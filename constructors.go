@@ -32,3 +32,8 @@ func ReadConfig(pth string) (*AppConfig, error) {
 
 	return c, nil
 }
+
+func ParseConfig(in []byte) (*AppConfig, error) {
+	var a AppConfig
+	return &a, yaml.Unmarshal(in, &a)
+}

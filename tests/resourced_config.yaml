@@ -1,0 +1,12 @@
+app_info:
+    name: ""
+    version: ""
+    startup_duration: 0s
+data_sources:
+    - resource_name: postgres
+      host: localhost
+      port: 5432
+      name: matreshka
+      user: matreshka
+      pwd: matreshka
+      ssl_mode: "false"

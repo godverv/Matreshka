@@ -1,20 +1,17 @@
 package matreshka
 
 import (
-	"time"
+	"gopkg.in/yaml.v3"
 
-	"github.com/godverv/matreshka/resources"
 	"github.com/godverv/matreshka/server"
 )
 
 type AppConfig struct {
-	AppInfo     AppInfo              `yaml:"app_info"`
-	DataSources []resources.Resource `yaml:"data_sources,omitempty"`
-	Server      []server.Server      `yaml:"server,omitempty"`
+	AppInfo     AppInfo         `yaml:"app_info"`
+	DataSources Resources       `yaml:"data_sources,omitempty"`
+	Server      []server.Server `yaml:"server,omitempty"`
 }
 
-type AppInfo struct {
-	Name            string        `yaml:"name"`
-	Version         string        `yaml:"version"`
-	StartupDuration time.Duration `yaml:"startup_duration"`
+func (a *AppConfig) Marshal() ([]byte, error) {
+	return yaml.Marshal(*a)
 }

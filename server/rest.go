@@ -7,6 +7,16 @@ type Rest struct {
 	Port uint16 `yaml:"port"`
 }
 
+func (r *Rest) ToEnv() map[string]string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *Rest) FromEnv(in map[string]string) (err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r *Rest) GetName() string {
 	return r.Name
 }

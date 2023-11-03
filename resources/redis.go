@@ -6,7 +6,9 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 )
 
-var (
+const RedisResourceName = "redis"
+
+const (
 	EnvVarRedisHost     = "REDIS_HOST"
 	EnvVarRedisPort     = "REDIS_PORT"
 	EnvVarRedisUser     = "REDIS_USER"
@@ -15,7 +17,7 @@ var (
 )
 
 type Redis struct {
-	ResourceName string `yaml:"resource_name"`
+	AppResource
 
 	Host string `yaml:"host"`
 	Port uint16 `yaml:"port"`
@@ -25,11 +27,11 @@ type Redis struct {
 	Db   int    `yaml:"db"`
 }
 
-func (p *Redis) GetName() string {
-	return p.ResourceName
+func (p *Redis) GetType() string {
+	return RedisResourceName
 }
 
-func (p *Redis) GetEnv() map[string]string {
+func (p *Redis) ToEnv() map[string]string {
 	return map[string]string{
 		EnvVarRedisHost:     p.Host,
 		EnvVarRedisPort:     strconv.FormatUint(uint64(p.Port), 10),
@@ -39,7 +41,7 @@ func (p *Redis) GetEnv() map[string]string {
 	}
 }
 
-func (p *Redis) FillFromEnv(env map[string]string) error {
+func (p *Redis) FromEnv(env map[string]string) error {
 	p.Host = env[EnvVarRedisHost]
 
 	p.Pwd = env[EnvVarRedisPassword]
