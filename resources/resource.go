@@ -12,12 +12,10 @@ type Resource interface {
 	GetType() string
 }
 
-type AppResource struct {
-	ResourceName string `yaml:"resource_name"`
-}
+type Name string
 
-func (r *AppResource) GetName() string {
-	return r.ResourceName
+func (a Name) GetName() string {
+	return string(a)
 }
 
 var nameToType = map[string]Resource{

@@ -7,7 +7,7 @@ import (
 type Resources []resources.Resource
 
 func (r Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var resourceNames []resources.AppResource
+	var resourceNames []resources.Name
 	err := unmarshal(&resourceNames)
 	if err != nil {
 		return err
@@ -16,7 +16,7 @@ func (r Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	actualResources := make([]resources.Resource, 0, len(resourceNames))
 
 	for _, appResource := range resourceNames {
-		actualResources = append(actualResources, resources.GetResourceByName(appResource.ResourceName))
+		actualResources = append(actualResources, resources.GetResourceByName(appResource.GetName()))
 	}
 
 	return unmarshal(&actualResources)

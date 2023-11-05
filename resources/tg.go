@@ -7,7 +7,7 @@ const (
 )
 
 type Telegram struct {
-	AppResource
+	Name `yaml:"resource_name"`
 
 	ApiKey string `yaml:"api_key"`
 }
@@ -26,8 +26,4 @@ func (t *Telegram) FromEnv(in map[string]string) (err error) {
 	t.ApiKey = in[TelegramApiKey]
 
 	return nil
-}
-
-func (t *Telegram) setName(name string) {
-	t.ResourceName = name
 }

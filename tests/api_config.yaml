@@ -1,0 +1,7 @@
+app_info:
+    name: ""
+    version: ""
+    startup_duration: 0s
+server:
+    - name: rest_server
+      port: 8080

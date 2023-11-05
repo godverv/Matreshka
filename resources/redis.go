@@ -17,7 +17,7 @@ const (
 )
 
 type Redis struct {
-	AppResource
+	Name `yaml:"resource_name"`
 
 	Host string `yaml:"host"`
 	Port uint16 `yaml:"port"`

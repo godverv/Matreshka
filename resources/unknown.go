@@ -1,7 +1,7 @@
 package resources
 
 type Unknown struct {
-	AppResource
+	Name `yaml:"resource_name"`
 
 	Content map[string]string
 }

@@ -18,7 +18,7 @@ const (
 )
 
 type Postgres struct {
-	AppResource
+	Name `yaml:"resource_name"`
 
 	Host string `yaml:"host"`
 	Port uint64 `yaml:"port"`
@@ -59,7 +59,7 @@ func (p *Postgres) FromEnv(in map[string]string) (err error) {
 }
 
 func (p *Postgres) MarshalYAML() (interface{}, error) {
-	resourceType := strings.Split(p.DbName, "_")[0]
+	resourceType := strings.Split(p.GetName(), "_")[0]
 	if resourceType != "postgres" {
 		return nil, errors.Wrap(ErrInvalidResourceName, "but got: "+resourceType)
 	}
