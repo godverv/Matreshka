@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/godverv/matreshka/internal/env_parser"
 )
 
@@ -19,11 +21,13 @@ func (s Name) GetName() string {
 }
 
 func GetServerByName(name string) Api {
-	switch name {
+	switch strings.Split(name, "_")[0] {
 	case RestServerType:
 		return &Rest{}
+
 	case GRPSServerType:
 		return &GRPC{}
+
 	default:
 		return &Unknown{}
 	}

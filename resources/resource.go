@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"strings"
+
 	"github.com/godverv/matreshka/internal/env_parser"
 )
 
@@ -18,17 +20,18 @@ func (a Name) GetName() string {
 	return string(a)
 }
 
-var nameToType = map[string]Resource{
-	PostgresResourceName: &Postgres{},
-	RedisResourceName:    &Redis{},
-	TelegramResourceName: &Telegram{},
-}
-
 func GetResourceByName(name string) Resource {
-	r, ok := nameToType[name]
-	if ok {
-		return r
-	}
+	switch strings.Split(name, "_")[0] {
+	case PostgresResourceName:
+		return &Postgres{}
 
-	return &Unknown{}
+	case RedisResourceName:
+		return &Redis{}
+
+	case TelegramResourceName:
+		return &Telegram{}
+
+	default:
+		return &Unknown{}
+	}
 }

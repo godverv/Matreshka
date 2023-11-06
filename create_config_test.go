@@ -1,4 +1,4 @@
-package tests
+package matreshka
 
 import (
 	_ "embed"
@@ -6,22 +6,23 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka"
 	"github.com/godverv/matreshka/api"
 	"github.com/godverv/matreshka/resources"
 )
 
 var (
-	//go:embed empty_config.yaml
+	//go:embed tests/empty_config.yaml
 	emptyConfig string
-	//go:embed resourced_config.yaml
+	//go:embed tests/app_config.yaml
+	appConfig string
+	//go:embed tests/resourced_config.yaml
 	resourcedConfig string
-	//go:embed api_config.yaml
+	//go:embed tests/api_config.yaml
 	apiConfig string
 )
 
 func Test_CreateEmptyConfig(t *testing.T) {
-	cfg := matreshka.NewEmptyConfig()
+	cfg := NewEmptyConfig()
 
 	bytes, err := cfg.Marshal()
 	require.NoError(t, err)
@@ -29,7 +30,7 @@ func Test_CreateEmptyConfig(t *testing.T) {
 }
 
 func Test_CreateConfigWithResources(t *testing.T) {
-	cfg := matreshka.NewEmptyConfig()
+	cfg := NewEmptyConfig()
 
 	cfg.DataSources = append(cfg.DataSources, &resources.Postgres{
 		Name:    "postgres",
@@ -47,7 +48,7 @@ func Test_CreateConfigWithResources(t *testing.T) {
 }
 
 func Test_CreateConfigWithServers(t *testing.T) {
-	cfg := matreshka.NewEmptyConfig()
+	cfg := NewEmptyConfig()
 	cfg.Server = append(cfg.Server, &api.Rest{
 		Name: "rest_server",
 		Port: 8080,

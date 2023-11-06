@@ -19,19 +19,18 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	for resIdx, node := range resourceNodes {
 		if len(node.Content) == 0 {
-			// TODO
 			continue
 		}
 
 		var resourceType string
 
 		for dataIdx := 0; dataIdx < len(node.Content); dataIdx += 2 {
-			// TODO
 			if node.Content[dataIdx].Value == "resource_name" {
 				resourceType = node.Content[dataIdx+1].Value
 				break
 			}
 		}
+
 		actualResources[resIdx] = resources.GetResourceByName(resourceType)
 		err = node.Decode(actualResources[resIdx])
 		if err != nil {

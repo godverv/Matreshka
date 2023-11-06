@@ -23,8 +23,9 @@ func ReadConfig(pth string) (*AppConfig, error) {
 		return nil, err
 	}
 
-	c := &AppConfig{}
+	defer f.Close()
 
+	c := &AppConfig{}
 	err = yaml.NewDecoder(f).Decode(c)
 	if err != nil {
 		return nil, errors.Wrap(err, "error decoding config to struct")
