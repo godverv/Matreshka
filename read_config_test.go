@@ -28,19 +28,16 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	cfgGot, err := ParseConfig([]byte(resourcedConfig))
 	require.NoError(t, err)
 
-	cfgExpect := &AppConfig{
-		DataSources: []resources.Resource{
-			&resources.Postgres{
-				Name:    "postgres",
-				Host:    "localhost",
-				Port:    5432,
-				User:    "matreshka",
-				Pwd:     "matreshka",
-				DbName:  "matreshka",
-				SSLMode: "false",
-			},
-		},
-	}
+	cfgExpect := &AppConfig{}
+	cfgExpect.DataSources.Add(&resources.Postgres{
+		Name:    "postgres",
+		Host:    "localhost",
+		Port:    5432,
+		User:    "matreshka",
+		Pwd:     "matreshka",
+		DbName:  "matreshka",
+		SSLMode: "false",
+	})
 
 	require.Equal(t, cfgExpect, cfgGot)
 }

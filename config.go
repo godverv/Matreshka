@@ -5,9 +5,10 @@ import (
 )
 
 type AppConfig struct {
-	AppInfo     AppInfo   `yaml:"app_info"`
-	DataSources Resources `yaml:"data_sources,omitempty"`
-	Server      Servers   `yaml:"server,omitempty"`
+	AppInfo     AppInfo                `yaml:"app_info"`
+	DataSources Resources              `yaml:"data_sources,omitempty"`
+	Server      Servers                `yaml:"server,omitempty"`
+	Environment map[string]interface{} `yaml:"environment,omitempty"`
 }
 
 func (a *AppConfig) Marshal() ([]byte, error) {

@@ -1,8 +1,14 @@
 package api
 
+import (
+	"strconv"
+)
+
 const (
 	RestServerType  = "rest"
 	DefaultRestPort = 8080
+
+	EnvVarRestPort = "REST_PORT"
 )
 
 type Rest struct {
@@ -12,13 +18,20 @@ type Rest struct {
 }
 
 func (r *Rest) ToEnv() map[string]string {
-	//TODO implement me
-	panic("implement me")
+	return map[string]string{
+		EnvVarRestPort: strconv.FormatUint(uint64(r.Port), 10),
+	}
 }
 
-func (r *Rest) FromEnv(in map[string]string) (err error) {
-	//TODO implement me
-	panic("implement me")
+func (r *Rest) FromEnv(in map[string]string) error {
+	portUint, err := strconv.ParseUint(in[EnvVarRestPort], 10, 16)
+	if err != nil {
+		return err
+	}
+
+	r.Port = uint16(portUint)
+
+	return nil
 }
 
 func (r *Rest) GetPort() uint16 {

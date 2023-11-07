@@ -15,23 +15,14 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	actualResources := make(Resources, len(resourceNodes))
+	actualResources := make([]resources.Resource, len(resourceNodes))
 
 	for resIdx, node := range resourceNodes {
 		if len(node.Content) == 0 {
 			continue
 		}
 
-		var resourceType string
-
-		for dataIdx := 0; dataIdx < len(node.Content); dataIdx += 2 {
-			if node.Content[dataIdx].Value == "resource_name" {
-				resourceType = node.Content[dataIdx+1].Value
-				break
-			}
-		}
-
-		actualResources[resIdx] = resources.GetResourceByName(resourceType)
+		actualResources[resIdx] = resources.GetResourceByName(findResourceName(node.Content))
 		err = node.Decode(actualResources[resIdx])
 		if err != nil {
 			return err
@@ -40,4 +31,18 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	*r = actualResources
 	return nil
+}
+
+func (r *Resources) Add(resource resources.Resource) {
+	*r = append(*r, resource)
+}
+
+func findResourceName(nodes []*yaml.Node) string {
+	for dataIdx := 0; dataIdx < len(nodes); dataIdx += 2 {
+		if nodes[dataIdx].Value == "resource_name" {
+			return nodes[dataIdx+1].Value
+		}
+	}
+
+	return ""
 }

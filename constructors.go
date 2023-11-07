@@ -5,16 +5,10 @@ import (
 
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
-
-	"github.com/godverv/matreshka/api"
-	"github.com/godverv/matreshka/resources"
 )
 
 func NewEmptyConfig() *AppConfig {
-	return &AppConfig{
-		Server:      make([]api.Api, 0),
-		DataSources: make([]resources.Resource, 0),
-	}
+	return &AppConfig{}
 }
 
 func ReadConfig(pth string) (*AppConfig, error) {
