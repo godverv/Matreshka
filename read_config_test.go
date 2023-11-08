@@ -29,7 +29,7 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	cfgExpect := &AppConfig{}
-	cfgExpect.DataSources.Add(&resources.Postgres{
+	cfgExpect.Resources = append(cfgExpect.Resources, &resources.Postgres{
 		Name:    "postgres",
 		Host:    "localhost",
 		Port:    5432,
@@ -47,7 +47,7 @@ func Test_ReadApiConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	cfgExpect := &AppConfig{
-		Server: []api.Api{
+		Servers: []api.Api{
 			&api.Rest{
 				Name: "rest_server",
 				Port: 8080,

@@ -1,0 +1,10 @@
+app_info:
+  name: ""
+  version: ""
+  startup_duration: 0s
+
+environment:
+  int: false
+  string: 67
+  bool: правда
+  duration: twelve hours

@@ -1,0 +1,10 @@
+app_info:
+  name: ""
+  version: ""
+  startup_duration: 0s
+
+environment:
+  int: 1
+  string: "not so basic 🤡 string"
+  bool: true
+  duration: 10s

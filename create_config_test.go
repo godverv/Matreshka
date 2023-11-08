@@ -21,6 +21,10 @@ var (
 	apiConfig string
 	//go:embed tests/full_config.yaml
 	fullConfig string
+	//go:embed tests/environment_config.yaml
+	environmentConfig string
+	//go:embed tests/invalid_environment_config.yaml
+	invalidEnvironmentConfig string
 )
 
 func Test_CreateEmptyConfig(t *testing.T) {
@@ -34,7 +38,7 @@ func Test_CreateEmptyConfig(t *testing.T) {
 func Test_CreateConfigWithResources(t *testing.T) {
 	cfg := NewEmptyConfig()
 
-	cfg.DataSources.Add(&resources.Postgres{
+	cfg.Resources = append(cfg.Resources, &resources.Postgres{
 		Name:    "postgres",
 		Host:    "localhost",
 		Port:    5432,
@@ -51,7 +55,7 @@ func Test_CreateConfigWithResources(t *testing.T) {
 
 func Test_CreateConfigWithServers(t *testing.T) {
 	cfg := NewEmptyConfig()
-	cfg.Server = append(cfg.Server, &api.Rest{
+	cfg.Servers = append(cfg.Servers, &api.Rest{
 		Name: "rest_server",
 		Port: 8080,
 	})

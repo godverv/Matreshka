@@ -33,10 +33,6 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (r *Resources) Add(resource resources.Resource) {
-	*r = append(*r, resource)
-}
-
 func findResourceName(nodes []*yaml.Node) string {
 	for dataIdx := 0; dataIdx < len(nodes); dataIdx += 2 {
 		if nodes[dataIdx].Value == "resource_name" {
