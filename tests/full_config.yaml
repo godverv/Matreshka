@@ -13,3 +13,9 @@ data_sources:
       pwd: matreshka
       name: matreshka
       ssl_mode: "false"
+
+environment:
+  int: 1
+  string: "not so basic 🤡 string"
+  bool: true
+  duration: 10s
