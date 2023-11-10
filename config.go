@@ -8,9 +8,9 @@ import (
 
 type AppConfig struct {
 	AppInfo     `yaml:"app_info"`
-	Resources   `yaml:"data_sources,omitempty"`
-	Servers     `yaml:"server,omitempty"`
-	Environment map[string]interface{} `yaml:"environment,omitempty"`
+	Resources   `yaml:"data_sources"`
+	Servers     `yaml:"server"`
+	Environment map[string]interface{} `yaml:"environment"`
 }
 
 func (a *AppConfig) TryGetInt(key string) (out int, ok bool) {
