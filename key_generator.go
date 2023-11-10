@@ -9,23 +9,19 @@ import (
 
 var ErrNoAppName = stderrors.New("no app name")
 
-func GenerateEnvironmentKeys(c AppConfig) (keys []string, values []any, err error) {
+func GenerateEnvironmentKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 	if c.AppInfo.Name == "" {
-		return nil, nil, ErrNoAppName
+		return nil, ErrNoAppName
 	}
 
-	keys, values, err = env_parser.ExtractVariables(c.AppInfo.Name, c.Environment)
+	envs, err = env_parser.ExtractVariables(c.AppInfo.Name, c.Environment)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	sort.Slice(values, func(i, j int) bool {
-		return keys[i] < keys[j]
+	sort.Slice(envs, func(i, j int) bool {
+		return envs[i].Name < envs[j].Name
 	})
 
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-
-	return keys, values, nil
+	return envs, nil
 }

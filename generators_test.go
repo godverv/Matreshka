@@ -4,27 +4,34 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/godverv/matreshka/internal/env_parser"
 )
 
 func Test_GenerateGoConfigKeys(t *testing.T) {
 	c, err := ParseConfig([]byte(fullConfig))
 	require.NoError(t, err)
 
-	expectedKeys := []string{
-		"matreshka_bool",
-		"matreshka_duration",
-		"matreshka_int",
-		"matreshka_string",
-	}
-	expectedValues := []any{
-		1,
-		true,
-		"not so basic 🤡 string",
-		"10s",
+	expected := []env_parser.EnvVal{
+		{
+			Name:  "matreshka_bool",
+			Value: true,
+		},
+		{
+			Name:  "matreshka_duration",
+			Value: "10s",
+		},
+		{
+			Name:  "matreshka_int",
+			Value: 1,
+		},
+		{
+			Name:  "matreshka_string",
+			Value: "not so basic 🤡 string",
+		},
 	}
 
-	keys, values, err := GenerateEnvironmentKeys(*c)
+	res, err := GenerateEnvironmentKeys(*c)
 	require.NoError(t, err)
-	require.Equal(t, expectedKeys, keys)
-	require.Equal(t, expectedValues, values)
+	require.Equal(t, expected, res)
 }

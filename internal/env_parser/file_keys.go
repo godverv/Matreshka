@@ -1,21 +1,28 @@
 package env_parser
 
-func ExtractVariables(prefix string, m map[string]interface{}) (keys []string, values []any, err error) {
+type EnvVal struct {
+	Name  string
+	Value interface{}
+}
+
+func ExtractVariables(prefix string, m map[string]interface{}) (vals []EnvVal, err error) {
 	for k, v := range m {
 		if newMap, ok := v.(map[string]interface{}); ok {
-			upperKeys, upperValues, err := ExtractVariables(prefix+"_"+k, newMap)
+			vs, err := ExtractVariables(prefix+"_"+k, newMap)
 			if err != nil {
-				return nil, nil, err
+				return nil, err
 			}
 
-			keys = append(keys, upperKeys...)
-			values = append(values, upperValues...)
+			vals = append(vals, vs...)
 		} else {
 			k = prefix + "_" + k
 
-			keys = append(keys, k)
-			values = append(values, v)
+			vals = append(vals, EnvVal{
+				Name:  k,
+				Value: v,
+			})
 		}
 	}
-	return keys, values, nil
+
+	return vals, nil
 }
