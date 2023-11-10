@@ -5,15 +5,10 @@ type EnvVal struct {
 	Value interface{}
 }
 
-func ExtractVariables(prefix string, m map[string]interface{}) (vals []EnvVal, err error) {
+func ExtractVariables(prefix string, m map[string]interface{}) (vals []EnvVal) {
 	for k, v := range m {
 		if newMap, ok := v.(map[string]interface{}); ok {
-			vs, err := ExtractVariables(prefix+"_"+k, newMap)
-			if err != nil {
-				return nil, err
-			}
-
-			vals = append(vals, vs...)
+			vals = append(vals, ExtractVariables(prefix+"_"+k, newMap)...)
 		} else {
 			k = prefix + "_" + k
 
@@ -24,5 +19,5 @@ func ExtractVariables(prefix string, m map[string]interface{}) (vals []EnvVal, e
 		}
 	}
 
-	return vals, nil
+	return vals
 }
