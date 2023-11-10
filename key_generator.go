@@ -14,10 +14,7 @@ func GenerateEnvironmentKeys(c AppConfig) (envs []env_parser.EnvVal, err error) 
 		return nil, ErrNoAppName
 	}
 
-	envs, err = env_parser.ExtractVariables(c.AppInfo.Name, c.Environment)
-	if err != nil {
-		return nil, err
-	}
+	envs = env_parser.ExtractVariables(c.AppInfo.Name, c.Environment)
 
 	sort.Slice(envs, func(i, j int) bool {
 		return envs[i].Name < envs[j].Name

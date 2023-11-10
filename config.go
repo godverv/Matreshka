@@ -3,7 +3,13 @@ package matreshka
 import (
 	"time"
 
+	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	ErrNotFound = errors.New("no such key in config")
+	ErrParsing  = errors.New("error casting value to wanted type")
 )
 
 type AppConfig struct {
@@ -13,65 +19,74 @@ type AppConfig struct {
 	Environment map[string]interface{} `yaml:"environment"`
 }
 
-func (a *AppConfig) TryGetInt(key string) (out int, ok bool) {
+func (a *AppConfig) TryGetInt(key string) (out int, err error) {
 	val, ok := a.Environment[key]
 	if !ok {
-		return 0, false
+		return 0, errors.Wrap(ErrNotFound, key)
 	}
 
 	out, ok = val.(int)
-	return out, ok
+	if !ok {
+		return out, errors.Wrapf(ErrParsing, "wanted: %T actual value %T", out, val)
+	}
+	return out, nil
 }
 func (a *AppConfig) GetInt(key string) (out int) {
 	out, _ = a.TryGetInt(key)
 	return out
 }
 
-func (a *AppConfig) TryGetString(key string) (out string, ok bool) {
+func (a *AppConfig) TryGetString(key string) (out string, err error) {
 	val, ok := a.Environment[key]
 	if !ok {
-		return "", false
+		return "", errors.Wrap(ErrNotFound, key)
 	}
 
 	out, ok = val.(string)
-	return out, ok
+	if !ok {
+		return out, errors.Wrapf(ErrParsing, "wanted: %T actual value %T", out, val)
+	}
+	return out, nil
 }
 func (a *AppConfig) GetString(key string) (out string) {
 	out, _ = a.TryGetString(key)
 	return out
 }
 
-func (a *AppConfig) TryGetBool(key string) (out bool, ok bool) {
+func (a *AppConfig) TryGetBool(key string) (out bool, err error) {
 	val, ok := a.Environment[key]
 	if !ok {
-		return false, false
+		return false, errors.Wrap(ErrNotFound, key)
 	}
 
 	out, ok = val.(bool)
-	return out, ok
+	if !ok {
+		return out, errors.Wrapf(ErrParsing, "wanted: %T actual value %T", out, val)
+	}
+	return out, nil
 }
 func (a *AppConfig) GetBool(key string) (out bool) {
 	out, _ = a.TryGetBool(key)
 	return out
 }
 
-func (a *AppConfig) TryGetDuration(key string) (t time.Duration, ok bool) {
+func (a *AppConfig) TryGetDuration(key string) (out time.Duration, err error) {
 	val, ok := a.Environment[key]
 	if !ok {
-		return 0, false
+		return 0, errors.Wrap(ErrNotFound, key)
 	}
 
 	timed, ok := val.(string)
 	if !ok {
-		return 0, false
+		return 0, errors.Wrap(ErrParsing, "error parsing value to string before parsing duration")
 	}
 
-	t, err := time.ParseDuration(timed)
+	out, err = time.ParseDuration(timed)
 	if err != nil {
-		return 0, false
+		return 0, errors.Wrapf(ErrParsing, "error parssing duration")
 	}
 
-	return t, ok
+	return out, nil
 }
 func (a *AppConfig) GetDuration(key string) (out time.Duration) {
 	out, _ = a.TryGetDuration(key)
