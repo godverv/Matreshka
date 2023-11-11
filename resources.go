@@ -8,6 +8,16 @@ import (
 
 type Resources []resources.Resource
 
+func (r *Resources) Get(name string) resources.Resource {
+	for _, item := range *r {
+		if item.GetName() == name {
+			return item
+		}
+	}
+
+	return nil
+}
+
 func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var resourceNodes []yaml.Node
 	err := unmarshal(&resourceNodes)

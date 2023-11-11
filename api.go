@@ -8,7 +8,17 @@ import (
 
 type Servers []api.Api
 
-func (r *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (s *Servers) Get(name string) api.Api {
+	for _, item := range *s {
+		if item.GetName() == name {
+			return item
+		}
+	}
+
+	return nil
+}
+
+func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var apiNodes []yaml.Node
 	err := unmarshal(&apiNodes)
 	if err != nil {
@@ -37,7 +47,7 @@ func (r *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	}
 
-	*r = actualApi
+	*s = actualApi
 
 	return nil
 }
