@@ -1,21 +1,59 @@
 package matreshka
 
 import (
+	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/resources"
 )
 
+var (
+	ErrResourceNotFound    = errors.New("resource not found")
+	ErrResourceInvalidType = errors.New("resource found but can't be cast")
+)
+
 type Resources []resources.Resource
 
-func (r *Resources) Get(name string) resources.Resource {
-	for _, item := range *r {
-		if item.GetName() == name {
-			return item
-		}
+func (r *Resources) Postgres(name string) (out *resources.Postgres, err error) {
+	res := r.get(name)
+	if res == nil {
+		return nil, ErrResourceNotFound
 	}
 
-	return nil
+	out, ok := res.(*resources.Postgres)
+	if !ok {
+		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+	}
+
+	return out, nil
+}
+
+func (r *Resources) Telegram(name string) (out *resources.Telegram, err error) {
+	res := r.get(name)
+	if res == nil {
+		return nil, ErrResourceNotFound
+	}
+
+	out, ok := res.(*resources.Telegram)
+	if !ok {
+		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+	}
+
+	return out, nil
+}
+
+func (r *Resources) Redis(name string) (out *resources.Redis, err error) {
+	res := r.get(name)
+	if res == nil {
+		return nil, ErrResourceNotFound
+	}
+
+	out, ok := res.(*resources.Redis)
+	if !ok {
+		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+	}
+
+	return out, nil
 }
 
 func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -40,6 +78,16 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	*r = actualResources
+	return nil
+}
+
+func (r *Resources) get(name string) resources.Resource {
+	for _, item := range *r {
+		if item.GetName() == name {
+			return item
+		}
+	}
+
 	return nil
 }
 

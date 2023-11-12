@@ -1,21 +1,45 @@
 package matreshka
 
 import (
+	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/api"
 )
 
+var (
+	ErrApiConfigNotFound = errors.New("api configuration not found")
+	ErrAPIInvalidType    = errors.New("api found but can't be cast")
+)
+
 type Servers []api.Api
 
-func (s *Servers) Get(name string) api.Api {
-	for _, item := range *s {
-		if item.GetName() == name {
-			return item
-		}
+func (s *Servers) GRPC(name string) (*api.GRPC, error) {
+	res := s.get(name)
+	if res == nil {
+		return nil, ErrApiConfigNotFound
 	}
 
-	return nil
+	out, ok := res.(*api.GRPC)
+	if !ok {
+		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+	}
+
+	return out, nil
+}
+
+func (s *Servers) REST(name string) (*api.Rest, error) {
+	res := s.get(name)
+	if res == nil {
+		return nil, ErrApiConfigNotFound
+	}
+
+	out, ok := res.(*api.Rest)
+	if !ok {
+		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+	}
+
+	return out, nil
 }
 
 func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -48,6 +72,16 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	*s = actualApi
+
+	return nil
+}
+
+func (s *Servers) get(name string) api.Api {
+	for _, item := range *s {
+		if item.GetName() == name {
+			return item
+		}
+	}
 
 	return nil
 }
