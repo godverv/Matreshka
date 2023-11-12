@@ -11,6 +11,7 @@ type Api interface {
 	GetName() string
 	// GetPort - return port or default port
 	GetPort() uint16
+	GetPortStr() string
 
 	env_parser.EnvParser
 }

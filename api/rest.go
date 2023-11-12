@@ -41,3 +41,8 @@ func (r *Rest) GetPort() uint16 {
 
 	return DefaultRestPort
 }
+
+func (r *Rest) GetPortStr() string {
+	p := r.GetPort()
+	return strconv.FormatUint(uint64(p), 10)
+}

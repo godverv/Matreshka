@@ -31,7 +31,7 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 		},
 	}
 
-	res, err := GenerateEnvironmentKeys(*c)
+	res, err := GenerateKeys(*c)
 	require.NoError(t, err)
 	require.Equal(t, expected, res)
 }
