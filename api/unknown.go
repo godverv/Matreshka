@@ -14,6 +14,7 @@ func (u *Unknown) GetPortStr() string {
 }
 
 func (u *Unknown) ToEnv() map[string]string {
+	u.Values[EnvServerName] = u.GetName()
 	return u.Values
 }
 

@@ -6,6 +6,8 @@ import (
 	"github.com/godverv/matreshka/internal/env_parser"
 )
 
+const EnvResourceName = "resource_name"
+
 type Resource interface {
 	env_parser.EnvParser
 

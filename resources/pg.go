@@ -42,6 +42,8 @@ func (p *Postgres) ToEnv() map[string]string {
 
 		EnvVarPostgresHost: p.Host,
 		EnvVarPostgresPort: strconv.FormatUint(p.Port, 10),
+
+		EnvResourceName: p.GetName(),
 	}
 }
 
@@ -55,6 +57,12 @@ func (p *Postgres) FromEnv(in map[string]string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "error parsing port value")
 	}
+
+	p.Name = Name(in[EnvResourceName])
+	if p.Name == "" {
+		p.Name = PostgresResourceName
+	}
+
 	return nil
 }
 

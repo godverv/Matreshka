@@ -6,6 +6,8 @@ import (
 	"github.com/godverv/matreshka/internal/env_parser"
 )
 
+const EnvServerName = "server_name"
+
 type Api interface {
 	// GetName - return a name of server
 	GetName() string

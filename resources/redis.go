@@ -38,6 +38,7 @@ func (p *Redis) ToEnv() map[string]string {
 		EnvVarRedisUser:     p.User,
 		EnvVarRedisPassword: p.Pwd,
 		EnvVarRedisDbNum:    strconv.FormatUint(uint64(p.Db), 10),
+		EnvResourceName:     p.GetName(),
 	}
 }
 
@@ -64,6 +65,11 @@ func (p *Redis) FromEnv(env map[string]string) error {
 		}
 
 		p.Port = uint16(redisPort)
+	}
+
+	p.Name = Name(env[EnvResourceName])
+	if p.Name == "" {
+		p.Name = RedisResourceName
 	}
 
 	return nil

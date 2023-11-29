@@ -20,6 +20,7 @@ type Rest struct {
 func (r *Rest) ToEnv() map[string]string {
 	return map[string]string{
 		EnvVarRestPort: strconv.FormatUint(uint64(r.Port), 10),
+		EnvServerName:  r.GetName(),
 	}
 }
 
@@ -30,6 +31,10 @@ func (r *Rest) FromEnv(in map[string]string) error {
 	}
 
 	r.Port = uint16(portUint)
+
+	if r.Name == "" {
+		r.Name = RestServerType
+	}
 
 	return nil
 }

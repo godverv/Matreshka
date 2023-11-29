@@ -20,6 +20,7 @@ type GRPC struct {
 func (g *GRPC) ToEnv() map[string]string {
 	return map[string]string{
 		EnvVarGRPCPort: strconv.FormatUint(uint64(g.Port), 10),
+		EnvServerName:  g.GetName(),
 	}
 }
 
@@ -30,6 +31,10 @@ func (g *GRPC) FromEnv(in map[string]string) error {
 	}
 
 	g.Port = uint16(portUint)
+
+	if g.Name == "" {
+		g.Name = GRPSServerType
+	}
 
 	return nil
 }

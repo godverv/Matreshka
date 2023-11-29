@@ -18,12 +18,18 @@ func (t *Telegram) GetType() string {
 
 func (t *Telegram) ToEnv() map[string]string {
 	return map[string]string{
-		TelegramApiKey: t.ApiKey,
+		TelegramApiKey:  t.ApiKey,
+		EnvResourceName: t.GetName(),
 	}
 }
 
 func (t *Telegram) FromEnv(in map[string]string) (err error) {
 	t.ApiKey = in[TelegramApiKey]
+
+	t.Name = Name(in[EnvResourceName])
+	if t.Name == "" {
+		t.Name = TelegramResourceName
+	}
 
 	return nil
 }
