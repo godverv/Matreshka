@@ -2,6 +2,8 @@ app_info:
     name: ""
     version: ""
     startup_duration: 0s
+data_sources: []
 server:
     - name: rest_server
       port: 8080
+environment: {}

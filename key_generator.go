@@ -7,6 +7,11 @@ import (
 	"github.com/godverv/matreshka/internal/env_parser"
 )
 
+const (
+	apiPrefix      = "Api_"
+	resourcePrefix = "Resource_"
+)
+
 var ErrNoAppName = stderrors.New("no app name")
 
 func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
@@ -21,15 +26,17 @@ func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 	})
 
 	for idx := range c.Resources {
+
 		envs = append(envs, env_parser.EnvVal{
-			Name:  "Resource_" + c.Resources[idx].GetName(),
+			Name:  resourcePrefix + c.Resources[idx].GetName(),
 			Value: c.Resources[idx],
 		})
 	}
 
 	for idx := range c.Servers {
+
 		envs = append(envs, env_parser.EnvVal{
-			Name:  "Api_" + c.Servers[idx].GetName(),
+			Name:  apiPrefix + c.Servers[idx].GetName(),
 			Value: c.Servers[idx],
 		})
 	}

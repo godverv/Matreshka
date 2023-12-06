@@ -33,6 +33,9 @@ func GetResourceByName(name string) Resource {
 	case TelegramResourceName:
 		return &Telegram{}
 
+	case GrpcResourceName:
+		return &GRPC{}
+
 	default:
 		return &Unknown{}
 	}

@@ -8,7 +8,12 @@ import (
 )
 
 func NewEmptyConfig() *AppConfig {
-	return &AppConfig{}
+	return &AppConfig{
+		AppInfo:     AppInfo{},
+		Resources:   make(Resources, 0),
+		Servers:     make(Servers, 0),
+		Environment: make(map[string]interface{}),
+	}
 }
 
 func ReadConfig(pth string) (*AppConfig, error) {

@@ -41,26 +41,26 @@ func Test_InvalidEnvironment(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("int", func(t *testing.T) {
-		val, ok := cfg.TryGetInt("int")
-		require.False(t, ok)
+		val, err := cfg.TryGetInt("int")
+		require.ErrorIs(t, err, ErrParsing)
 		require.Empty(t, val)
 	})
 
 	t.Run("string", func(t *testing.T) {
-		val, ok := cfg.TryGetString("string")
-		require.False(t, ok)
+		val, err := cfg.TryGetString("string")
+		require.ErrorIs(t, err, ErrParsing)
 		require.Empty(t, val)
 	})
 
 	t.Run("bool", func(t *testing.T) {
-		val, ok := cfg.TryGetBool("bool")
-		require.False(t, ok)
+		val, err := cfg.TryGetBool("bool")
+		require.ErrorIs(t, err, ErrParsing)
 		require.Empty(t, val)
 	})
 
 	t.Run("duration", func(t *testing.T) {
-		val, ok := cfg.TryGetDuration("duration")
-		require.False(t, ok)
+		val, err := cfg.TryGetDuration("duration")
+		require.ErrorIs(t, err, ErrParsing)
 		require.Empty(t, val)
 	})
 }

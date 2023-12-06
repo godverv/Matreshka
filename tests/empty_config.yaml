@@ -2,3 +2,6 @@ app_info:
     name: ""
     version: ""
     startup_duration: 0s
+data_sources: []
+server: []
+environment: {}

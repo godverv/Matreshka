@@ -1,6 +1,8 @@
 package matreshka
 
 import (
+	"strings"
+
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
@@ -77,6 +79,7 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (s *Servers) get(name string) api.Api {
+	name = strings.TrimLeft(name, apiPrefix)
 	for _, item := range *s {
 		if item.GetName() == name {
 			return item
