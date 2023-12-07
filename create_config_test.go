@@ -12,30 +12,36 @@ import (
 
 var (
 	//go:embed tests/empty_config.yaml
-	emptyConfig string
+	emptyConfig []byte
 	//go:embed tests/app_config.yaml
-	appConfig string
+	appConfig []byte
 	//go:embed tests/resourced_config.yaml
-	resourcedConfig string
+	resourcedConfig []byte
 	//go:embed tests/api_config.yaml
-	apiConfig string
+	apiConfig []byte
+	//go:embed tests/api_half_empty_config.yaml
+	apiHalfEmptyConfig []byte
 	//go:embed tests/full_config.yaml
-	fullConfig string
+	fullConfig []byte
 	//go:embed tests/environment_config.yaml
-	environmentConfig string
+	environmentConfig []byte
 	//go:embed tests/invalid_environment_config.yaml
-	invalidEnvironmentConfig string
+	invalidEnvironmentConfig []byte
 )
 
 func Test_CreateEmptyConfig(t *testing.T) {
+	t.Parallel()
+
 	cfg := NewEmptyConfig()
 
 	bytes, err := cfg.Marshal()
 	require.NoError(t, err)
-	require.Equal(t, emptyConfig, string(bytes))
+	require.Equal(t, string(emptyConfig), string(bytes))
 }
 
 func Test_CreateConfigWithResources(t *testing.T) {
+	t.Parallel()
+
 	cfg := NewEmptyConfig()
 
 	cfg.Resources = append(cfg.Resources, &resources.Postgres{
@@ -50,17 +56,24 @@ func Test_CreateConfigWithResources(t *testing.T) {
 
 	bytes, err := cfg.Marshal()
 	require.NoError(t, err)
-	require.Equal(t, resourcedConfig, string(bytes))
+	require.Equal(t, string(resourcedConfig), string(bytes))
 }
 
 func Test_CreateConfigWithServers(t *testing.T) {
-	cfg := NewEmptyConfig()
-	cfg.Servers = append(cfg.Servers, &api.Rest{
-		Name: "rest_server",
-		Port: 8080,
-	})
+	t.Parallel()
 
-	bytes, err := cfg.Marshal()
+	cfg := NewEmptyConfig()
+	cfg.Servers = append(cfg.Servers,
+		&api.Rest{
+			Name: "rest_server",
+			Port: 8080,
+		},
+		&api.GRPC{
+			Name: "grpc_server",
+			Port: 50051,
+		})
+
+	apiMarshalled, err := cfg.Marshal()
 	require.NoError(t, err)
-	require.Equal(t, apiConfig, string(bytes))
+	require.Equal(t, string(apiConfig), string(apiMarshalled))
 }

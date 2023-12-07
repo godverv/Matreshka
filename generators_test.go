@@ -11,7 +11,9 @@ import (
 )
 
 func Test_GenerateGoConfigKeys(t *testing.T) {
-	c, err := ParseConfig([]byte(fullConfig))
+	t.Parallel()
+
+	c, err := ParseConfig(fullConfig)
 	require.NoError(t, err)
 
 	expected := []env_parser.EnvVal{

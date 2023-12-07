@@ -7,8 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Environment(t *testing.T) {
-	cfg, err := ParseConfig([]byte(environmentConfig))
+func Test_EnvironmentOk(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := ParseConfig(environmentConfig)
 	require.NoError(t, err)
 
 	t.Run("int", func(t *testing.T) {
@@ -36,31 +38,64 @@ func Test_Environment(t *testing.T) {
 	})
 }
 
-func Test_InvalidEnvironment(t *testing.T) {
-	cfg, err := ParseConfig([]byte(invalidEnvironmentConfig))
+func Test_EnvironmentInvalid(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := ParseConfig(invalidEnvironmentConfig)
 	require.NoError(t, err)
 
 	t.Run("int", func(t *testing.T) {
 		val, err := cfg.TryGetInt("int")
-		require.ErrorIs(t, err, ErrParsing)
+		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})
 
 	t.Run("string", func(t *testing.T) {
 		val, err := cfg.TryGetString("string")
-		require.ErrorIs(t, err, ErrParsing)
+		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})
 
 	t.Run("bool", func(t *testing.T) {
 		val, err := cfg.TryGetBool("bool")
-		require.ErrorIs(t, err, ErrParsing)
+		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})
 
 	t.Run("duration", func(t *testing.T) {
 		val, err := cfg.TryGetDuration("duration")
-		require.ErrorIs(t, err, ErrParsing)
+		require.ErrorIs(t, err, ErrUnexpectedType)
+		require.Empty(t, val)
+	})
+}
+
+func Test_EnvironmentNotFound(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := ParseConfig(emptyConfig)
+	require.NoError(t, err)
+
+	t.Run("int", func(t *testing.T) {
+		val, err := cfg.TryGetInt("not_found_int")
+		require.ErrorIs(t, err, ErrNotFound)
+		require.Empty(t, val)
+	})
+
+	t.Run("string", func(t *testing.T) {
+		val, err := cfg.TryGetString("string")
+		require.ErrorIs(t, err, ErrNotFound)
+		require.Empty(t, val)
+	})
+
+	t.Run("bool", func(t *testing.T) {
+		val, err := cfg.TryGetBool("bool")
+		require.ErrorIs(t, err, ErrNotFound)
+		require.Empty(t, val)
+	})
+
+	t.Run("duration", func(t *testing.T) {
+		val, err := cfg.TryGetDuration("duration")
+		require.ErrorIs(t, err, ErrNotFound)
 		require.Empty(t, val)
 	})
 }

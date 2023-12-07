@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("no such key in config")
-	ErrParsing  = errors.New("error casting value to wanted type")
+	ErrNotFound       = errors.New("no such key in config")
+	ErrUnexpectedType = errors.New("error casting value to wanted type")
 )
 
 type AppConfig struct {
@@ -27,7 +27,7 @@ func (a *AppConfig) TryGetInt(key string) (out int, err error) {
 
 	out, ok = val.(int)
 	if !ok {
-		return out, errors.Wrapf(ErrParsing, "wanted: %T actual value %T", out, val)
+		return out, errors.Wrapf(ErrUnexpectedType, "wanted: %T actual value %T", out, val)
 	}
 	return out, nil
 }
@@ -44,7 +44,7 @@ func (a *AppConfig) TryGetString(key string) (out string, err error) {
 
 	out, ok = val.(string)
 	if !ok {
-		return out, errors.Wrapf(ErrParsing, "wanted: %T actual value %T", out, val)
+		return out, errors.Wrapf(ErrUnexpectedType, "wanted: %T actual value %T", out, val)
 	}
 	return out, nil
 }
@@ -61,7 +61,7 @@ func (a *AppConfig) TryGetBool(key string) (out bool, err error) {
 
 	out, ok = val.(bool)
 	if !ok {
-		return out, errors.Wrapf(ErrParsing, "wanted: %T actual value %T", out, val)
+		return out, errors.Wrapf(ErrUnexpectedType, "wanted: %T actual value %T", out, val)
 	}
 	return out, nil
 }
@@ -78,12 +78,12 @@ func (a *AppConfig) TryGetDuration(key string) (out time.Duration, err error) {
 
 	timed, ok := val.(string)
 	if !ok {
-		return 0, errors.Wrap(ErrParsing, "error parsing value to string before parsing duration")
+		return 0, errors.Wrap(ErrUnexpectedType, "error parsing value to string before parsing duration")
 	}
 
 	out, err = time.ParseDuration(timed)
 	if err != nil {
-		return 0, errors.Wrapf(ErrParsing, "error parssing duration")
+		return 0, errors.Wrapf(ErrUnexpectedType, "error parssing duration")
 	}
 
 	return out, nil

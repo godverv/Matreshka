@@ -9,22 +9,17 @@ import (
 	"github.com/godverv/matreshka/resources"
 )
 
-var (
-	ErrResourceNotFound    = errors.New("resource not found")
-	ErrResourceInvalidType = errors.New("resource found but can't be cast")
-)
-
 type Resources []resources.Resource
 
 func (r *Resources) Postgres(name string) (out *resources.Postgres, err error) {
 	res := r.get(name)
 	if res == nil {
-		return nil, ErrResourceNotFound
+		return nil, ErrNotFound
 	}
 
 	out, ok := res.(*resources.Postgres)
 	if !ok {
-		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -33,12 +28,12 @@ func (r *Resources) Postgres(name string) (out *resources.Postgres, err error) {
 func (r *Resources) Telegram(name string) (out *resources.Telegram, err error) {
 	res := r.get(name)
 	if res == nil {
-		return nil, ErrResourceNotFound
+		return nil, ErrNotFound
 	}
 
 	out, ok := res.(*resources.Telegram)
 	if !ok {
-		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -47,12 +42,12 @@ func (r *Resources) Telegram(name string) (out *resources.Telegram, err error) {
 func (r *Resources) Redis(name string) (out *resources.Redis, err error) {
 	res := r.get(name)
 	if res == nil {
-		return nil, ErrResourceNotFound
+		return nil, ErrNotFound
 	}
 
 	out, ok := res.(*resources.Redis)
 	if !ok {
-		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -61,12 +56,12 @@ func (r *Resources) Redis(name string) (out *resources.Redis, err error) {
 func (r *Resources) GRPC(name string) (out *resources.GRPC, err error) {
 	res := r.get(name)
 	if res == nil {
-		return nil, ErrResourceNotFound
+		return nil, ErrNotFound
 	}
 
 	out, ok := res.(*resources.GRPC)
 	if !ok {
-		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil

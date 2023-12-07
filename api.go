@@ -9,22 +9,17 @@ import (
 	"github.com/godverv/matreshka/api"
 )
 
-var (
-	ErrApiConfigNotFound = errors.New("api configuration not found")
-	ErrAPIInvalidType    = errors.New("api found but can't be cast")
-)
-
 type Servers []api.Api
 
 func (s *Servers) GRPC(name string) (*api.GRPC, error) {
 	res := s.get(name)
 	if res == nil {
-		return nil, ErrApiConfigNotFound
+		return nil, ErrNotFound
 	}
 
 	out, ok := res.(*api.GRPC)
 	if !ok {
-		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -33,12 +28,12 @@ func (s *Servers) GRPC(name string) (*api.GRPC, error) {
 func (s *Servers) REST(name string) (*api.Rest, error) {
 	res := s.get(name)
 	if res == nil {
-		return nil, ErrApiConfigNotFound
+		return nil, ErrNotFound
 	}
 
 	out, ok := res.(*api.Rest)
 	if !ok {
-		return nil, errors.Wrapf(ErrResourceInvalidType, "required type %T got %T", out, res)
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -48,7 +43,7 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var apiNodes []yaml.Node
 	err := unmarshal(&apiNodes)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error unmarshalling to yaml.Nodes")
 	}
 
 	actualApi := make([]api.Api, len(apiNodes))
@@ -69,7 +64,7 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		actualApi[apiIdx] = api.GetServerByName(apiName)
 		err = apiNode.Decode(actualApi[apiIdx])
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "error decoding to struct of type %T", actualApi[apiIdx])
 		}
 	}
 

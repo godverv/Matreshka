@@ -1,6 +1,7 @@
 package matreshka
 
 import (
+	stderrors "errors"
 	"os"
 
 	errors "github.com/Red-Sock/trace-errors"
@@ -52,6 +53,10 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 		}
 
 		MergeConfigs(masterConfig, slaveConfig)
+	}
+
+	if len(errs) != 0 {
+		return masterConfig, stderrors.Join(errs...)
 	}
 
 	return masterConfig, nil

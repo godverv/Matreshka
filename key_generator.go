@@ -4,7 +4,9 @@ import (
 	stderrors "errors"
 	"sort"
 
+	"github.com/godverv/matreshka/api"
 	"github.com/godverv/matreshka/internal/env_parser"
+	"github.com/godverv/matreshka/resources"
 )
 
 const (
@@ -19,27 +21,40 @@ func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 		return nil, ErrNoAppName
 	}
 
-	envs = env_parser.ExtractVariables(c.AppInfo.Name, c.Environment)
-
+	envs = GenerateEnvironmentKeys(c.AppInfo.Name, c.Environment)
 	sort.Slice(envs, func(i, j int) bool {
 		return envs[i].Name < envs[j].Name
 	})
-
-	for idx := range c.Resources {
-
-		envs = append(envs, env_parser.EnvVal{
-			Name:  resourcePrefix + c.Resources[idx].GetName(),
-			Value: c.Resources[idx],
-		})
-	}
-
-	for idx := range c.Servers {
-
-		envs = append(envs, env_parser.EnvVal{
-			Name:  apiPrefix + c.Servers[idx].GetName(),
-			Value: c.Servers[idx],
-		})
-	}
+	envs = append(envs, GenerateResourceConfigKeys(c.Resources...)...)
+	envs = append(envs, GenerateApiConfigKeys(c.Servers...)...)
 
 	return envs, nil
+}
+
+func GenerateEnvironmentKeys(appName string, in map[string]interface{}) []env_parser.EnvVal {
+	return env_parser.ExtractVariables(appName, in)
+}
+
+func GenerateResourceConfigKeys(rs ...resources.Resource) []env_parser.EnvVal {
+	envs := make([]env_parser.EnvVal, 0, len(rs))
+	for idx := range rs {
+		envs = append(envs, env_parser.EnvVal{
+			Name:  resourcePrefix + rs[idx].GetName(),
+			Value: rs[idx],
+		})
+	}
+
+	return envs
+}
+
+func GenerateApiConfigKeys(rs ...api.Api) []env_parser.EnvVal {
+	envs := make([]env_parser.EnvVal, 0, len(rs))
+	for idx := range rs {
+		envs = append(envs, env_parser.EnvVal{
+			Name:  apiPrefix + rs[idx].GetName(),
+			Value: rs[idx],
+		})
+	}
+
+	return envs
 }

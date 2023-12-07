@@ -11,7 +11,9 @@ import (
 )
 
 func Test_ReadAppConfig(t *testing.T) {
-	cfgGot, err := ParseConfig([]byte(appConfig))
+	t.Parallel()
+
+	cfgGot, err := ParseConfig(appConfig)
 	require.NoError(t, err)
 
 	cfgExpect := &AppConfig{
@@ -25,6 +27,8 @@ func Test_ReadAppConfig(t *testing.T) {
 }
 
 func Test_ReadDataSourceConfig(t *testing.T) {
+	t.Parallel()
+
 	cfgGot, err := ParseConfig([]byte(resourcedConfig))
 	require.NoError(t, err)
 
@@ -43,7 +47,9 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 }
 
 func Test_ReadApiConfig(t *testing.T) {
-	cfgGot, err := ParseConfig([]byte(apiConfig))
+	t.Parallel()
+
+	cfgGot, err := ParseConfig(apiConfig)
 	require.NoError(t, err)
 
 	cfgExpect := NewEmptyConfig()
@@ -51,6 +57,10 @@ func Test_ReadApiConfig(t *testing.T) {
 		&api.Rest{
 			Name: "rest_server",
 			Port: 8080,
+		},
+		&api.GRPC{
+			Name: "grpc_server",
+			Port: 50051,
 		},
 	}
 
