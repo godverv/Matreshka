@@ -33,15 +33,34 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	cfgExpect := NewEmptyConfig()
-	cfgExpect.Resources = append(cfgExpect.Resources, &resources.Postgres{
-		Name:    "postgres",
-		Host:    "localhost",
-		Port:    5432,
-		User:    "matreshka",
-		Pwd:     "matreshka",
-		DbName:  "matreshka",
-		SSLMode: "false",
-	})
+	cfgExpect.Resources = append(cfgExpect.Resources,
+		&resources.Postgres{
+			Name:    "postgres",
+			Host:    "localhost",
+			Port:    5432,
+			User:    "matreshka",
+			Pwd:     "matreshka",
+			DbName:  "matreshka",
+			SSLMode: "false",
+		},
+		&resources.Redis{
+			Name: "redis",
+			Host: "localhost",
+			Port: 6379,
+			User: "",
+			Pwd:  "",
+			Db:   0,
+		},
+		&resources.GRPC{
+			Name:             "grpc_rscli_example",
+			ConnectionString: "0.0.0.0:50051",
+			Module:           "github.com/Red-Sock/rscli_example",
+		},
+		&resources.Telegram{
+			Name:   "telegram",
+			ApiKey: "some_api_key",
+		},
+	)
 
 	require.Equal(t, cfgExpect, cfgGot)
 }

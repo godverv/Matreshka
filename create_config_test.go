@@ -44,15 +44,34 @@ func Test_CreateConfigWithResources(t *testing.T) {
 
 	cfg := NewEmptyConfig()
 
-	cfg.Resources = append(cfg.Resources, &resources.Postgres{
-		Name:    "postgres",
-		Host:    "localhost",
-		Port:    5432,
-		DbName:  "matreshka",
-		User:    "matreshka",
-		Pwd:     "matreshka",
-		SSLMode: "false",
-	})
+	cfg.Resources = append(cfg.Resources,
+		&resources.Postgres{
+			Name:    "postgres",
+			Host:    "localhost",
+			Port:    5432,
+			DbName:  "matreshka",
+			User:    "matreshka",
+			Pwd:     "matreshka",
+			SSLMode: "false",
+		},
+		&resources.Redis{
+			Name: "redis",
+			Host: "localhost",
+			Port: 6379,
+			User: "",
+			Pwd:  "",
+			Db:   0,
+		},
+		&resources.GRPC{
+			Name:             "grpc_rscli_example",
+			ConnectionString: "0.0.0.0:50051",
+			Module:           "github.com/Red-Sock/rscli_example",
+		},
+		&resources.Telegram{
+			Name:   "telegram",
+			ApiKey: "some_api_key",
+		},
+	)
 
 	bytes, err := cfg.Marshal()
 	require.NoError(t, err)

@@ -157,6 +157,6 @@ func Test_MergeConfigs(t *testing.T) {
 	t.Run("INVALID_READING_FIRST_CONFIG", func(t *testing.T) {
 		cfg, err := ReadConfigs("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Equal(t, cfg, NewEmptyConfig())
+		require.Nil(t, cfg)
 	})
 }
