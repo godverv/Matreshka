@@ -46,10 +46,43 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 			},
 		},
 		{
-			Name: "Api_rest_server",
+			Name: "Resource_redis",
+			Value: &resources.Redis{
+				Name: "redis",
+				Host: "localhost",
+				Port: 6379,
+				User: "",
+				Pwd:  "",
+				Db:   0,
+			},
+		},
+		{
+			Name: "Resource_telegram",
+			Value: &resources.Telegram{
+				Name:   "telegram",
+				ApiKey: "some_secure_key",
+			},
+		},
+		{
+			Name: "Resource_grpc_rscli_example",
+			Value: &resources.GRPC{
+				Name:             "grpc_rscli_example",
+				ConnectionString: "0.0.0.0:50051",
+				Module:           "github.com/Red-Sock/rscli_example",
+			},
+		},
+		{
+			Name: "Api_rest",
 			Value: &api.Rest{
-				Name: "rest_server",
+				Name: "rest",
 				Port: 8080,
+			},
+		},
+		{
+			Name: "Api_grpc",
+			Value: &api.GRPC{
+				Name: "grpc",
+				Port: 50051,
 			},
 		},
 	}

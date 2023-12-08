@@ -105,11 +105,32 @@ func Test_MergeConfigs(t *testing.T) {
 					DbName:  "matreshka",
 					SSLMode: "false",
 				},
+				&resources.Redis{
+					Name: "redis",
+					Host: "localhost",
+					Port: 6379,
+					User: "",
+					Pwd:  "",
+					Db:   0,
+				},
+				&resources.Telegram{
+					Name:   "telegram",
+					ApiKey: "some_secure_key",
+				},
+				&resources.GRPC{
+					Name:             "grpc_rscli_example",
+					ConnectionString: "0.0.0.0:50051",
+					Module:           "github.com/Red-Sock/rscli_example",
+				},
 			},
 			Servers: []api.Api{
 				&api.Rest{
-					Name: "rest_server",
+					Name: "rest",
 					Port: 8080,
+				},
+				&api.GRPC{
+					Name: "grpc",
+					Port: 50051,
 				},
 			},
 			Environment: map[string]interface{}{
