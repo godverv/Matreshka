@@ -29,7 +29,7 @@ func Test_ReadAppConfig(t *testing.T) {
 func Test_ReadDataSourceConfig(t *testing.T) {
 	t.Parallel()
 
-	cfgGot, err := ParseConfig([]byte(resourcedConfig))
+	cfgGot, err := ParseConfig(resourcedConfig)
 	require.NoError(t, err)
 
 	cfgExpect := NewEmptyConfig()
