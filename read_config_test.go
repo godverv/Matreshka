@@ -81,8 +81,9 @@ func Test_ReadApiConfig(t *testing.T) {
 			Port: 8080,
 		},
 		&api.GRPC{
-			Name: "grpc_server",
-			Port: 50051,
+			Name:        "grpc_server",
+			Port:        50051,
+			GatewayPort: 50052,
 		},
 	}
 
