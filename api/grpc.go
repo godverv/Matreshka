@@ -65,3 +65,8 @@ func (g *GRPC) GetPortStr() string {
 func (g *GRPC) GetGatewayPort() uint16 {
 	return g.GatewayPort
 }
+
+func (g *GRPC) GetGatewayPortStr() string {
+	p := g.GatewayPort
+	return strconv.FormatUint(uint64(p), 10)
+}
