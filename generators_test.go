@@ -1,6 +1,7 @@
 package matreshka
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -89,5 +90,9 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 
 	res, err := GenerateKeys(*c)
 	require.NoError(t, err)
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Name < res[i].Name
+	})
+
 	require.Equal(t, expected, res)
 }

@@ -25,7 +25,7 @@ func ReadConfig(pth string) (*AppConfig, error) {
 
 	defer f.Close()
 
-	c := &AppConfig{}
+	c := NewEmptyConfig()
 	err = yaml.NewDecoder(f).Decode(c)
 	if err != nil {
 		return nil, errors.Wrap(err, "error decoding config to struct")
@@ -63,8 +63,21 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 }
 
 func ParseConfig(in []byte) (*AppConfig, error) {
-	var a AppConfig
-	return &a, yaml.Unmarshal(in, &a)
+	a := NewEmptyConfig()
+	err := yaml.Unmarshal(in, a)
+	if err != nil {
+		return nil, err
+	}
+
+	namedMap := make(map[string]interface{})
+
+	for k, v := range a.Environment {
+		namedMap[a.Name+"_"+k] = v
+	}
+
+	a.Environment = namedMap
+
+	return a, nil
 }
 
 func MergeConfigs(master, slave *AppConfig) {

@@ -8,19 +8,22 @@ const (
 	GRPSServerType  = "grpc"
 	DefaultGrpcPort = 50051
 
-	EnvVarGRPCPort = "GRPC_PORT"
+	EnvVarGRPCPort        = "GRPC_PORT"
+	EnvVarGRPCGatewayPort = "GRPC_GATEWAY_PORT"
 )
 
 type GRPC struct {
 	Name
 
-	Port uint16 `yaml:"port"`
+	Port        uint16 `yaml:"port"`
+	GatewayPort uint16 `yaml:"gateway_port"`
 }
 
 func (g *GRPC) ToEnv() map[string]string {
 	return map[string]string{
-		EnvVarGRPCPort: strconv.FormatUint(uint64(g.Port), 10),
-		EnvServerName:  g.GetName(),
+		EnvVarGRPCPort:        strconv.FormatUint(uint64(g.Port), 10),
+		EnvVarGRPCGatewayPort: strconv.FormatUint(uint64(g.GatewayPort), 10),
+		EnvServerName:         g.GetName(),
 	}
 }
 
@@ -31,6 +34,13 @@ func (g *GRPC) FromEnv(in map[string]string) error {
 	}
 
 	g.Port = uint16(portUint)
+
+	gwPortUint, err := strconv.ParseUint(in[EnvVarGRPCGatewayPort], 10, 16)
+	if err != nil {
+		return err
+	}
+
+	g.GatewayPort = uint16(gwPortUint)
 
 	if g.Name == "" {
 		g.Name = GRPSServerType

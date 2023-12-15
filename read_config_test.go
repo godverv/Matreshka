@@ -16,12 +16,12 @@ func Test_ReadAppConfig(t *testing.T) {
 	cfgGot, err := ParseConfig(appConfig)
 	require.NoError(t, err)
 
-	cfgExpect := &AppConfig{
-		AppInfo: AppInfo{
-			Name:            "matreshka",
-			Version:         "0.0.1",
-			StartupDuration: 10 * time.Second,
-		}}
+	cfgExpect := NewEmptyConfig()
+	cfgExpect.AppInfo = AppInfo{
+		Name:            "matreshka",
+		Version:         "0.0.1",
+		StartupDuration: 10 * time.Second,
+	}
 
 	require.Equal(t, cfgExpect, cfgGot)
 }
@@ -33,6 +33,8 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	cfgExpect := NewEmptyConfig()
+	cfgExpect.Name = "matreshka"
+
 	cfgExpect.Resources = append(cfgExpect.Resources,
 		&resources.Postgres{
 			Name:    "postgres",
@@ -72,6 +74,7 @@ func Test_ReadApiConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	cfgExpect := NewEmptyConfig()
+	cfgExpect.Name = "matreshka"
 	cfgExpect.Servers = []api.Api{
 		&api.Rest{
 			Name: "rest_server",
