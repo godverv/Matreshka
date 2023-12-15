@@ -18,8 +18,9 @@ func Test_GetApi(t *testing.T) {
 		grpcCfg, err := cfg.Servers.GRPC("grpc_server")
 		require.NoError(t, err)
 		require.Equal(t, grpcCfg, &api.GRPC{
-			Name: "grpc_server",
-			Port: 50051,
+			Name:        "grpc_server",
+			Port:        50051,
+			GatewayPort: 50052,
 		})
 
 		restCfg, err := cfg.Servers.REST("rest_server")
