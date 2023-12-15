@@ -1,5 +1,5 @@
 app_info:
-    name: "matreshka"
+    name: matreshka
     version: "0.0.1"
     startup_duration: 10s
 server:

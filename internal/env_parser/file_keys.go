@@ -10,7 +10,9 @@ func ExtractVariables(prefix string, m map[string]interface{}) (vals []EnvVal) {
 		if newMap, ok := v.(map[string]interface{}); ok {
 			vals = append(vals, ExtractVariables(prefix+"_"+k, newMap)...)
 		} else {
-			k = prefix + "_" + k
+			if prefix != "" {
+				k = prefix + "_" + k
+			}
 
 			vals = append(vals, EnvVal{
 				Name:  k,

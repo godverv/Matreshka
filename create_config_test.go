@@ -43,7 +43,7 @@ func Test_CreateConfigWithResources(t *testing.T) {
 	t.Parallel()
 
 	cfg := NewEmptyConfig()
-
+	cfg.Name = "matreshka"
 	cfg.Resources = append(cfg.Resources,
 		&resources.Postgres{
 			Name:    "postgres",
@@ -82,6 +82,7 @@ func Test_CreateConfigWithServers(t *testing.T) {
 	t.Parallel()
 
 	cfg := NewEmptyConfig()
+	cfg.Name = "matreshka"
 	cfg.Servers = append(cfg.Servers,
 		&api.Rest{
 			Name: "rest_server",

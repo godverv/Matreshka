@@ -2,7 +2,6 @@ package matreshka
 
 import (
 	stderrors "errors"
-	"path"
 	"sort"
 
 	"github.com/godverv/matreshka/api"
@@ -21,9 +20,8 @@ func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 	if c.AppInfo.Name == "" {
 		return nil, ErrNoAppName
 	}
-	name := path.Base(c.AppInfo.Name)
 
-	envs = GenerateEnvironmentKeys(name, c.Environment)
+	envs = GenerateEnvironmentKeys(c.Environment)
 	sort.Slice(envs, func(i, j int) bool {
 		return envs[i].Name < envs[j].Name
 	})
@@ -33,8 +31,8 @@ func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 	return envs, nil
 }
 
-func GenerateEnvironmentKeys(appName string, in map[string]interface{}) []env_parser.EnvVal {
-	return env_parser.ExtractVariables(appName, in)
+func GenerateEnvironmentKeys(in map[string]interface{}) []env_parser.EnvVal {
+	return env_parser.ExtractVariables("", in)
 }
 
 func GenerateResourceConfigKeys(rs ...resources.Resource) []env_parser.EnvVal {
