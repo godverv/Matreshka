@@ -8,3 +8,8 @@ environment:
   string: "not so basic 🤡 string"
   bool: true
   duration: 10s
+  slice:
+    - "1"
+    - "2"
+    - "3"
+    - "4"

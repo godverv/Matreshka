@@ -1,6 +1,7 @@
 package matreshka
 
 import (
+	"encoding/json"
 	"time"
 
 	errors "github.com/Red-Sock/trace-errors"
@@ -91,6 +92,36 @@ func (a *AppConfig) TryGetDuration(key string) (out time.Duration, err error) {
 func (a *AppConfig) GetDuration(key string) (out time.Duration) {
 	out, _ = a.TryGetDuration(key)
 	return out
+}
+
+func (a *AppConfig) TryGetAny(key string) (any, error) {
+	val, ok := a.Environment[key]
+	if !ok {
+		return 0, errors.Wrap(ErrNotFound, key)
+	}
+
+	return val, nil
+}
+func (a *AppConfig) GetAny(key string) any {
+	res, _ := a.TryGetAny(key)
+	return res
+}
+
+func ReadSliceFromConfig[T comparable](cfg *AppConfig, key string, in *[]T) error {
+	res, ok := cfg.Environment[key]
+	if !ok {
+		return errors.Wrap(ErrNotFound, key)
+	}
+	bts, err := json.Marshal(res)
+	if err != nil {
+		return errors.Wrap(err, "error marshalling value")
+	}
+	err = json.Unmarshal(bts, in)
+	if err != nil {
+		return errors.Wrap(err, "error unmarshalling value")
+	}
+
+	return nil
 }
 
 func (a *AppConfig) Marshal() ([]byte, error) {

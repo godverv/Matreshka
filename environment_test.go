@@ -36,6 +36,13 @@ func Test_EnvironmentOk(t *testing.T) {
 			time.Second*10,
 			cfg.GetDuration("duration"))
 	})
+
+	t.Run("slice", func(t *testing.T) {
+		var s []any
+		err = ReadSliceFromConfig(cfg, "slice", &s)
+		require.NoError(t, err)
+		require.Equal(t, []any{"1", "2", "3", "4"}, s)
+	})
 }
 
 func Test_EnvironmentInvalid(t *testing.T) {
