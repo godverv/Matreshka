@@ -3,6 +3,7 @@ package matreshka
 import (
 	stderrors "errors"
 	"os"
+	"path"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
@@ -40,7 +41,7 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 	}
 
 	envConfig := NewEmptyConfig()
-	envConfig.Environment = readEnvironment(masterConfig.Name)
+	envConfig.Environment = readEnvironment(path.Base(masterConfig.Name))
 	MergeConfigs(envConfig, masterConfig)
 
 	if len(errs) != 0 {
