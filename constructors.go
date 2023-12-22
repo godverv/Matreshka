@@ -3,9 +3,9 @@ package matreshka
 import (
 	stderrors "errors"
 	"os"
+	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
-	"go.deanishe.net/env"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,36 +18,19 @@ func NewEmptyConfig() *AppConfig {
 	}
 }
 
-func ReadConfig(pth string) (*AppConfig, error) {
-	f, err := os.Open(pth)
-	if err != nil {
-		return nil, err
-	}
-
-	defer f.Close()
-
-	c := NewEmptyConfig()
-	err = yaml.NewDecoder(f).Decode(c)
-	if err != nil {
-		return nil, errors.Wrap(err, "error decoding config to struct")
-	}
-
-	return c, nil
-}
-
 func ReadConfigs(pths ...string) (*AppConfig, error) {
 	if len(pths) == 0 {
 		return nil, nil
 	}
 
-	masterConfig, err := ReadConfig(pths[0])
+	masterConfig, err := readConfig(pths[0])
 	if err != nil {
 		return nil, errors.Wrap(err, "error reading master config")
 	}
 
 	var errs []error
 	for _, pth := range pths[1:] {
-		slaveConfig, err := ReadConfig(pth)
+		slaveConfig, err := readConfig(pth)
 		if err != nil {
 			errs = append(errs, errors.Wrapf(err, "error reading config at %s", pth))
 			continue
@@ -55,12 +38,9 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 
 		MergeConfigs(masterConfig, slaveConfig)
 	}
-	envConfig := NewEmptyConfig()
-	err = env.Bind(envConfig)
-	if err != nil {
-		errs = append(errs, errors.Wrap(err, "error obtaining env config"))
-	}
 
+	envConfig := NewEmptyConfig()
+	envConfig.Environment = readEnvironment(masterConfig.Name)
 	MergeConfigs(envConfig, masterConfig)
 
 	if len(errs) != 0 {
@@ -116,4 +96,43 @@ func MergeConfigs(master, slave *AppConfig) {
 			master.Resources = append(master.Resources, slave.Resources[i])
 		}
 	}
+}
+
+func readConfig(pth string) (*AppConfig, error) {
+	f, err := os.Open(pth)
+	if err != nil {
+		return nil, err
+	}
+
+	defer f.Close()
+
+	c := NewEmptyConfig()
+	err = yaml.NewDecoder(f).Decode(c)
+	if err != nil {
+		return nil, errors.Wrap(err, "error decoding config to struct")
+	}
+
+	return c, nil
+}
+
+func readEnvironment(prefix string) map[string]interface{} {
+	environ := os.Environ()
+	out := map[string]interface{}{}
+
+	prefix = strings.ToUpper(prefix)
+	for _, variable := range environ {
+		idx := strings.Index(variable, "=")
+		if idx == -1 {
+			continue
+		}
+
+		name := strings.ToUpper(variable[:idx])
+
+		if !strings.HasPrefix(name, prefix) {
+			continue
+		}
+
+		out[name[len(prefix)+1:]] = variable[idx+1:]
+	}
+	return out
 }
