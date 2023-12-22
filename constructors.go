@@ -5,6 +5,7 @@ import (
 	"os"
 
 	errors "github.com/Red-Sock/trace-errors"
+	"go.deanishe.net/env"
 	"gopkg.in/yaml.v3"
 )
 
@@ -54,6 +55,13 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 
 		MergeConfigs(masterConfig, slaveConfig)
 	}
+	envConfig := NewEmptyConfig()
+	err = env.Bind(envConfig)
+	if err != nil {
+		errs = append(errs, errors.Wrap(err, "error obtaining env config"))
+	}
+
+	MergeConfigs(envConfig, masterConfig)
 
 	if len(errs) != 0 {
 		return masterConfig, stderrors.Join(errs...)
