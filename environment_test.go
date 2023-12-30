@@ -43,6 +43,11 @@ func Test_EnvironmentOk(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, []any{"1", "2", "3", "4"}, s)
 	})
+
+	t.Run("inner_struct", func(t *testing.T) {
+		v := cfg.GetBool("matreshka_inner_struct")
+		require.True(t, v)
+	})
 }
 
 func Test_EnvironmentInvalid(t *testing.T) {

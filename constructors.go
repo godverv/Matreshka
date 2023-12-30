@@ -58,6 +58,8 @@ func ParseConfig(in []byte) (*AppConfig, error) {
 		return nil, err
 	}
 
+	a.Environment = flatten(a.Environment)
+
 	namedMap := make(map[string]interface{})
 
 	for k, v := range a.Environment {
@@ -113,6 +115,8 @@ func readConfig(pth string) (*AppConfig, error) {
 		return nil, errors.Wrap(err, "error decoding config to struct")
 	}
 
+	c.Environment = flatten(c.Environment)
+
 	return c, nil
 }
 
@@ -135,5 +139,22 @@ func readEnvironment(prefix string) map[string]interface{} {
 
 		out[name[len(prefix)+1:]] = variable[idx+1:]
 	}
+	return out
+}
+
+func flatten(in map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	for k, v := range in {
+		switch t := v.(type) {
+		case map[string]interface{}:
+			for flatK, flatV := range flatten(t) {
+				out[k+"_"+flatK] = flatV
+			}
+		default:
+			out[k] = v
+		}
+	}
+
 	return out
 }
