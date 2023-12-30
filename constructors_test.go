@@ -29,13 +29,13 @@ func Test_ReadConfig(t *testing.T) {
 				emptyConfig,
 				os.ModePerm))
 
-		cfg, err := ReadConfig(cfgPath)
+		cfg, err := readConfig(cfgPath)
 		require.NoError(t, err)
 		require.Equal(t, cfg, NewEmptyConfig())
 	})
 
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
-		cfg, err := ReadConfig("unreadable config path")
+		cfg, err := readConfig("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
 		require.Nil(t, cfg)
 	})
@@ -51,7 +51,7 @@ func Test_ReadConfig(t *testing.T) {
 				[]byte("1f!cked #p\nc0nfig"),
 				os.ModePerm))
 
-		cfg, err := ReadConfig(cfgPath)
+		cfg, err := readConfig(cfgPath)
 		require.Contains(t, err.Error(), "error decoding config to struct\nyaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `1f!cked` into matreshka.AppConfig")
 		require.Nil(t, cfg)
 	})

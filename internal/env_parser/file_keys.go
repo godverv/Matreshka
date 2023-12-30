@@ -7,13 +7,12 @@ type EnvVal struct {
 
 func ExtractVariables(prefix string, m map[string]interface{}) (vals []EnvVal) {
 	for k, v := range m {
+		if prefix != "" {
+			k = prefix + "_" + k
+		}
 		if newMap, ok := v.(map[string]interface{}); ok {
-			vals = append(vals, ExtractVariables(prefix+"_"+k, newMap)...)
+			vals = append(vals, ExtractVariables(k, newMap)...)
 		} else {
-			if prefix != "" {
-				k = prefix + "_" + k
-			}
-
 			vals = append(vals, EnvVal{
 				Name:  k,
 				Value: v,
