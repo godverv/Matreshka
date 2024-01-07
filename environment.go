@@ -94,7 +94,7 @@ func (a *AppConfig) GetAny(key string) any {
 	return res
 }
 
-func ReadSliceFromConfig[T comparable](cfg *AppConfig, key string, in *[]T) error {
+func ReadSliceFromConfig[T comparable](cfg AppConfig, key string, in *[]T) error {
 	res, ok := cfg.Environment[key]
 	if !ok {
 		return errors.Wrap(ErrNotFound, key)

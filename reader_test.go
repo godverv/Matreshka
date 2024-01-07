@@ -37,7 +37,7 @@ func Test_ReadConfig(t *testing.T) {
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
 		cfg, err := readConfig("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Nil(t, cfg)
+		require.Equal(t, cfg, NewEmptyConfig())
 	})
 
 	t.Run("ERROR_UNMARSHALLING_CONFIG", func(t *testing.T) {
@@ -53,7 +53,7 @@ func Test_ReadConfig(t *testing.T) {
 
 		cfg, err := readConfig(cfgPath)
 		require.Contains(t, err.Error(), "error decoding config to struct\nyaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `1f!cked` into matreshka.AppConfig")
-		require.Nil(t, cfg)
+		require.Equal(t, cfg, NewEmptyConfig())
 	})
 }
 
@@ -159,11 +159,12 @@ func Test_MergeConfigs(t *testing.T) {
 	})
 
 	t.Run("INVALID_READING_ONE_CONFIG", func(t *testing.T) {
-
 		cfgPath := path.Join(tmpDirPath, path.Base(t.Name())+".yaml")
+
 		defer func() {
 			require.NoError(t, os.RemoveAll(cfgPath))
 		}()
+
 		require.NoError(t,
 			os.WriteFile(
 				cfgPath,
@@ -172,7 +173,7 @@ func Test_MergeConfigs(t *testing.T) {
 
 		cfg, err := ReadConfigs(cfgPath, "unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Equal(t, cfg, NewEmptyConfig())
+		require.Equal(t, *cfg, NewEmptyConfig())
 	})
 
 	t.Run("INVALID_READING_FIRST_CONFIG", func(t *testing.T) {

@@ -88,7 +88,7 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 		},
 	}
 
-	res, err := GenerateKeys(*c)
+	res, err := GenerateKeys(c)
 	require.NoError(t, err)
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].Name < res[i].Name
