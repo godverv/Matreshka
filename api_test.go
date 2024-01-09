@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/godverv/matreshka/api"
 )
 
 func Test_GetApi(t *testing.T) {
@@ -17,18 +15,11 @@ func Test_GetApi(t *testing.T) {
 
 		grpcCfg, err := cfg.Servers.GRPC("grpc_server")
 		require.NoError(t, err)
-		require.Equal(t, grpcCfg, &api.GRPC{
-			Name:        "grpc_server",
-			Port:        50051,
-			GatewayPort: 50052,
-		})
+		require.Equal(t, grpcCfg, getGRPCServerTest())
 
 		restCfg, err := cfg.Servers.REST("rest_server")
 		require.NoError(t, err)
-		require.Equal(t, restCfg, &api.Rest{
-			Name: "rest_server",
-			Port: 8080,
-		})
+		require.Equal(t, restCfg, getRestServerTest())
 	})
 
 	t.Run("ERROR_NOT_FOUND_API", func(t *testing.T) {

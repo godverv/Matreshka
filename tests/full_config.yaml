@@ -3,10 +3,11 @@ app_info:
     version: "0.0.1"
     startup_duration: 10s
 server:
-    - name: rest
+    - name: rest_server
       port: 8080
-    - name: grpc
+    - name: grpc_server
       port: 50051
+      gateway_port: 50052
 data_sources:
     - resource_name: postgres
       host: localhost
@@ -22,7 +23,7 @@ data_sources:
       pwd: ""
       db: 0
     - resource_name: telegram
-      api_key: "some_secure_key"
+      api_key: "some_api_key"
     - resource_name: grpc_rscli_example
       connection_string: 0.0.0.0:50051
       module: github.com/Red-Sock/rscli_example

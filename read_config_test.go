@@ -1,12 +1,16 @@
 package matreshka
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/godverv/matreshka-be/pkg/api/matreshka_api"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 
 	"github.com/godverv/matreshka/api"
+	"github.com/godverv/matreshka/mocks"
 	"github.com/godverv/matreshka/resources"
 )
 
@@ -36,32 +40,10 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	cfgExpect.Name = "matreshka"
 
 	cfgExpect.Resources = append(cfgExpect.Resources,
-		&resources.Postgres{
-			Name:    "postgres",
-			Host:    "localhost",
-			Port:    5432,
-			User:    "matreshka",
-			Pwd:     "matreshka",
-			DbName:  "matreshka",
-			SSLMode: "false",
-		},
-		&resources.Redis{
-			Name: "redis",
-			Host: "localhost",
-			Port: 6379,
-			User: "",
-			Pwd:  "",
-			Db:   0,
-		},
-		&resources.GRPC{
-			Name:             "grpc_rscli_example",
-			ConnectionString: "0.0.0.0:50051",
-			Module:           "github.com/Red-Sock/rscli_example",
-		},
-		&resources.Telegram{
-			Name:   "telegram",
-			ApiKey: "some_api_key",
-		},
+		getPostgresClientTest(),
+		getRedisClientTest(),
+		getGRPCClientTest(),
+		getTelegramClientTest(),
 	)
 
 	require.Equal(t, cfgExpect, cfgGot)
@@ -76,15 +58,45 @@ func Test_ReadApiConfig(t *testing.T) {
 	cfgExpect := NewEmptyConfig()
 	cfgExpect.Name = "matreshka"
 	cfgExpect.Servers = []api.Api{
-		&api.Rest{
-			Name: "rest_server",
-			Port: 8080,
-		},
-		&api.GRPC{
-			Name:        "grpc_server",
-			Port:        50051,
-			GatewayPort: 50052,
-		},
+		getRestServerTest(),
+		getGRPCServerTest(),
+	}
+
+	require.Equal(t, cfgExpect, cfgGot)
+}
+
+func Test_ReadWithApi(t *testing.T) {
+	backend := mocks.NewMatreshkaBeAPIClientMock(t)
+	defer backend.MinimockFinish()
+
+	backend.GetConfigRawMock.Set(
+		func(_ context.Context, in *matreshka_api.GetConfigRaw_Request, opts ...grpc.CallOption) (gp1 *matreshka_api.GetConfigRaw_Response, err error) {
+			return &matreshka_api.GetConfigRaw_Response{
+				Config: string(fullConfig),
+			}, nil
+		})
+
+	cfgGot := getViaApi(backend, "MATRESHKA_TEST")
+
+	cfgExpect := NewEmptyConfig()
+	cfgExpect.Name = "matreshka"
+	cfgExpect.Version = "0.0.1"
+	cfgExpect.StartupDuration = time.Second * 10
+	cfgExpect.Resources = []resources.Resource{
+		getPostgresClientTest(),
+		getRedisClientTest(),
+		getTelegramClientTest(),
+		getGRPCClientTest(),
+	}
+	cfgExpect.Servers = []api.Api{
+		getRestServerTest(),
+		getGRPCServerTest(),
+	}
+	cfgExpect.Environment = map[string]interface{}{
+		"matreshka_bool":     true,
+		"matreshka_duration": "10s",
+		"matreshka_int":      1,
+		"matreshka_string":   "not so basic 🤡 string",
 	}
 
 	require.Equal(t, cfgExpect, cfgGot)

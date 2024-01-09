@@ -48,7 +48,10 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 		masterConfig = MergeConfigs(masterConfig, slaveConfig)
 	}
 
-	masterConfig = MergeConfigs(getViaApi(), masterConfig)
+	client := getClient()
+	if client != nil {
+		masterConfig = MergeConfigs(getViaApi(client, os.Getenv(VervName)), masterConfig)
+	}
 	masterConfig = MergeConfigs(getViaEnvironment(), masterConfig)
 
 	if len(errs) != 0 {
@@ -111,31 +114,27 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	return master
 }
 
-func getViaApi() AppConfig {
-	ac := NewEmptyConfig()
-	projectName := os.Getenv(VervName)
-	if projectName == "" {
-		return ac
-	}
-
+func getClient() (client matreshka_api.MatreshkaBeAPIClient) {
 	vervConfigUrl := os.Getenv(VervConfigUrl)
 	if vervConfigUrl == "" {
-		return ac
+		return nil
 	}
 
-	ctx := context.Background()
-
-	dial, err := grpc.DialContext(
-		ctx,
+	dial, err := grpc.Dial(
 		vervConfigUrl,
+		// TODO VERV-34
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return ac
+		return nil
 	}
 
-	c := matreshka_api.NewMatreshkaBeAPIClient(dial)
+	return matreshka_api.NewMatreshkaBeAPIClient(dial)
+}
 
-	cfg, _ := c.GetConfigRaw(ctx, &matreshka_api.GetConfigRaw_Request{ServiceName: projectName})
+func getViaApi(client matreshka_api.MatreshkaBeAPIClient, projectName string) AppConfig {
+	ac := NewEmptyConfig()
+	ctx := context.Background()
+	cfg, _ := client.GetConfigRaw(ctx, &matreshka_api.GetConfigRaw_Request{ServiceName: projectName})
 	if cfg == nil {
 		return ac
 	}

@@ -96,42 +96,14 @@ func Test_MergeConfigs(t *testing.T) {
 				StartupDuration: time.Second * 10,
 			},
 			Resources: []resources.Resource{
-				&resources.Postgres{
-					Name:    "postgres",
-					Host:    "localhost",
-					Port:    5432,
-					User:    "matreshka",
-					Pwd:     "matreshka",
-					DbName:  "matreshka",
-					SSLMode: "false",
-				},
-				&resources.Redis{
-					Name: "redis",
-					Host: "localhost",
-					Port: 6379,
-					User: "",
-					Pwd:  "",
-					Db:   0,
-				},
-				&resources.Telegram{
-					Name:   "telegram",
-					ApiKey: "some_secure_key",
-				},
-				&resources.GRPC{
-					Name:             "grpc_rscli_example",
-					ConnectionString: "0.0.0.0:50051",
-					Module:           "github.com/Red-Sock/rscli_example",
-				},
+				getPostgresClientTest(),
+				getRedisClientTest(),
+				getTelegramClientTest(),
+				getGRPCClientTest(),
 			},
 			Servers: []api.Api{
-				&api.Rest{
-					Name: "rest",
-					Port: 8080,
-				},
-				&api.GRPC{
-					Name: "grpc",
-					Port: 50051,
-				},
+				getRestServerTest(),
+				getGRPCServerTest(),
 			},
 			Environment: map[string]interface{}{
 				"int":      1,
