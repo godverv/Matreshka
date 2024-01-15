@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/godverv/matreshka/resources"
 )
 
 func Test_GetResources(t *testing.T) {
@@ -17,41 +15,19 @@ func Test_GetResources(t *testing.T) {
 
 		postgresCfg, err := cfg.Resources.Postgres("postgres")
 		require.NoError(t, err)
-		require.Equal(t, postgresCfg, &resources.Postgres{
-			Name:    "postgres",
-			Host:    "localhost",
-			Port:    5432,
-			User:    "matreshka",
-			Pwd:     "matreshka",
-			DbName:  "matreshka",
-			SSLMode: "false",
-		})
+		require.Equal(t, postgresCfg, getPostgresClientTest())
 
 		redisCfg, err := cfg.Resources.Redis("redis")
 		require.NoError(t, err)
-		require.Equal(t, redisCfg, &resources.Redis{
-			Name: "redis",
-			Host: "localhost",
-			Port: 6379,
-			User: "",
-			Pwd:  "",
-			Db:   0,
-		})
+		require.Equal(t, redisCfg, getRedisClientTest())
 
 		grpcCfg, err := cfg.Resources.GRPC("grpc_rscli_example")
 		require.NoError(t, err)
-		require.Equal(t, grpcCfg, &resources.GRPC{
-			Name:             "grpc_rscli_example",
-			ConnectionString: "0.0.0.0:50051",
-			Module:           "github.com/Red-Sock/rscli_example",
-		})
+		require.Equal(t, grpcCfg, getGRPCClientTest())
 
 		tgCfg, err := cfg.Resources.Telegram("telegram")
 		require.NoError(t, err)
-		require.Equal(t, tgCfg, &resources.Telegram{
-			Name:   "telegram",
-			ApiKey: "some_api_key",
-		})
+		require.Equal(t, tgCfg, getTelegramClientTest())
 	})
 
 	t.Run("ERROR_NOT_FOUND_RESOURCE", func(t *testing.T) {

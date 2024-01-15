@@ -3,15 +3,19 @@ package matreshka
 import (
 	stderrors "errors"
 	"os"
-	"path"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 )
 
-func NewEmptyConfig() *AppConfig {
-	return &AppConfig{
+const (
+	VervName      = "VERV_NAME"
+	VervConfigUrl = "VERV_CONFIG_URL"
+)
+
+func NewEmptyConfig() AppConfig {
+	return AppConfig{
 		AppInfo:     AppInfo{},
 		Resources:   make(Resources, 0),
 		Servers:     make(Servers, 0),
@@ -37,25 +41,24 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 			continue
 		}
 
-		MergeConfigs(masterConfig, slaveConfig)
+		masterConfig = MergeConfigs(masterConfig, slaveConfig)
 	}
 
-	envConfig := NewEmptyConfig()
-	envConfig.Environment = readEnvironment(path.Base(masterConfig.Name))
-	MergeConfigs(envConfig, masterConfig)
+	masterConfig = MergeConfigs(getViaEnvironment(), masterConfig)
 
 	if len(errs) != 0 {
-		return masterConfig, stderrors.Join(errs...)
+		return &masterConfig, stderrors.Join(errs...)
 	}
 
-	return masterConfig, nil
+	return &masterConfig, nil
 }
 
-func ParseConfig(in []byte) (*AppConfig, error) {
+func ParseConfig(in []byte) (AppConfig, error) {
 	a := NewEmptyConfig()
-	err := yaml.Unmarshal(in, a)
+
+	err := yaml.Unmarshal(in, &a)
 	if err != nil {
-		return nil, err
+		return a, err
 	}
 
 	a.Environment = flatten(a.Environment)
@@ -71,7 +74,7 @@ func ParseConfig(in []byte) (*AppConfig, error) {
 	return a, nil
 }
 
-func MergeConfigs(master, slave *AppConfig) {
+func MergeConfigs(master, slave AppConfig) AppConfig {
 	if master.Name == "" {
 		master.Name = slave.Name
 	}
@@ -99,20 +102,34 @@ func MergeConfigs(master, slave *AppConfig) {
 			master.Resources = append(master.Resources, slave.Resources[i])
 		}
 	}
+
+	return master
 }
 
-func readConfig(pth string) (*AppConfig, error) {
+func getViaEnvironment() AppConfig {
+	envConfig := NewEmptyConfig()
+
+	projectName := os.Getenv(VervName)
+	if projectName == "" {
+		return envConfig
+	}
+
+	envConfig.Environment = readEnvironment(projectName)
+	return envConfig
+}
+
+func readConfig(pth string) (AppConfig, error) {
 	f, err := os.Open(pth)
 	if err != nil {
-		return nil, err
+		return NewEmptyConfig(), err
 	}
 
 	defer f.Close()
 
 	c := NewEmptyConfig()
-	err = yaml.NewDecoder(f).Decode(c)
+	err = yaml.NewDecoder(f).Decode(&c)
 	if err != nil {
-		return nil, errors.Wrap(err, "error decoding config to struct")
+		return c, errors.Wrap(err, "error decoding config to struct")
 	}
 
 	c.Environment = flatten(c.Environment)
@@ -137,7 +154,7 @@ func readEnvironment(prefix string) map[string]interface{} {
 			continue
 		}
 
-		out[name[len(prefix)+1:]] = variable[idx+1:]
+		out[strings.ToLower(name[len(prefix)+1:])] = variable[idx+1:]
 	}
 	return out
 }

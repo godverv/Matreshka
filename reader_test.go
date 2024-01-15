@@ -37,7 +37,7 @@ func Test_ReadConfig(t *testing.T) {
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
 		cfg, err := readConfig("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Nil(t, cfg)
+		require.Equal(t, cfg, NewEmptyConfig())
 	})
 
 	t.Run("ERROR_UNMARSHALLING_CONFIG", func(t *testing.T) {
@@ -53,7 +53,7 @@ func Test_ReadConfig(t *testing.T) {
 
 		cfg, err := readConfig(cfgPath)
 		require.Contains(t, err.Error(), "error decoding config to struct\nyaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `1f!cked` into matreshka.AppConfig")
-		require.Nil(t, cfg)
+		require.Equal(t, cfg, NewEmptyConfig())
 	})
 }
 
@@ -96,42 +96,14 @@ func Test_MergeConfigs(t *testing.T) {
 				StartupDuration: time.Second * 10,
 			},
 			Resources: []resources.Resource{
-				&resources.Postgres{
-					Name:    "postgres",
-					Host:    "localhost",
-					Port:    5432,
-					User:    "matreshka",
-					Pwd:     "matreshka",
-					DbName:  "matreshka",
-					SSLMode: "false",
-				},
-				&resources.Redis{
-					Name: "redis",
-					Host: "localhost",
-					Port: 6379,
-					User: "",
-					Pwd:  "",
-					Db:   0,
-				},
-				&resources.Telegram{
-					Name:   "telegram",
-					ApiKey: "some_secure_key",
-				},
-				&resources.GRPC{
-					Name:             "grpc_rscli_example",
-					ConnectionString: "0.0.0.0:50051",
-					Module:           "github.com/Red-Sock/rscli_example",
-				},
+				getPostgresClientTest(),
+				getRedisClientTest(),
+				getTelegramClientTest(),
+				getGRPCClientTest(),
 			},
 			Servers: []api.Api{
-				&api.Rest{
-					Name: "rest",
-					Port: 8080,
-				},
-				&api.GRPC{
-					Name: "grpc",
-					Port: 50051,
-				},
+				getRestServerTest(),
+				getGRPCServerTest(),
 			},
 			Environment: map[string]interface{}{
 				"int":      1,
@@ -159,11 +131,12 @@ func Test_MergeConfigs(t *testing.T) {
 	})
 
 	t.Run("INVALID_READING_ONE_CONFIG", func(t *testing.T) {
-
 		cfgPath := path.Join(tmpDirPath, path.Base(t.Name())+".yaml")
+
 		defer func() {
 			require.NoError(t, os.RemoveAll(cfgPath))
 		}()
+
 		require.NoError(t,
 			os.WriteFile(
 				cfgPath,
@@ -172,7 +145,7 @@ func Test_MergeConfigs(t *testing.T) {
 
 		cfg, err := ReadConfigs(cfgPath, "unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Equal(t, cfg, NewEmptyConfig())
+		require.Equal(t, *cfg, NewEmptyConfig())
 	})
 
 	t.Run("INVALID_READING_FIRST_CONFIG", func(t *testing.T) {
