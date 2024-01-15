@@ -1,15 +1,11 @@
 package matreshka
 
 import (
-	"context"
 	stderrors "errors"
 	"os"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
-	"github.com/godverv/matreshka-be/pkg/api/matreshka_api"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -48,10 +44,6 @@ func ReadConfigs(pths ...string) (*AppConfig, error) {
 		masterConfig = MergeConfigs(masterConfig, slaveConfig)
 	}
 
-	client := getClient()
-	if client != nil {
-		masterConfig = MergeConfigs(getViaApi(client, os.Getenv(VervName)), masterConfig)
-	}
 	masterConfig = MergeConfigs(getViaEnvironment(), masterConfig)
 
 	if len(errs) != 0 {
@@ -112,36 +104,6 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	}
 
 	return master
-}
-
-func getClient() (client matreshka_api.MatreshkaBeAPIClient) {
-	vervConfigUrl := os.Getenv(VervConfigUrl)
-	if vervConfigUrl == "" {
-		return nil
-	}
-
-	dial, err := grpc.Dial(
-		vervConfigUrl,
-		// TODO VERV-34
-		grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil
-	}
-
-	return matreshka_api.NewMatreshkaBeAPIClient(dial)
-}
-
-func getViaApi(client matreshka_api.MatreshkaBeAPIClient, projectName string) AppConfig {
-	ac := NewEmptyConfig()
-	ctx := context.Background()
-	cfg, _ := client.GetConfigRaw(ctx, &matreshka_api.GetConfigRaw_Request{ServiceName: projectName})
-	if cfg == nil {
-		return ac
-	}
-
-	conf, _ := ParseConfig([]byte(cfg.Config))
-
-	return conf
 }
 
 func getViaEnvironment() AppConfig {
