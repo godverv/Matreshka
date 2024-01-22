@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	VervName      = "VERV_NAME"
-	VervConfigUrl = "VERV_CONFIG_URL"
+	VervName = "VERV_NAME"
 )
 
 func NewEmptyConfig() AppConfig {

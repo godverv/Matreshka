@@ -92,7 +92,7 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func (r *Resources) get(name string) resources.Resource {
 	for _, item := range *r {
-		if item.GetName() == name {
+		if resourcePrefix+item.GetName() == name {
 			return item
 		}
 	}
