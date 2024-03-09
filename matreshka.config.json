@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://redsock.ru",
+  "title": "Matreshka",
+  "description": "Matreshka based configuration",
+  "type": "object",
+  "properties": {
+    "app_info": {
+      "description": "Basic application information",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "App name. May be presented in golang package format. e.g `github.com/godverv/matreshka-be`",
+          "type": "string"
+        },
+        "version": {
+          "description": "Current version of app",
+          "type": "string",
+          "pattern": "v[0-9]+\\.[0-9]+\\.[0-9]+"
+        },
+        "startup_duration": {
+          "description": "Amount of seconds required for application to start",
+          "type": "string",
+          "pattern": "[1-9][0-9]+s"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    },
+    "server": {
+      "description": "Defines server properties, such as Rest Port, GRPC port",
+      "type": "array",
+      "items": {
+        "description": "Server definition",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of server. Must start with the type of server",
+            "type": "string",
+            "pattern": "(rest|grpc)_\\w+"
+          },
+          "port": {
+            "description": "Port of server",
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "exclusiveMaximum": 65536
+          }
+        }
+      }
+    },
+    "data_sources": {
+      "description": "Definition of needed data sources including Databases, APIs and etc",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/definitions/postgres"
+          },
+          {
+            "$ref": "#/definitions/redis"
+          },
+          {
+            "$ref": "#/definitions/telegram"
+          },
+          {
+            "$ref": "#/definitions/grpc"
+          }
+        ]
+      }
+    },
+    "environment": {
+      "description": "Defines additional environment variables"
+    }
+  },
+  "definitions": {
+    "postgres": {
+      "description": "Defines connection to postgres",
+      "type": "object",
+      "properties": {
+        "resource_name": {
+          "description": "Name of connection. Must start with postgres",
+          "type": "string",
+          "pattern": "postgres(_|)(.+|)"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "$ref": "#/definitions/port"
+        },
+        "user": {
+          "type": "string"
+        },
+        "pwd": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ssl_mode": {
+          "enum": [
+            "disable",
+            "allow",
+            "prefer",
+            "require",
+            "verify-ca",
+            "verify-full"
+          ]
+        }
+      },
+      "required": ["resource_name", "host", "port", "user", "name"]
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "resource_name": {
+          "description": "Name of connection. Must start with redis",
+          "type": "string",
+          "pattern": "redis(_|)(.+|)"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "$ref": "#/definitions/port"
+        },
+        "user": {
+          "type": "string"
+        },
+        "pwd": {
+          "type": "string"
+        },
+        "db": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["resource_name", "host", "port"]
+    },
+    "telegram": {
+      "description": "Name of resource. Must start with telegram",
+      "type": "object",
+      "properties": {
+        "resource_name": {
+          "type": "string",
+          "pattern": "telegram(_|)(.+|)"
+        },
+        "api": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc": {
+      "description": "Name of grpc service. Must start with grpc",
+      "type": "object",
+      "properties": {
+        "resource_name": {
+          "type": "string",
+          "pattern": "grpc(_|)(.+|)"
+        },
+        "connection_string": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        }
+      }
+    },
+    "port": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 65536
+    }
+  }
+}
