@@ -38,7 +38,7 @@
           "name": {
             "description": "Name of server. Must start with the type of server",
             "type": "string",
-            "pattern": "(rest|grpc)_\\w+"
+            "pattern": "(rest|grpc)(_|)(.+|)"
           },
           "port": {
             "description": "Port of server",
