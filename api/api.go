@@ -26,12 +26,18 @@ func (s Name) GetName() string {
 func GetServerByName(name string) Api {
 	switch strings.Split(name, "_")[0] {
 	case RestServerType:
-		return &Rest{}
+		return &Rest{
+			Name: Name(name),
+		}
 
 	case GRPSServerType:
-		return &GRPC{}
+		return &GRPC{
+			Name: Name(name),
+		}
 
 	default:
-		return &Unknown{}
+		return &Unknown{
+			Name: Name(name),
+		}
 	}
 }

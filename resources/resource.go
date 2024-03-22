@@ -25,18 +25,28 @@ func (a Name) GetName() string {
 func GetResourceByName(name string) Resource {
 	switch strings.Split(name, "_")[0] {
 	case PostgresResourceName:
-		return &Postgres{}
+		return &Postgres{
+			Name: Name(name),
+		}
 
 	case RedisResourceName:
-		return &Redis{}
+		return &Redis{
+			Name: Name(name),
+		}
 
 	case TelegramResourceName:
-		return &Telegram{}
+		return &Telegram{
+			Name: Name(name),
+		}
 
 	case GrpcResourceName:
-		return &GRPC{}
+		return &GRPC{
+			Name: Name(name),
+		}
 
 	default:
-		return &Unknown{}
+		return &Unknown{
+			Name: Name(name),
+		}
 	}
 }
