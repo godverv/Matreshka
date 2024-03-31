@@ -9,7 +9,7 @@ import (
 func Test_GetResources(t *testing.T) {
 	t.Parallel()
 
-	t.Run("OK_RESOURCES", func(t *testing.T) {
+	t.Run("OK_RESOURCES_WITH_PREFIX", func(t *testing.T) {
 		cfg, err := ParseConfig(resourcedConfig)
 		require.NoError(t, err)
 
@@ -26,6 +26,27 @@ func Test_GetResources(t *testing.T) {
 		require.Equal(t, grpcCfg, getGRPCClientTest())
 
 		tgCfg, err := cfg.Resources.Telegram(resourcePrefix + "telegram")
+		require.NoError(t, err)
+		require.Equal(t, tgCfg, getTelegramClientTest())
+	})
+
+	t.Run("OK_RESOURCES_WITHOUT_PREFIX", func(t *testing.T) {
+		cfg, err := ParseConfig(resourcedConfig)
+		require.NoError(t, err)
+
+		postgresCfg, err := cfg.Resources.Postgres("postgres")
+		require.NoError(t, err)
+		require.Equal(t, postgresCfg, getPostgresClientTest())
+
+		redisCfg, err := cfg.Resources.Redis("redis")
+		require.NoError(t, err)
+		require.Equal(t, redisCfg, getRedisClientTest())
+
+		grpcCfg, err := cfg.Resources.GRPC("grpc_rscli_example")
+		require.NoError(t, err)
+		require.Equal(t, grpcCfg, getGRPCClientTest())
+
+		tgCfg, err := cfg.Resources.Telegram("telegram")
 		require.NoError(t, err)
 		require.Equal(t, tgCfg, getTelegramClientTest())
 	})

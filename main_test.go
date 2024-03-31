@@ -13,7 +13,7 @@ func getPostgresClientTest() *resources.Postgres {
 		DbName:  "matreshka",
 		User:    "matreshka",
 		Pwd:     "matreshka",
-		SSLMode: "false",
+		SSLMode: "disable",
 	}
 }
 
@@ -52,8 +52,7 @@ func getRestServerTest() *api.Rest {
 
 func getGRPCServerTest() *api.GRPC {
 	return &api.GRPC{
-		Name:        "grpc_server",
-		Port:        50051,
-		GatewayPort: 50052,
+		Name: "grpc_server",
+		Port: 50051,
 	}
 }

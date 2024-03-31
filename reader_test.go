@@ -92,7 +92,7 @@ func Test_MergeConfigs(t *testing.T) {
 		fullConfigExpect := &AppConfig{
 			AppInfo: AppInfo{
 				Name:            "matreshka",
-				Version:         "0.0.1",
+				Version:         "v0.0.1",
 				StartupDuration: time.Second * 10,
 			},
 			Resources: []resources.Resource{

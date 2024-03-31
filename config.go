@@ -20,3 +20,7 @@ type AppConfig struct {
 func (a *AppConfig) Marshal() ([]byte, error) {
 	return yaml.Marshal(*a)
 }
+
+func (a *AppConfig) Unmarshal(b []byte) error {
+	return yaml.Unmarshal(b, a)
+}

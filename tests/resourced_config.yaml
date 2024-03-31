@@ -9,7 +9,7 @@ data_sources:
       user: matreshka
       pwd: matreshka
       name: matreshka
-      ssl_mode: "false"
+      ssl_mode: disable
     - resource_name: redis
       host: localhost
       port: 6379

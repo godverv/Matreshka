@@ -33,27 +33,27 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 			Value: "not so basic 🤡 string",
 		},
 		{
-			Name:  "Resource_postgres",
+			Name:  resourcePrefix + "postgres",
 			Value: getPostgresClientTest(),
 		},
 		{
-			Name:  "Resource_redis",
+			Name:  resourcePrefix + "redis",
 			Value: getRedisClientTest(),
 		},
 		{
-			Name:  "Resource_telegram",
+			Name:  resourcePrefix + "telegram",
 			Value: getTelegramClientTest(),
 		},
 		{
-			Name:  "Resource_grpc_rscli_example",
+			Name:  resourcePrefix + "grpc_rscli_example",
 			Value: getGRPCClientTest(),
 		},
 		{
-			Name:  "Api_rest_server",
+			Name:  apiPrefix + "rest_server",
 			Value: getRestServerTest(),
 		},
 		{
-			Name:  "Api_grpc_server",
+			Name:  apiPrefix + "grpc_server",
 			Value: getGRPCServerTest(),
 		},
 	}
