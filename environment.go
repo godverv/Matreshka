@@ -2,6 +2,8 @@ package matreshka
 
 import (
 	"encoding/json"
+	"strconv"
+	"strings"
 	"time"
 
 	errors "github.com/Red-Sock/trace-errors"
@@ -13,10 +15,19 @@ func (a *AppConfig) TryGetInt(key string) (out int, err error) {
 		return 0, errors.Wrap(ErrNotFound, key)
 	}
 
-	out, ok = val.(int)
-	if !ok {
-		return out, errors.Wrapf(ErrUnexpectedType, "wanted: %T actual value %T", out, val)
+	switch val.(type) {
+	case int:
+		out, ok = val.(int)
+	case string:
+		s, _ := val.(string)
+		out, err = strconv.Atoi(s)
+		ok = err == nil
 	}
+
+	if !ok {
+		return out, errors.Wrapf(ErrUnexpectedType, "wanted: int but got %v of type %T", val, val)
+	}
+
 	return out, nil
 }
 func (a *AppConfig) GetInt(key string) (out int) {
@@ -47,11 +58,21 @@ func (a *AppConfig) TryGetBool(key string) (out bool, err error) {
 		return false, errors.Wrap(ErrNotFound, key)
 	}
 
-	out, ok = val.(bool)
-	if !ok {
-		return out, errors.Wrapf(ErrUnexpectedType, "wanted: %T actual value %T", out, val)
+	switch val.(type) {
+	case bool:
+		out, ok = val.(bool)
+
+	case string:
+		var s string
+		s, ok = val.(string)
+		out = strings.ToLower(s) == "true"
 	}
-	return out, nil
+
+	if ok {
+		return out, nil
+	}
+
+	return out, errors.Wrapf(ErrUnexpectedType, "wanted: string or bool, got: %T", val)
 }
 func (a *AppConfig) GetBool(key string) (out bool) {
 	out, _ = a.TryGetBool(key)
