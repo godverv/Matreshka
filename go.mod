@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/Red-Sock/trace-errors v0.0.5
-	github.com/godverv/matreshka-be v0.0.2
+	github.com/godverv/matreshka-be v1.0.23
 	github.com/gojuno/minimock/v3 v3.3.6
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.60.1

@@ -1,16 +1,21 @@
 package matreshka
 
 import (
+	"context"
 	stderrors "errors"
 	"os"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
+	"github.com/godverv/matreshka-be/pkg/matreshka_api"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v3"
 )
 
 const (
 	VervName = "VERV_NAME"
+	ApiURL   = "MATRESHKA_URL"
 )
 
 func NewEmptyConfig() AppConfig {
@@ -22,32 +27,37 @@ func NewEmptyConfig() AppConfig {
 	}
 }
 
-func ReadConfigs(pths ...string) (*AppConfig, error) {
-	if len(pths) == 0 {
-		return nil, nil
-	}
-
-	masterConfig, err := readConfig(pths[0])
+func ReadConfigs(paths ...string) (*AppConfig, error) {
+	masterConfig, err := getFromApi()
 	if err != nil {
-		return nil, errors.Wrap(err, "error reading master config")
+		return nil, errors.Wrap(err, "error getting config via api")
 	}
 
-	var errs []error
-	for _, pth := range pths[1:] {
-		slaveConfig, err := readConfig(pth)
+	if len(paths) != 0 {
+		fileConfig, err := getFromFile(paths[0])
 		if err != nil {
-			errs = append(errs, errors.Wrapf(err, "error reading config at %s", pth))
-			continue
+			return nil, errors.Wrap(err, "error reading master config")
 		}
 
-		masterConfig = MergeConfigs(masterConfig, slaveConfig)
+		masterConfig = MergeConfigs(masterConfig, fileConfig)
+
+		var errs []error
+		for _, pth := range paths[1:] {
+			fileConfig, err = getFromFile(pth)
+			if err != nil {
+				errs = append(errs, errors.Wrapf(err, "error reading config at %s", pth))
+				continue
+			}
+
+			masterConfig = MergeConfigs(masterConfig, fileConfig)
+		}
+
+		if len(errs) != 0 {
+			return &masterConfig, stderrors.Join(errs...)
+		}
 	}
 
-	masterConfig = MergeConfigs(getViaEnvironment(), masterConfig)
-
-	if len(errs) != 0 {
-		return &masterConfig, stderrors.Join(errs...)
-	}
+	masterConfig = MergeConfigs(getFromEnvironment(), masterConfig)
 
 	return &masterConfig, nil
 }
@@ -105,7 +115,7 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	return master
 }
 
-func getViaEnvironment() AppConfig {
+func getFromEnvironment() AppConfig {
 	envConfig := NewEmptyConfig()
 
 	projectName := os.Getenv(VervName)
@@ -113,34 +123,9 @@ func getViaEnvironment() AppConfig {
 		return envConfig
 	}
 
-	envConfig.Environment = readEnvironment(projectName)
-	return envConfig
-}
-
-func readConfig(pth string) (AppConfig, error) {
-	f, err := os.Open(pth)
-	if err != nil {
-		return NewEmptyConfig(), err
-	}
-
-	defer f.Close()
-
-	c := NewEmptyConfig()
-	err = yaml.NewDecoder(f).Decode(&c)
-	if err != nil {
-		return c, errors.Wrap(err, "error decoding config to struct")
-	}
-
-	c.Environment = flatten(c.Environment)
-
-	return c, nil
-}
-
-func readEnvironment(prefix string) map[string]interface{} {
 	environ := os.Environ()
-	out := map[string]interface{}{}
 
-	prefix = strings.ToUpper(prefix)
+	prefix := strings.ToUpper(projectName)
 	for _, variable := range environ {
 		idx := strings.Index(variable, "=")
 		if idx == -1 {
@@ -153,9 +138,74 @@ func readEnvironment(prefix string) map[string]interface{} {
 			continue
 		}
 
-		out[strings.ToLower(name[len(prefix)+1:])] = variable[idx+1:]
+		envConfig.Environment[strings.ToLower(name[len(prefix)+1:])] = variable[idx+1:]
 	}
-	return out
+
+	return envConfig
+}
+
+func getFromFile(pth string) (AppConfig, error) {
+	f, err := os.Open(pth)
+	if err != nil {
+		return NewEmptyConfig(), err
+	}
+
+	defer func() {
+		closerErr := f.Close()
+		if err == nil {
+			err = closerErr
+			return
+		}
+
+		err = stderrors.Join(err, closerErr)
+	}()
+
+	c := NewEmptyConfig()
+	err = yaml.NewDecoder(f).Decode(&c)
+	if err != nil {
+		return c, errors.Wrap(err, "error decoding config to struct")
+	}
+
+	c.Environment = flatten(c.Environment)
+
+	return c, nil
+}
+
+func getFromApi() (AppConfig, error) {
+	configFromApi := NewEmptyConfig()
+
+	url := os.Getenv(ApiURL)
+	if url == "" {
+		return configFromApi, nil
+	}
+
+	projectName := os.Getenv(VervName)
+	if projectName == "" {
+		return configFromApi, nil
+	}
+
+	ctx := context.Background()
+
+	opts := grpc.WithTransportCredentials(insecure.NewCredentials())
+	dial, err := grpc.DialContext(ctx, url, opts)
+	if err != nil {
+		return configFromApi, errors.Wrap(err, "")
+	}
+
+	client := matreshka_api.NewMatreshkaBeAPIClient(dial)
+
+	getRawConfigRequest := &matreshka_api.GetConfigRaw_Request{ServiceName: projectName}
+	configRaw, err := client.GetConfigRaw(ctx, getRawConfigRequest)
+	if err != nil {
+		return configFromApi, errors.Wrap(err, "error getting config from matreshka api")
+	}
+
+	err = configFromApi.Unmarshal(configRaw.Config)
+	if err != nil {
+		return configFromApi, errors.Wrap(err, "error unmarshalling matreshka response")
+	}
+
+	return configFromApi, nil
 }
 
 func flatten(in map[string]interface{}) map[string]interface{} {
