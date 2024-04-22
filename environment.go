@@ -22,6 +22,8 @@ func (a *AppConfig) TryGetInt(key string) (out int, err error) {
 		s, _ := val.(string)
 		out, err = strconv.Atoi(s)
 		ok = err == nil
+	default:
+		ok = false
 	}
 
 	if !ok {
@@ -58,14 +60,16 @@ func (a *AppConfig) TryGetBool(key string) (out bool, err error) {
 		return false, errors.Wrap(ErrNotFound, key)
 	}
 
-	switch val.(type) {
+	switch v := val.(type) {
 	case bool:
-		out, ok = val.(bool)
+		out = v
 
 	case string:
-		var s string
-		s, ok = val.(string)
-		out = strings.ToLower(s) == "true"
+		v = strings.ToLower(v)
+		out = v == "true"
+		ok = v == "true" || v == "false"
+	default:
+		ok = false
 	}
 
 	if ok {

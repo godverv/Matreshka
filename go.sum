@@ -2,8 +2,7 @@ github.com/Red-Sock/trace-errors v0.0.5 h1:MgD1AIJ/Qw8QMSoxGJQRUycH2fSRFpq/FtUOx
 github.com/Red-Sock/trace-errors v0.0.5/go.mod h1:rvIxpJ2M7/XkEnXjXfmQjsaKXYRVGM4TFQ8R5Zo4mSk=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/godverv/matreshka-be v0.0.2 h1:jWq+sj0avPOzJkpV8KUxcvowa8nLMLqiP2APC4sTrfY=
-github.com/godverv/matreshka-be v0.0.2/go.mod h1:yEHcgRAu+NBkiTO5BmfxAnyIeNx3Ae45vcFu8byhI20=
+github.com/godverv/matreshka-be v1.0.23 h1:UNne0FOOGDyU0WoCA6+2BoVbdAIrTf3l6oCek3frnVc=
 github.com/godverv/matreshka-be v1.0.23/go.mod h1:z3LlfGNgri6E1ut3KySsHUXHYahcTZHnpBuoBYzn2c8=
 github.com/gojuno/minimock/v3 v3.3.6 h1:tZQQaDgKSxsKiVia9vt6zZ/qsKNGBw2D0ubHQPr+mHc=
 github.com/gojuno/minimock/v3 v3.3.6/go.mod h1:kjvubEBVT8aUQ9e+g8x/hPfAhiOoqW7WinzzJgzr4ws=

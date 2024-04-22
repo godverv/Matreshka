@@ -127,7 +127,7 @@ func Test_MergeConfigs(t *testing.T) {
 	t.Run("EMPTY_PARAMS", func(t *testing.T) {
 		c, e := ReadConfigs()
 		require.Nil(t, e)
-		require.Nil(t, c)
+		require.Equal(t, *c, NewEmptyConfig())
 	})
 
 	t.Run("INVALID_READING_ONE_CONFIG", func(t *testing.T) {
