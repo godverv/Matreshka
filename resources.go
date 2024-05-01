@@ -67,6 +67,20 @@ func (r *Resources) GRPC(name string) (out *resources.GRPC, err error) {
 	return out, nil
 }
 
+func (r *Resources) Sqlite(name string) (out *resources.Sqlite, err error) {
+	res := r.get(name)
+	if res == nil {
+		return nil, ErrNotFound
+	}
+
+	out, ok := res.(*resources.Sqlite)
+	if !ok {
+		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
+	}
+
+	return out, nil
+}
+
 func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var resourceNodes []yaml.Node
 	err := unmarshal(&resourceNodes)
