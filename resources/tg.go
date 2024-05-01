@@ -9,11 +9,11 @@ type Telegram struct {
 }
 
 func NewTelegram(n Name) Resource {
-	return Telegram{
+	return &Telegram{
 		Name: n,
 	}
 }
 
-func (t Telegram) GetType() string {
+func (t *Telegram) GetType() string {
 	return TelegramResourceName
 }

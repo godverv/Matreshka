@@ -22,7 +22,7 @@ type Postgres struct {
 }
 
 func NewPostgres(n Name) Resource {
-	return Postgres{
+	return &Postgres{
 		Name:   n,
 		Host:   "0.0.0.0",
 		Port:   5432,
@@ -32,15 +32,15 @@ func NewPostgres(n Name) Resource {
 	}
 }
 
-func (p Postgres) GetType() string {
+func (p *Postgres) GetType() string {
 	return PostgresResourceName
 }
 
-func (p Postgres) MarshalYAML() (interface{}, error) {
+func (p *Postgres) MarshalYAML() (interface{}, error) {
 	resourceType := strings.Split(p.GetName(), "_")[0]
 	if resourceType != "postgres" {
 		return nil, errors.Wrap(ErrInvalidResourceName, "but got: "+resourceType)
 	}
 
-	return p, nil
+	return *p, nil
 }

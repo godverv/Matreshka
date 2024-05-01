@@ -9,12 +9,12 @@ type Sqlite struct {
 }
 
 func NewSqlite(n Name) Resource {
-	return Sqlite{
+	return &Sqlite{
 		Name: n,
 		Path: "/app/data",
 	}
 }
 
-func (p Sqlite) GetType() string {
+func (p *Sqlite) GetType() string {
 	return SqliteResourceName
 }

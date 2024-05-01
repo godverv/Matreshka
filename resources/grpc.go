@@ -10,11 +10,11 @@ type GRPC struct {
 }
 
 func NewGRPC(n Name) Resource {
-	return GRPC{
+	return &GRPC{
 		Name: n,
 	}
 }
 
-func (g GRPC) GetType() string {
+func (g *GRPC) GetType() string {
 	return GrpcResourceName
 }

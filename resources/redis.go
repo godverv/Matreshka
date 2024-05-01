@@ -14,13 +14,13 @@ type Redis struct {
 }
 
 func NewRedis(n Name) Resource {
-	return Redis{
+	return &Redis{
 		Name: n,
 		Host: "0.0.0.0",
 		Port: 6379,
 	}
 }
 
-func (p Redis) GetType() string {
+func (p *Redis) GetType() string {
 	return RedisResourceName
 }
