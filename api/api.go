@@ -2,8 +2,6 @@ package api
 
 import (
 	"strings"
-
-	"github.com/godverv/matreshka/internal/env_parser"
 )
 
 const EnvServerName = "server_name"
@@ -14,8 +12,6 @@ type Api interface {
 	// GetPort - return port or default port
 	GetPort() uint16
 	GetPortStr() string
-
-	env_parser.EnvParser
 }
 type Name string
 
@@ -23,21 +19,19 @@ func (s Name) GetName() string {
 	return string(s)
 }
 
+var apis = map[string]func(n Name) Api{
+	RestServerType: func(n Name) Api { return &Rest{Name: n} },
+	GRPSServerType: func(n Name) Api { return &GRPC{Name: n} },
+}
+
 func GetServerByName(name string) Api {
-	switch strings.Split(name, "_")[0] {
-	case RestServerType:
-		return &Rest{
-			Name: Name(name),
-		}
+	a := apis[strings.Split(name, "_")[0]]
 
-	case GRPSServerType:
-		return &GRPC{
-			Name: Name(name),
-		}
-
-	default:
+	if a == nil {
 		return &Unknown{
 			Name: Name(name),
 		}
 	}
+
+	return a(Name(name))
 }
