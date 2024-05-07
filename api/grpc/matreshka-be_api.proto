@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package matreshka_be_api;
+
+import "google/api/annotations.proto";
+
+option go_package = "/matreshka_api";
+
+service MatreshkaBeAPI {
+  rpc ApiVersion(ApiVersion.Request) returns (ApiVersion.Response) {
+    option (google.api.http) = {
+      get: "/version"
+    };
+  };
+
+  rpc GetConfigRaw(GetConfigRaw.Request) returns (GetConfigRaw.Response) {
+    option (google.api.http) = {
+      get: "/config/raw/{service_name}",
+    };
+  }
+
+  rpc GetConfig(GetConfig.Request) returns (GetConfig.Response) {
+    option (google.api.http) = {
+      get: "/config/{service_name}",
+    };
+  }
+
+  rpc UpdateServiceConfig(UpdateServiceConfig.Request) returns (UpdateServiceConfig.Response) {
+    option(google.api.http) = {
+      post: "/config/create",
+      body: "*"
+    };
+  }
+
+  rpc PatchConfigEnv(PatchConfigEnv.Request) returns (PatchConfigEnv.Response) {
+    option (google.api.http) = {
+      patch: "/config/env",
+      body: "*"
+    };
+  }
+
+  rpc PatchConfigRaw(PatchConfigRaw.Request) returns (PatchConfigRaw.Response) {
+    option (google.api.http) = {
+      patch: "/config/raw/{service_name}",
+      body: "*"
+    };
+  }
+}
+
+message ApiVersion {
+  message Request {}
+  message Response {
+    string version = 1;
+  }
+}
+
+message UpdateServiceConfig {
+  message Request {
+    Config config = 1;
+  }
+
+  message Response {
+    string link = 1;
+  }
+}
+
+message Config {
+  message AppConfig {
+    string name = 1;
+    string version = 2;
+    // e.g "10s"
+    string startup_duration = 3;
+  }
+  AppConfig app_config = 1;
+
+  message Resource {
+    enum Type {
+      unknown = 0;
+      postgres = 1;
+      redis = 2;
+      grpc = 3;
+      telegram = 4;
+    }
+
+    Type resource_type = 1;
+    // link to resource configuration if available
+    string connection_string = 2;
+  }
+  repeated Resource resources = 2;
+
+  message Api {
+    enum Type {
+      unknown = 0;
+      grpc = 1;
+      rest = 2;
+    }
+    Type api_type = 1;
+    string swagger_link = 2;
+
+    string makosh_name = 3;
+  }
+  repeated Api api = 3;
+
+  message Environment {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Environment environment = 4;
+}
+
+message GetConfigRaw {
+  message Request {
+    string service_name = 1;
+  }
+
+  message Response {
+    bytes config = 1;
+  }
+}
+
+message GetConfig {
+  message Request {
+    string service_name = 1;
+  }
+
+  message Response {
+    Config config = 1;
+  }
+}
+
+message PatchConfigEnv {
+  message Patch {
+    string field_name = 1;
+    string value = 2;
+  }
+
+  message Request {
+    string service_name = 1;
+    repeated Patch patches = 2;
+  }
+  message Response {}
+}
+
+message PatchConfigRaw {
+  message Request {
+    bytes raw = 1;
+    string service_name = 2;
+  }
+
+  message Response {
+
+  }
+
+}

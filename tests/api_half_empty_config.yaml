@@ -1,8 +1,0 @@
-app_info:
-    name: matreshka
-    version: ""
-    startup_duration: 0s
-data_sources: []
-server:
-    -
-environment: {}

@@ -1,5 +1,6 @@
-dep:
-	go install github.com/gojuno/minimock/v3/cmd/minimock@latest
+include ./scripts/grpc.mk
+include ./scripts/rscli.mk
 
-mock:
-	minimock -i github.com/godverv/matreshka-be/pkg/matreshka_api.MatreshkaBeAPIClient -o mocks -g -s "_mock.go"
+gen:
+
+buildc:

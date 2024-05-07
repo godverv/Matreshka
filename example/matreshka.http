@@ -1,0 +1,31 @@
+### Create config
+POST {{matreshka-api}}/config/create
+Content-Type: application/json
+
+{
+  "app_config": {
+    "name":  "test_service",
+    "version": "v0.0.1",
+    "startup_duration":  "10s"
+  }
+}
+
+### Get config
+GET {{matreshka-api}}/config/raw/test_service
+
+### Patch config with variable
+PATCH {{matreshka-api}}/patch_config
+Content-Type: application/json
+
+{
+  "service_name": "test_service",
+  "patches": [
+    {
+      "field_name": "watch_tower_enabled",
+      "value": "true"
+    }
+  ]
+}
+
+### Get config
+GET {{matreshka-api}}/config/test_service
