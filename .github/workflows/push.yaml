@@ -3,7 +3,7 @@ run-name: ${{ github.REF_NAME }} pull request
 on:
   push:
     branches:
-      - backend/VERV-*
+      - server/VERV-*
 
 jobs:
   create-pr:
