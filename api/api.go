@@ -12,6 +12,8 @@ type Api interface {
 	// GetPort - return port or default port
 	GetPort() uint16
 	GetPortStr() string
+
+	GetType() string
 }
 type Name string
 

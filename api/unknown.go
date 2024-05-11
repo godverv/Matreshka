@@ -1,8 +1,14 @@
 package api
 
+const UnknownServerType = "unknown"
+
 type Unknown struct {
 	Name
 	Values map[string]string
+}
+
+func (u *Unknown) GetType() string {
+	return UnknownServerType
 }
 
 func (u *Unknown) GetPort() uint16 {

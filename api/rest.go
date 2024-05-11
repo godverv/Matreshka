@@ -51,3 +51,7 @@ func (r *Rest) GetPortStr() string {
 	p := r.GetPort()
 	return strconv.FormatUint(uint64(p), 10)
 }
+
+func (r *Rest) GetType() string {
+	return RestServerType
+}
