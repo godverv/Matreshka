@@ -13,11 +13,11 @@ func Test_GetApi(t *testing.T) {
 		cfg, err := ParseConfig(apiConfig)
 		require.NoError(t, err)
 
-		grpcCfg, err := cfg.Servers.GRPC("grpc_server")
+		grpcCfg, err := cfg.Servers.GRPC("grpc")
 		require.NoError(t, err)
 		require.Equal(t, grpcCfg, getGRPCServerTest())
 
-		restCfg, err := cfg.Servers.REST("rest_server")
+		restCfg, err := cfg.Servers.REST("rest")
 		require.NoError(t, err)
 		require.Equal(t, restCfg, getRestServerTest())
 	})
@@ -39,11 +39,11 @@ func Test_GetApi(t *testing.T) {
 		cfg, err := ParseConfig(apiConfig)
 		require.NoError(t, err)
 
-		grpcCfg, err := cfg.Servers.GRPC("rest_server")
+		grpcCfg, err := cfg.Servers.GRPC("rest")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Nil(t, grpcCfg)
 
-		restCfg, err := cfg.Servers.REST("grpc_server")
+		restCfg, err := cfg.Servers.REST("grpc")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Nil(t, restCfg)
 	})

@@ -4,8 +4,8 @@ app_info:
     startup_duration: 0s
 data_sources: []
 server:
-    - name: rest_server
+    - name: rest
       port: 8080
-    - name: grpc_server
+    - name: grpc
       port: 50051
 environment: {}

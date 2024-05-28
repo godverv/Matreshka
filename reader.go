@@ -194,8 +194,8 @@ func getFromApi() (AppConfig, error) {
 
 	client := matreshka_api.NewMatreshkaBeAPIClient(dial)
 
-	getRawConfigRequest := &matreshka_api.GetConfigRaw_Request{ServiceName: projectName}
-	configRaw, err := client.GetConfigRaw(ctx, getRawConfigRequest)
+	getRawConfigRequest := &matreshka_api.GetConfig_Request{ServiceName: projectName}
+	configRaw, err := client.GetConfig(ctx, getRawConfigRequest)
 	if err != nil {
 		return configFromApi, errors.Wrap(err, "error getting config from matreshka api")
 	}
