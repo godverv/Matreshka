@@ -1,15 +1,13 @@
 module github.com/godverv/matreshka
 
-go 1.21
-
-toolchain go1.22.1
+go 1.22
 
 require (
+	github.com/Red-Sock/env v0.0.2
 	github.com/Red-Sock/trace-errors v0.0.6
-	github.com/evilwire/go-env v0.0.0-20171212022040-ce47a9b9a91c
 	github.com/godverv/matreshka-be v1.0.27
-	github.com/stretchr/testify v1.8.4
-	google.golang.org/grpc v1.63.2
+	github.com/stretchr/testify v1.9.0
+	google.golang.org/grpc v1.64.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

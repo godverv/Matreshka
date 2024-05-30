@@ -3,10 +3,10 @@ package matreshka
 import (
 	"strings"
 
+	"github.com/Red-Sock/env"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/servers"
 )
 
@@ -74,12 +74,12 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (s *Servers) MarshalEnv(prefix string) []env.EnvVal {
+func (s *Servers) MarshalEnv(prefix string) []env.Node {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]env.EnvVal, 0)
+	out := make([]env.Node, 0)
 	for _, srv := range *s {
 		serverName := strings.Replace(srv.GetName(), "_", "-", -1)
 		out = append(out, env.MarshalEnvWithPrefix(prefix+serverName, srv)...)

@@ -3,11 +3,11 @@ package matreshka
 import (
 	"strings"
 
+	"github.com/Red-Sock/env"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/data_sources"
-	"github.com/godverv/matreshka/internal/env"
 )
 
 type DataSources []data_sources.Resource
@@ -107,12 +107,12 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (r *DataSources) MarshalEnv(prefix string) []env.EnvVal {
+func (r *DataSources) MarshalEnv(prefix string) []env.Node {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]env.EnvVal, 0, len(*r))
+	out := make([]env.Node, 0, len(*r))
 	for _, resource := range *r {
 		resourceName := strings.Replace(resource.GetName(), "_", "-", -1)
 		out = append(out, env.MarshalEnvWithPrefix(prefix+resourceName, resource)...)

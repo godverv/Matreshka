@@ -1,8 +1,9 @@
 package matreshka
 
 import (
+	"github.com/Red-Sock/env"
+
 	"github.com/godverv/matreshka/data_sources"
-	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/servers"
 )
 
@@ -17,11 +18,11 @@ func getPostgresClientTest() *data_sources.Postgres {
 		SslMode: "disable",
 	}
 }
-func getPostgresClientEnvs() []env.EnvVal {
+func getPostgresClientEnvs() []env.Node {
 	pg := getPostgresClientTest()
 
 	prefix := resourcePrefix + pg.GetName()
-	return []env.EnvVal{
+	return []env.Node{
 		{
 			Name:  prefix,
 			Value: pg,
@@ -67,11 +68,11 @@ func getRedisClientTest() *data_sources.Redis {
 		Db:   0,
 	}
 }
-func getRedisClientEnvs() []env.EnvVal {
+func getRedisClientEnvs() []env.Node {
 	redis := getRedisClientTest()
 	name := resourcePrefix + redis.GetName()
 
-	return []env.EnvVal{
+	return []env.Node{
 		{
 			Name:  name,
 			Value: redis,
@@ -110,10 +111,10 @@ func getGRPCClientTest() *data_sources.GRPC {
 		Module:           "github.com/Red-Sock/rscli_example",
 	}
 }
-func getGRPCClientEnvs() []env.EnvVal {
+func getGRPCClientEnvs() []env.Node {
 	grpcClient := getGRPCClientTest()
 	name := resourcePrefix + grpcClient.GetName()
-	return []env.EnvVal{
+	return []env.Node{
 		{
 			Name:  name,
 			Value: grpcClient,
@@ -139,10 +140,10 @@ func getTelegramClientTest() *data_sources.Telegram {
 		ApiKey: "some_api_key",
 	}
 }
-func getTelegramClientEnvs() []env.EnvVal {
+func getTelegramClientEnvs() []env.Node {
 	telegram := getTelegramClientTest()
 	name := resourcePrefix + telegram.GetName()
-	return []env.EnvVal{
+	return []env.Node{
 		{
 			Name:  name,
 			Value: telegram,
@@ -165,11 +166,11 @@ func getRestServerTest() *servers.Rest {
 		Port: 8080,
 	}
 }
-func getRestServerEnvs() []env.EnvVal {
+func getRestServerEnvs() []env.Node {
 	rest := getRestServerTest()
 	serverName := apiPrefix + rest.GetName()
 
-	return []env.EnvVal{
+	return []env.Node{
 		{
 			Name:  serverName,
 			Value: rest,
@@ -191,11 +192,11 @@ func getGRPCServerTest() *servers.GRPC {
 		Port: 50051,
 	}
 }
-func getGRPCServerEnvs() []env.EnvVal {
+func getGRPCServerEnvs() []env.Node {
 	grpc := getGRPCServerTest()
 
 	serverName := apiPrefix + grpc.GetName()
-	return []env.EnvVal{
+	return []env.Node{
 		{
 			Name:  serverName,
 			Value: grpc,

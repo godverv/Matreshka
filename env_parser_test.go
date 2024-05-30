@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Red-Sock/env"
 	"github.com/stretchr/testify/require"
 
 	"github.com/godverv/matreshka/data_sources"
-	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/servers"
 )
 
@@ -20,7 +20,7 @@ func Test_marshalling_env(t *testing.T) {
 
 	res := env.MarshalEnvWithPrefix("MATRESHKA", &ai)
 
-	expected := []env.EnvVal{
+	expected := []env.Node{
 		{
 			Name:  "MATRESHKA_APP_INFO_NAME",
 			Value: "matreshka",
