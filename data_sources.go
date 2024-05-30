@@ -119,7 +119,7 @@ func (r *DataSources) MarshalEnv(prefix string) []env.EnvVal {
 
 	return out
 }
-func (r *DataSources) UnmarshalEnv(env []env.EnvVal) error {
+func (r *DataSources) UnmarshalEnv(env *env.EnvNode) error {
 	return nil
 }
 func (r *DataSources) get(name string) resources.Resource {

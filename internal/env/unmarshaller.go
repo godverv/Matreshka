@@ -47,7 +47,7 @@ func ParseDotEnv(bytes []byte) map[string]*EnvNode {
 	for idx := range bytes {
 		switch bytes[idx] {
 		case '=':
-			name = root + "_" + string(bytes[start:idx])
+			name = string(bytes[start:idx])
 			start = idx + 1
 		case '\n':
 			value = string(bytes[start:idx])
@@ -71,7 +71,11 @@ func ParseDotEnv(bytes []byte) map[string]*EnvNode {
 					}
 					nodesMap[parentNodePath] = parentNode
 				}
-				currentNodePath := parentNodePath + "_" + namePart
+
+				if parentNodePath != "" {
+					parentNodePath += "_"
+				}
+				currentNodePath := parentNodePath + namePart
 
 				newNode := &EnvNode{
 					Name: currentNodePath,
@@ -95,26 +99,12 @@ func unmarshal(prefix string, bytes []byte, in any) error {
 
 	for key, srcVal := range envVals {
 		targetVal, ok := targetMap[key]
-		if !ok {
-			continue
+		if ok {
+			_ = targetVal(srcVal)
 		}
-		_ = targetVal(srcVal)
 	}
 
 	return nil
-}
-
-func envValToMap(envVals []EnvNode) (map[string]EnvNode, error) {
-	fileEnvs := make(map[string]EnvNode)
-
-	for _, e := range envVals {
-		if _, ok := fileEnvs[e.Name]; ok {
-			return nil, errors.Wrap(ErrDuplicatedEnvKey, e.Name)
-		}
-		fileEnvs[e.Name] = e
-	}
-
-	return fileEnvs, nil
 }
 
 func structToMap(prefix string, in any) map[string]ValueMapFunc {

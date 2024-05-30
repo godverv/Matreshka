@@ -74,17 +74,6 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (s *Servers) get(name string) api.Api {
-	name = strings.TrimLeft(name, apiPrefix)
-	for _, item := range *s {
-		if item.GetName() == name {
-			return item
-		}
-	}
-
-	return nil
-}
-
 func (s *Servers) MarshalEnv(prefix string) []env.EnvVal {
 	if prefix != "" {
 		prefix += "_"
@@ -97,7 +86,17 @@ func (s *Servers) MarshalEnv(prefix string) []env.EnvVal {
 
 	return out
 }
+func (s *Servers) UnmarshalEnv(node *env.EnvNode) error {
+	return nil
+}
 
-func (s *Servers) UnmarshalEnv() {
+func (s *Servers) get(name string) api.Api {
+	name = strings.TrimLeft(name, apiPrefix)
+	for _, item := range *s {
+		if item.GetName() == name {
+			return item
+		}
+	}
 
+	return nil
 }
