@@ -40,31 +40,12 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 	expected = append(expected, getTelegramClientEnvs()...)
 	expected = append(expected, getGRPCClientEnvs()...)
 
-	//{
-	//Name:  resourcePrefix + "redis",
-	//	Value: getRedisClientTest(),
-	//},
-	//{
-	//Name:  resourcePrefix + "telegram",
-	//	Value: getTelegramClientTest(),
-	//},
-	//{
-	//Name:  resourcePrefix + "grpc_rscli_example",
-	//	Value: getGRPCClientTest(),
-	//},
-	//{
-	//Name:  apiPrefix + "rest_server",
-	//	Value: getRestServerTest(),
-	//},
-	//{
-
 	res, err := GenerateKeys(c)
 	require.NoError(t, err)
 
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].Name < res[j].Name
 	})
-
 	sort.Slice(expected, func(i, j int) bool {
 		return expected[i].Name < expected[j].Name
 	})

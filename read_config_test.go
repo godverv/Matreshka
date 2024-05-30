@@ -9,7 +9,7 @@ import (
 	"github.com/godverv/matreshka/servers"
 )
 
-func Test_ReadAppConfig(t *testing.T) {
+func Test_Read_AppConfig(t *testing.T) {
 	t.Parallel()
 
 	cfgGot, err := ParseConfig(appConfig)
@@ -25,7 +25,7 @@ func Test_ReadAppConfig(t *testing.T) {
 	require.Equal(t, cfgExpect, cfgGot)
 }
 
-func Test_ReadDataSourceConfig(t *testing.T) {
+func Test_Read_DataSourceConfig(t *testing.T) {
 	t.Parallel()
 
 	cfgGot, err := ParseConfig(resourcedConfig)
@@ -44,7 +44,7 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	require.Equal(t, cfgExpect, cfgGot)
 }
 
-func Test_ReadApiConfig(t *testing.T) {
+func Test_Read_ServerConfig(t *testing.T) {
 	t.Parallel()
 
 	cfgGot, err := ParseConfig(apiConfig)

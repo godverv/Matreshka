@@ -141,6 +141,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
 
 	return nil
 }
+
 func (r *DataSources) get(name string) data_sources.Resource {
 	name = strings.TrimPrefix(name, resourcePrefix)
 	for _, item := range *r {

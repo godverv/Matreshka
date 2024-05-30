@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_EnvironmentOk(t *testing.T) {
+func Test_Environment_OK(t *testing.T) {
 	t.Parallel()
 
 	cfg, err := ParseConfig(environmentConfig)
@@ -50,7 +50,7 @@ func Test_EnvironmentOk(t *testing.T) {
 	})
 }
 
-func Test_EnvironmentInvalid(t *testing.T) {
+func Test_Environment_Invalid(t *testing.T) {
 	t.Parallel()
 
 	cfg, err := ParseConfig(invalidEnvironmentConfig)
@@ -81,7 +81,7 @@ func Test_EnvironmentInvalid(t *testing.T) {
 	})
 }
 
-func Test_EnvironmentNotFound(t *testing.T) {
+func Test_Environment_NotFound(t *testing.T) {
 	t.Parallel()
 
 	cfg, err := ParseConfig(emptyConfig)

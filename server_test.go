@@ -9,7 +9,7 @@ import (
 func Test_GetApi(t *testing.T) {
 	t.Parallel()
 
-	t.Run("OK_API", func(t *testing.T) {
+	t.Run("OK", func(t *testing.T) {
 		cfg, err := ParseConfig(apiConfig)
 		require.NoError(t, err)
 
@@ -22,7 +22,7 @@ func Test_GetApi(t *testing.T) {
 		require.Equal(t, restCfg, getRestServerTest())
 	})
 
-	t.Run("ERROR_NOT_FOUND_API", func(t *testing.T) {
+	t.Run("ERROR_NOT_FOUND", func(t *testing.T) {
 		cfg, err := ParseConfig(emptyConfig)
 		require.NoError(t, err)
 
@@ -35,7 +35,7 @@ func Test_GetApi(t *testing.T) {
 		require.Nil(t, restCfg)
 	})
 
-	t.Run("ERROR_INVALID_TYPE_API", func(t *testing.T) {
+	t.Run("ERROR_INVALID_TYPE", func(t *testing.T) {
 		cfg, err := ParseConfig(apiConfig)
 		require.NoError(t, err)
 
@@ -48,7 +48,7 @@ func Test_GetApi(t *testing.T) {
 		require.Nil(t, restCfg)
 	})
 
-	t.Run("OK_HALF_EMPTY_API_CONFIG", func(t *testing.T) {
+	t.Run("OK_HALF_EMPTY", func(t *testing.T) {
 		_, err := ParseConfig(apiHalfEmptyConfig)
 		require.NoError(t, err)
 	})
