@@ -26,7 +26,12 @@ var resources = map[string]func(name Name) Resource{
 }
 
 func GetResourceByName(name string) Resource {
-	r := resources[strings.Split(name, "_")[0]]
+	{
+		name = strings.Split(name, "_")[0]
+		name = strings.ToLower(name)
+	}
+
+	r := resources[name]
 	if r == nil {
 		return &Unknown{
 			Name: Name(name),

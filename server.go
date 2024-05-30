@@ -86,7 +86,7 @@ func (s *Servers) MarshalEnv(prefix string) []env.EnvVal {
 
 	return out
 }
-func (s *Servers) UnmarshalEnv(node *env.EnvNode) error {
+func (s *Servers) UnmarshalEnv(node *env.Node) error {
 	return nil
 }
 

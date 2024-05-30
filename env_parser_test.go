@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/godverv/matreshka/internal/env"
+	"github.com/godverv/matreshka/resources"
 )
 
 func Test_marshalling_env(t *testing.T) {
@@ -113,9 +114,9 @@ MATRESHKA_DATA_SOURCES_POSTGRES_DB_NAME=matreshka
 MATRESHKA_DATA_SOURCES_POSTGRES_SSL_MODE=disable
 MATRESHKA_DATA_SOURCES_REDIS_HOST=localhost
 MATRESHKA_DATA_SOURCES_REDIS_PORT=6379
-MATRESHKA_DATA_SOURCES_REDIS_USER=
-MATRESHKA_DATA_SOURCES_REDIS_PWD=
-MATRESHKA_DATA_SOURCES_REDIS_DB=0
+MATRESHKA_DATA_SOURCES_REDIS_USER=redis_matreshka
+MATRESHKA_DATA_SOURCES_REDIS_PWD=redis_matreshka_pwd
+MATRESHKA_DATA_SOURCES_REDIS_DB=2
 MATRESHKA_DATA_SOURCES_TELEGRAM_API_KEY=some_api_key
 MATRESHKA_DATA_SOURCES_GRPC_RSCLI_EXAMPLE_CONNECTION_STRING=0.0.0.0:50051
 MATRESHKA_DATA_SOURCES_GRPC_RSCLI_EXAMPLE_MODULE=github.com/Red-Sock/rscli_example
@@ -123,7 +124,43 @@ MATRESHKA_SERVERS_REST_PORT=8080
 MATRESHKA_SERVERS_GRPC_PORT=50051
 `
 	var c AppConfig
-	err := env.UnmarshalEnvWithPrefix("MATRESHKA", []byte(fileIn), &c)
-	require.NoError(t, err)
-	require.Equal(t, c, c)
+	env.UnmarshalWithPrefix("MATRESHKA", []byte(fileIn), &c)
+	expected := AppConfig{
+		AppInfo: AppInfo{
+			Name:            "matreshka",
+			Version:         "v0.0.1",
+			StartupDuration: time.Second * 10,
+		},
+		DataSources: DataSources{
+			&resources.Postgres{
+				Name:    "postgres",
+				Host:    "localhost",
+				Port:    5432,
+				User:    "matreshka",
+				Pwd:     "matreshka",
+				DbName:  "matreshka",
+				SslMode: "disable",
+			},
+			&resources.Redis{
+				Name: "redis",
+				Host: "localhost",
+				Port: 6379,
+				User: "redis_matreshka",
+				Pwd:  "redis_matreshka_pwd",
+				Db:   2,
+			},
+			&resources.Telegram{
+				Name:   "telegram",
+				ApiKey: "some_api_key",
+			},
+			&resources.GRPC{
+				Name:             "grpc_rscli_example",
+				ConnectionString: "0.0.0.0:50051",
+				Module:           "github.com/Red-Sock/rscli_example",
+			},
+		},
+		Servers:     nil,
+		Environment: nil,
+	}
+	require.Equal(t, c, expected)
 }

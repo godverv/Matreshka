@@ -119,7 +119,22 @@ func (r *DataSources) MarshalEnv(prefix string) []env.EnvVal {
 
 	return out
 }
-func (r *DataSources) UnmarshalEnv(env *env.EnvNode) error {
+func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
+
+	sources := make(DataSources, 0)
+	for _, dataSourceNode := range rootNode.InnerNodes {
+		name := dataSourceNode.Name
+		if strings.HasPrefix(dataSourceNode.Name, rootNode.Name) {
+			name = name[len(rootNode.Name)+1:]
+		}
+
+		dst := resources.GetResourceByName(name)
+		env.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
+		sources = append(sources, dst)
+	}
+
+	*r = sources
+
 	return nil
 }
 func (r *DataSources) get(name string) resources.Resource {
