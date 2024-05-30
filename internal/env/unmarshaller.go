@@ -12,11 +12,17 @@ import (
 
 var ErrDuplicatedEnvKey = errors.New("environment key collision")
 
-type Unmarshaler interface {
-	UnmarshalEnv(env []EnvVal) error
+type EnvNode struct {
+	Name       string
+	Value      any
+	InnerNodes []*EnvNode
 }
 
-type ValueMapFunc func(v reflect.Value) error
+type Unmarshaler interface {
+	UnmarshalEnv(env *EnvNode) error
+}
+
+type ValueMapFunc func(v *EnvNode) error
 
 func UnmarshalEnv(bytes []byte, in any) error {
 	return unmarshal("", bytes, in)
@@ -26,55 +32,86 @@ func UnmarshalEnvWithPrefix(prefix string, bytes []byte, in any) error {
 	return unmarshal(prefix, bytes, in)
 }
 
-func ParseDotEnv(bytes []byte) []EnvVal {
-	var envVals []EnvVal
+func ParseDotEnv(bytes []byte) map[string]*EnvNode {
 
-	ev := EnvVal{}
+	const root = ""
+
+	nodesMap := map[string]*EnvNode{
+		root: {},
+	}
+
+	name := ""
+	var value any
 
 	start := 0
 	for idx := range bytes {
 		switch bytes[idx] {
 		case '=':
-			ev.Name = string(bytes[start:idx])
+			name = root + "_" + string(bytes[start:idx])
 			start = idx + 1
 		case '\n':
-			ev.Value = string(bytes[start:idx])
+			value = string(bytes[start:idx])
 			start = idx + 1
-			envVals = append(envVals, ev)
+
+			node := &EnvNode{
+				Name:  name,
+				Value: value,
+			}
+			nodesMap[name] = node
+
+			nameParts := strings.Split(name, "_")
+			// todo подумать над пустыми именами
+			parentNodePath := nameParts[0]
+
+			for _, namePart := range nameParts[1:] {
+				parentNode := nodesMap[parentNodePath]
+				if parentNode == nil {
+					parentNode = &EnvNode{
+						Name: parentNodePath,
+					}
+					nodesMap[parentNodePath] = parentNode
+				}
+				currentNodePath := parentNodePath + "_" + namePart
+
+				newNode := &EnvNode{
+					Name: currentNodePath,
+				}
+				if _, ok := nodesMap[newNode.Name]; !ok {
+					parentNode.InnerNodes = append(parentNode.InnerNodes, newNode)
+					nodesMap[newNode.Name] = newNode
+				}
+				parentNodePath = currentNodePath
+			}
 		}
 	}
 
-	return envVals
+	return nodesMap
 }
 
 func unmarshal(prefix string, bytes []byte, in any) error {
 	envVals := ParseDotEnv(bytes)
-	fileEnvs, err := envValToMap(envVals)
-	if err != nil {
-		return errors.Wrap(err, "error getting map of dotenv")
-	}
 
 	targetMap := structToMap(prefix, in)
 
-	for key, srcVal := range fileEnvs {
+	for key, srcVal := range envVals {
 		targetVal, ok := targetMap[key]
 		if !ok {
 			continue
 		}
-		_ = targetVal(reflect.ValueOf(srcVal))
+		_ = targetVal(srcVal)
 	}
 
 	return nil
 }
 
-func envValToMap(envVals []EnvVal) (map[string]any, error) {
-	fileEnvs := make(map[string]any)
+func envValToMap(envVals []EnvNode) (map[string]EnvNode, error) {
+	fileEnvs := make(map[string]EnvNode)
 
 	for _, e := range envVals {
 		if _, ok := fileEnvs[e.Name]; ok {
 			return nil, errors.Wrap(ErrDuplicatedEnvKey, e.Name)
 		}
-		fileEnvs[e.Name] = e.Value
+		fileEnvs[e.Name] = e
 	}
 
 	return fileEnvs, nil
@@ -128,7 +165,21 @@ func reflectValToMap(prefix string, v reflect.Value, m map[string]ValueMapFunc) 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		m[strings.ToUpper(prefix)] = mapUint(v)
 	case reflect.Slice:
+		if !v.CanAddr() {
+			return
+		}
+		k := v.Addr()
 
+		//if k.IsNil() {
+		//	k.Set(reflect.New(k.Type().Elem()))
+		//	k = k.Elem()
+		//}
+		val := k.Interface()
+		customMarshaller, ok := val.(Unmarshaler)
+		if !ok {
+			panic("Slices of non basic type require sliceMarshaller to be implemented")
+		}
+		m[strings.ToUpper(prefix)] = customMarshaller.UnmarshalEnv
 	default:
 		return
 	}
@@ -145,8 +196,8 @@ func extractString(v reflect.Value) string {
 	}
 }
 func mapString(target reflect.Value) ValueMapFunc {
-	return func(src reflect.Value) error {
-		target.SetString(extractString(src))
+	return func(src *EnvNode) error {
+		target.SetString(extractString(reflect.ValueOf(src.Value)))
 		return nil
 	}
 }
@@ -166,8 +217,8 @@ func extractInt(v reflect.Value) int64 {
 	}
 }
 func mapInt(target reflect.Value) ValueMapFunc {
-	return func(v reflect.Value) error {
-		target.SetInt(extractInt(v))
+	return func(src *EnvNode) error {
+		target.SetInt(extractInt(reflect.ValueOf(src.Value)))
 		return nil
 	}
 }
@@ -187,8 +238,8 @@ func extractUint(v reflect.Value) uint64 {
 	}
 }
 func mapUint(target reflect.Value) ValueMapFunc {
-	return func(src reflect.Value) error {
-		target.SetUint(extractUint(src))
+	return func(src *EnvNode) error {
+		target.SetUint(extractUint(reflect.ValueOf(src.Value)))
 		return nil
 	}
 }
@@ -205,8 +256,8 @@ func extractDuration(v reflect.Value) int64 {
 	}
 }
 func mapDuration(target reflect.Value) ValueMapFunc {
-	return func(src reflect.Value) error {
-		target.SetInt(extractDuration(src))
+	return func(src *EnvNode) error {
+		target.SetInt(extractDuration(reflect.ValueOf(src.Value)))
 		return nil
 	}
 }
@@ -223,8 +274,8 @@ func extractBool(v reflect.Value) bool {
 }
 
 func mapBool(target reflect.Value) ValueMapFunc {
-	return func(src reflect.Value) error {
-		target.SetBool(extractBool(src))
+	return func(src *EnvNode) error {
+		target.SetBool(extractBool(reflect.ValueOf(src.Value)))
 		return nil
 	}
 }

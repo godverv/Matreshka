@@ -16,7 +16,7 @@ func Test_marshalling_env(t *testing.T) {
 	err := ai.Unmarshal(fullConfig)
 	require.NoError(t, err)
 
-	res := env.MarshalEnvWithPrefix("MATRESHKA", ai)
+	res := env.MarshalEnvWithPrefix("MATRESHKA", &ai)
 
 	expected := []env.EnvVal{
 		{

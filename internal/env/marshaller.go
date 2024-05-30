@@ -17,17 +17,16 @@ type sliceMarshaller interface {
 }
 
 func MarshalEnv(in any) []EnvVal {
-	return marshal("", in)
+	return marshal("", reflect.ValueOf(in))
 }
 
 func MarshalEnvWithPrefix(prefix string, in any) []EnvVal {
-	return marshal(prefix, in)
+	return marshal(prefix, reflect.ValueOf(in))
 }
 
-func marshal(prefix string, in any) []EnvVal {
+func marshal(prefix string, ref reflect.Value) []EnvVal {
 	prefix = strings.ToUpper(prefix)
 
-	ref := reflect.ValueOf(in)
 	res := make([]EnvVal, 0)
 	switch ref.Kind() {
 	case reflect.Slice:
@@ -44,7 +43,7 @@ func marshal(prefix string, in any) []EnvVal {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		res = append(res, EnvVal{
 			Name:  prefix,
-			Value: in,
+			Value: ref.Interface(),
 		})
 	default:
 		return nil
@@ -118,9 +117,8 @@ func marshalStruct(prefix string, ref reflect.Value) []EnvVal {
 			tag = splitToSnake(ref.Type().Field(i).Name)
 		}
 		tag = prefix + tag
-		value := ref.Field(i).Interface()
-		res = append(res,
-			marshal(tag, value)...)
+		value := ref.Field(i)
+		res = append(res, marshal(tag, value)...)
 	}
 
 	return res

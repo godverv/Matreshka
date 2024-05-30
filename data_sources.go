@@ -107,19 +107,21 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (r DataSources) MarshalEnv(prefix string) []env.EnvVal {
+func (r *DataSources) MarshalEnv(prefix string) []env.EnvVal {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]env.EnvVal, 0, len(r))
-	for _, resource := range r {
+	out := make([]env.EnvVal, 0, len(*r))
+	for _, resource := range *r {
 		out = append(out, env.MarshalEnvWithPrefix(prefix+resource.GetName(), resource)...)
 	}
 
 	return out
 }
-
+func (r *DataSources) UnmarshalEnv(env []env.EnvVal) error {
+	return nil
+}
 func (r *DataSources) get(name string) resources.Resource {
 	name = strings.TrimPrefix(name, resourcePrefix)
 	for _, item := range *r {
