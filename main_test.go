@@ -1,13 +1,13 @@
 package matreshka
 
 import (
-	"github.com/godverv/matreshka/api"
+	"github.com/godverv/matreshka/data_sources"
 	"github.com/godverv/matreshka/internal/env"
-	"github.com/godverv/matreshka/resources"
+	"github.com/godverv/matreshka/servers"
 )
 
-func getPostgresClientTest() *resources.Postgres {
-	return &resources.Postgres{
+func getPostgresClientTest() *data_sources.Postgres {
+	return &data_sources.Postgres{
 		Name:    "postgres",
 		Host:    "localhost",
 		Port:    5432,
@@ -57,8 +57,8 @@ func getPostgresClientEnvs() []env.EnvVal {
 	}
 }
 
-func getRedisClientTest() *resources.Redis {
-	return &resources.Redis{
+func getRedisClientTest() *data_sources.Redis {
+	return &data_sources.Redis{
 		Name: "redis",
 		Host: "localhost",
 		Port: 6379,
@@ -103,8 +103,8 @@ func getRedisClientEnvs() []env.EnvVal {
 	}
 }
 
-func getGRPCClientTest() *resources.GRPC {
-	return &resources.GRPC{
+func getGRPCClientTest() *data_sources.GRPC {
+	return &data_sources.GRPC{
 		Name:             "grpc_rscli_example",
 		ConnectionString: "0.0.0.0:50051",
 		Module:           "github.com/Red-Sock/rscli_example",
@@ -133,8 +133,8 @@ func getGRPCClientEnvs() []env.EnvVal {
 	}
 }
 
-func getTelegramClientTest() *resources.Telegram {
-	return &resources.Telegram{
+func getTelegramClientTest() *data_sources.Telegram {
+	return &data_sources.Telegram{
 		Name:   "telegram",
 		ApiKey: "some_api_key",
 	}
@@ -159,8 +159,8 @@ func getTelegramClientEnvs() []env.EnvVal {
 	}
 }
 
-func getRestServerTest() *api.Rest {
-	return &api.Rest{
+func getRestServerTest() *servers.Rest {
+	return &servers.Rest{
 		Name: "rest",
 		Port: 8080,
 	}
@@ -185,8 +185,8 @@ func getRestServerEnvs() []env.EnvVal {
 	}
 }
 
-func getGRPCServerTest() *api.GRPC {
-	return &api.GRPC{
+func getGRPCServerTest() *servers.GRPC {
+	return &servers.GRPC{
 		Name: "grpc",
 		Port: 50051,
 	}

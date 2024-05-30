@@ -6,19 +6,19 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
+	"github.com/godverv/matreshka/data_sources"
 	"github.com/godverv/matreshka/internal/env"
-	"github.com/godverv/matreshka/resources"
 )
 
-type DataSources []resources.Resource
+type DataSources []data_sources.Resource
 
-func (r *DataSources) Postgres(name string) (out *resources.Postgres, err error) {
+func (r *DataSources) Postgres(name string) (out *data_sources.Postgres, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*resources.Postgres)
+	out, ok := res.(*data_sources.Postgres)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -26,13 +26,13 @@ func (r *DataSources) Postgres(name string) (out *resources.Postgres, err error)
 	return out, nil
 }
 
-func (r *DataSources) Telegram(name string) (out *resources.Telegram, err error) {
+func (r *DataSources) Telegram(name string) (out *data_sources.Telegram, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*resources.Telegram)
+	out, ok := res.(*data_sources.Telegram)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -40,13 +40,13 @@ func (r *DataSources) Telegram(name string) (out *resources.Telegram, err error)
 	return out, nil
 }
 
-func (r *DataSources) Redis(name string) (out *resources.Redis, err error) {
+func (r *DataSources) Redis(name string) (out *data_sources.Redis, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*resources.Redis)
+	out, ok := res.(*data_sources.Redis)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -54,13 +54,13 @@ func (r *DataSources) Redis(name string) (out *resources.Redis, err error) {
 	return out, nil
 }
 
-func (r *DataSources) GRPC(name string) (out *resources.GRPC, err error) {
+func (r *DataSources) GRPC(name string) (out *data_sources.GRPC, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*resources.GRPC)
+	out, ok := res.(*data_sources.GRPC)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -68,13 +68,13 @@ func (r *DataSources) GRPC(name string) (out *resources.GRPC, err error) {
 	return out, nil
 }
 
-func (r *DataSources) Sqlite(name string) (out *resources.Sqlite, err error) {
+func (r *DataSources) Sqlite(name string) (out *data_sources.Sqlite, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*resources.Sqlite)
+	out, ok := res.(*data_sources.Sqlite)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -89,14 +89,14 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	actualResources := make([]resources.Resource, len(resourceNodes))
+	actualResources := make([]data_sources.Resource, len(resourceNodes))
 
 	for resIdx, node := range resourceNodes {
 		if len(node.Content) == 0 {
 			continue
 		}
 
-		actualResources[resIdx] = resources.GetResourceByName(findResourceName(node.Content))
+		actualResources[resIdx] = data_sources.GetResourceByName(findResourceName(node.Content))
 		err = node.Decode(actualResources[resIdx])
 		if err != nil {
 			return err
@@ -131,7 +131,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
 
 		name = strings.Replace(name, "-", "_", -1)
 
-		dst := resources.GetResourceByName(name)
+		dst := data_sources.GetResourceByName(name)
 
 		env.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
 		sources = append(sources, dst)
@@ -141,7 +141,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
 
 	return nil
 }
-func (r *DataSources) get(name string) resources.Resource {
+func (r *DataSources) get(name string) data_sources.Resource {
 	name = strings.TrimPrefix(name, resourcePrefix)
 	for _, item := range *r {
 		if item.GetName() == name {

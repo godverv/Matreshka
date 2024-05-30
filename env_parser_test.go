@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/api"
+	"github.com/godverv/matreshka/data_sources"
 	"github.com/godverv/matreshka/internal/env"
-	"github.com/godverv/matreshka/resources"
+	"github.com/godverv/matreshka/servers"
 )
 
 func Test_marshalling_env(t *testing.T) {
@@ -132,7 +132,7 @@ MATRESHKA_SERVERS_GRPC_PORT=50051
 			StartupDuration: time.Second * 10,
 		},
 		DataSources: DataSources{
-			&resources.Postgres{
+			&data_sources.Postgres{
 				Name:    "postgres",
 				Host:    "localhost",
 				Port:    5432,
@@ -141,7 +141,7 @@ MATRESHKA_SERVERS_GRPC_PORT=50051
 				DbName:  "matreshka",
 				SslMode: "disable",
 			},
-			&resources.Redis{
+			&data_sources.Redis{
 				Name: "redis",
 				Host: "localhost",
 				Port: 6379,
@@ -149,22 +149,22 @@ MATRESHKA_SERVERS_GRPC_PORT=50051
 				Pwd:  "redis_matreshka_pwd",
 				Db:   2,
 			},
-			&resources.Telegram{
+			&data_sources.Telegram{
 				Name:   "telegram",
 				ApiKey: "some_api_key",
 			},
-			&resources.GRPC{
+			&data_sources.GRPC{
 				Name:             "grpc_rscli_example",
 				ConnectionString: "0.0.0.0:50051",
 				Module:           "github.com/Red-Sock/rscli_example",
 			},
 		},
 		Servers: Servers{
-			&api.Rest{
+			&servers.Rest{
 				Name: "rest",
 				Port: 8080,
 			},
-			&api.GRPC{
+			&servers.GRPC{
 				Name: "grpc",
 				Port: 50051,
 			},

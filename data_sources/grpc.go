@@ -1,4 +1,4 @@
-package resources
+package data_sources
 
 const GrpcResourceName = "grpc"
 

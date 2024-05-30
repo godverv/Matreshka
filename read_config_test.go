@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/api"
+	"github.com/godverv/matreshka/servers"
 )
 
 func Test_ReadAppConfig(t *testing.T) {
@@ -52,7 +52,7 @@ func Test_ReadApiConfig(t *testing.T) {
 
 	cfgExpect := NewEmptyConfig()
 	cfgExpect.Name = "matreshka"
-	cfgExpect.Servers = []api.Api{
+	cfgExpect.Servers = []servers.Api{
 		getRestServerTest(),
 		getGRPCServerTest(),
 	}

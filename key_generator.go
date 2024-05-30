@@ -6,9 +6,9 @@ import (
 
 	errors "github.com/Red-Sock/trace-errors"
 
-	"github.com/godverv/matreshka/api"
+	"github.com/godverv/matreshka/data_sources"
 	"github.com/godverv/matreshka/internal/env"
-	"github.com/godverv/matreshka/resources"
+	"github.com/godverv/matreshka/servers"
 )
 
 const (
@@ -49,7 +49,7 @@ func GenerateEnvironmentKeys(in map[string]interface{}) []env.EnvVal {
 	return env.ExtractVariables("", in)
 }
 
-func GenerateResourceConfigKeys(rs []resources.Resource) ([]env.EnvVal, error) {
+func GenerateResourceConfigKeys(rs []data_sources.Resource) ([]env.EnvVal, error) {
 	envs := make([]env.EnvVal, 0, len(rs))
 	for idx := range rs {
 		key := resourcePrefix + rs[idx].GetName()
@@ -69,7 +69,7 @@ func GenerateResourceConfigKeys(rs []resources.Resource) ([]env.EnvVal, error) {
 	return envs, nil
 }
 
-func GenerateApiConfigKeys(rs []api.Api) ([]env.EnvVal, error) {
+func GenerateApiConfigKeys(rs []servers.Api) ([]env.EnvVal, error) {
 	envs := make([]env.EnvVal, 0, len(rs))
 	for idx := range rs {
 		key := apiPrefix + rs[idx].GetName()

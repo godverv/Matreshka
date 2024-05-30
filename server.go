@@ -6,19 +6,19 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/godverv/matreshka/api"
 	"github.com/godverv/matreshka/internal/env"
+	"github.com/godverv/matreshka/servers"
 )
 
-type Servers []api.Api
+type Servers []servers.Api
 
-func (s *Servers) GRPC(name string) (*api.GRPC, error) {
+func (s *Servers) GRPC(name string) (*servers.GRPC, error) {
 	res := s.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*api.GRPC)
+	out, ok := res.(*servers.GRPC)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -26,13 +26,13 @@ func (s *Servers) GRPC(name string) (*api.GRPC, error) {
 	return out, nil
 }
 
-func (s *Servers) REST(name string) (*api.Rest, error) {
+func (s *Servers) REST(name string) (*servers.Rest, error) {
 	res := s.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*api.Rest)
+	out, ok := res.(*servers.Rest)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -47,7 +47,7 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return errors.Wrap(err, "error unmarshalling to yaml.Nodes")
 	}
 
-	actualApi := make([]api.Api, len(apiNodes))
+	actualApi := make([]servers.Api, len(apiNodes))
 
 	for apiIdx, apiNode := range apiNodes {
 		if len(apiNode.Content) == 0 {
@@ -62,7 +62,7 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 		}
 
-		actualApi[apiIdx] = api.GetServerByName(apiName)
+		actualApi[apiIdx] = servers.GetServerByName(apiName)
 		err = apiNode.Decode(actualApi[apiIdx])
 		if err != nil {
 			return errors.Wrapf(err, "error decoding to struct of type %T", actualApi[apiIdx])
@@ -88,7 +88,7 @@ func (s *Servers) MarshalEnv(prefix string) []env.EnvVal {
 	return out
 }
 func (s *Servers) UnmarshalEnv(rootNode *env.Node) error {
-	servers := make(Servers, 0)
+	srvs := make(Servers, 0)
 	for _, serverNode := range rootNode.InnerNodes {
 		name := serverNode.Name
 
@@ -98,18 +98,18 @@ func (s *Servers) UnmarshalEnv(rootNode *env.Node) error {
 
 		name = strings.Replace(name, "-", "_", -1)
 
-		dst := api.GetServerByName(name)
+		dst := servers.GetServerByName(name)
 
 		env.NodeToStruct(serverNode.Name, serverNode, dst)
-		servers = append(servers, dst)
+		srvs = append(srvs, dst)
 	}
 
-	*s = servers
+	*s = srvs
 
 	return nil
 }
 
-func (s *Servers) get(name string) api.Api {
+func (s *Servers) get(name string) servers.Api {
 	name = strings.TrimLeft(name, apiPrefix)
 	for _, item := range *s {
 		if item.GetName() == name {

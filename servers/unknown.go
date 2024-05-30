@@ -1,4 +1,4 @@
-package api
+package servers
 
 const UnknownServerType = "unknown"
 

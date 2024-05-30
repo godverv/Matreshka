@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/api"
-	"github.com/godverv/matreshka/resources"
+	"github.com/godverv/matreshka/data_sources"
+	"github.com/godverv/matreshka/servers"
 )
 
 func Test_ReadConfig(t *testing.T) {
@@ -95,13 +95,13 @@ func Test_MergeConfigs(t *testing.T) {
 				Version:         "v0.0.1",
 				StartupDuration: time.Second * 10,
 			},
-			DataSources: []resources.Resource{
+			DataSources: []data_sources.Resource{
 				getPostgresClientTest(),
 				getRedisClientTest(),
 				getTelegramClientTest(),
 				getGRPCClientTest(),
 			},
-			Servers: []api.Api{
+			Servers: []servers.Api{
 				getRestServerTest(),
 				getGRPCServerTest(),
 			},
