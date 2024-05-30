@@ -12,7 +12,7 @@ const (
 )
 
 type GRPC struct {
-	Name
+	Name `env:"-"`
 
 	Port uint16 `yaml:"port"`
 }

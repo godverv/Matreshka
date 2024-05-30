@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/internal/env_parser"
+	"github.com/godverv/matreshka/internal/env"
 )
 
 func Test_GenerateGoConfigKeys(t *testing.T) {
@@ -15,7 +15,7 @@ func Test_GenerateGoConfigKeys(t *testing.T) {
 	c, err := ParseConfig(fullConfig)
 	require.NoError(t, err)
 
-	expected := []env_parser.EnvVal{
+	expected := []env.EnvVal{
 		{
 			Name:  "matreshka_bool",
 			Value: true,

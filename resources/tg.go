@@ -3,7 +3,7 @@ package resources
 const TelegramResourceName = "telegram"
 
 type Telegram struct {
-	Name `yaml:"resource_name"`
+	Name `yaml:"resource_name" env:"-"`
 
 	ApiKey string `yaml:"api_key"`
 }

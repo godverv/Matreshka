@@ -12,7 +12,7 @@ var (
 
 type AppConfig struct {
 	AppInfo     `yaml:"app_info"`
-	Resources   `yaml:"data_sources"`
+	DataSources `yaml:"data_sources"`
 	Servers     `yaml:"server"`
 	Environment map[string]interface{} `yaml:"environment"`
 }

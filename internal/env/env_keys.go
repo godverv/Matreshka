@@ -1,6 +1,9 @@
-package env_parser
+package env
 
 import (
+	"bytes"
+	"fmt"
+
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 )
@@ -51,4 +54,16 @@ func anyToMap(in any) (map[string]interface{}, error) {
 	}
 
 	return m, nil
+}
+
+func ToFile(vals []EnvVal) []byte {
+	b := &bytes.Buffer{}
+	for _, val := range vals {
+		b.Write([]byte(val.Name))
+		b.WriteByte('=')
+		b.Write([]byte(fmt.Sprint(val.Value)))
+		b.WriteByte('\n')
+	}
+
+	return b.Bytes()
 }

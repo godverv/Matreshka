@@ -34,7 +34,7 @@ func Test_ReadDataSourceConfig(t *testing.T) {
 	cfgExpect := NewEmptyConfig()
 	cfgExpect.Name = "matreshka"
 
-	cfgExpect.Resources = append(cfgExpect.Resources,
+	cfgExpect.DataSources = append(cfgExpect.DataSources,
 		getPostgresClientTest(),
 		getRedisClientTest(),
 		getGRPCClientTest(),

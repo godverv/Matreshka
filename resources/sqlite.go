@@ -3,7 +3,7 @@ package resources
 const SqliteResourceName = "sqlite"
 
 type Sqlite struct {
-	Name `yaml:"resource_name"`
+	Name `yaml:"resource_name" env:"-"`
 
 	Path string `yaml:"path"`
 }

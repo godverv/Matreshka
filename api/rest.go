@@ -12,7 +12,7 @@ const (
 )
 
 type Rest struct {
-	Name
+	Name `env:"-"`
 
 	Port uint16 `yaml:"port"`
 }

@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/api"
+	"github.com/godverv/matreshka/internal/env"
 )
 
 type Servers []api.Api
@@ -82,4 +83,17 @@ func (s *Servers) get(name string) api.Api {
 	}
 
 	return nil
+}
+
+func (s Servers) MarshalEnv(prefix string) []env.EnvVal {
+	if prefix != "" {
+		prefix += "_"
+	}
+
+	out := make([]env.EnvVal, 0)
+	for _, srv := range s {
+		out = append(out, env.MarshalEnvWithPrefix(prefix+srv.GetName(), srv)...)
+	}
+
+	return out
 }

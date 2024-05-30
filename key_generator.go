@@ -7,7 +7,7 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 
 	"github.com/godverv/matreshka/api"
-	"github.com/godverv/matreshka/internal/env_parser"
+	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/resources"
 )
 
@@ -18,7 +18,7 @@ const (
 
 var ErrNoAppName = stderrors.New("no app name")
 
-func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
+func GenerateKeys(c AppConfig) (envs []env.EnvVal, err error) {
 	if c.AppInfo.Name == "" {
 		return nil, ErrNoAppName
 	}
@@ -28,7 +28,7 @@ func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 		return envs[i].Name < envs[j].Name
 	})
 
-	resourcesEnvs, err := GenerateResourceConfigKeys(c.Resources)
+	resourcesEnvs, err := GenerateResourceConfigKeys(c.DataSources)
 	if err != nil {
 		return nil, errors.Wrap(err, "error extracting resource env keys")
 	}
@@ -45,20 +45,20 @@ func GenerateKeys(c AppConfig) (envs []env_parser.EnvVal, err error) {
 	return envs, nil
 }
 
-func GenerateEnvironmentKeys(in map[string]interface{}) []env_parser.EnvVal {
-	return env_parser.ExtractVariables("", in)
+func GenerateEnvironmentKeys(in map[string]interface{}) []env.EnvVal {
+	return env.ExtractVariables("", in)
 }
 
-func GenerateResourceConfigKeys(rs []resources.Resource) ([]env_parser.EnvVal, error) {
-	envs := make([]env_parser.EnvVal, 0, len(rs))
+func GenerateResourceConfigKeys(rs []resources.Resource) ([]env.EnvVal, error) {
+	envs := make([]env.EnvVal, 0, len(rs))
 	for idx := range rs {
 		key := resourcePrefix + rs[idx].GetName()
-		envs = append(envs, env_parser.EnvVal{
+		envs = append(envs, env.EnvVal{
 			Name:  key,
 			Value: rs[idx],
 		})
 
-		resourceEnvs, err := env_parser.ExtractFromAny(key, rs[idx])
+		resourceEnvs, err := env.ExtractFromAny(key, rs[idx])
 		if err != nil {
 			return nil, errors.Wrap(err, "error extracting resource values")
 		}
@@ -69,16 +69,16 @@ func GenerateResourceConfigKeys(rs []resources.Resource) ([]env_parser.EnvVal, e
 	return envs, nil
 }
 
-func GenerateApiConfigKeys(rs []api.Api) ([]env_parser.EnvVal, error) {
-	envs := make([]env_parser.EnvVal, 0, len(rs))
+func GenerateApiConfigKeys(rs []api.Api) ([]env.EnvVal, error) {
+	envs := make([]env.EnvVal, 0, len(rs))
 	for idx := range rs {
 		key := apiPrefix + rs[idx].GetName()
-		envs = append(envs, env_parser.EnvVal{
+		envs = append(envs, env.EnvVal{
 			Name:  key,
 			Value: rs[idx],
 		})
 
-		apiEnvs, err := env_parser.ExtractFromAny(key, rs[idx])
+		apiEnvs, err := env.ExtractFromAny(key, rs[idx])
 		if err != nil {
 			return nil, errors.Wrap(err, "error extracting server values")
 		}

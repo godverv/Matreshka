@@ -41,7 +41,7 @@ func Test_CreateConfigWithResources(t *testing.T) {
 
 	cfg := NewEmptyConfig()
 	cfg.Name = "matreshka"
-	cfg.Resources = append(cfg.Resources,
+	cfg.DataSources = append(cfg.DataSources,
 		getPostgresClientTest(),
 		getRedisClientTest(),
 		getGRPCClientTest(),

@@ -9,7 +9,7 @@ import (
 const PostgresResourceName = "postgres"
 
 type Postgres struct {
-	Name `yaml:"resource_name"`
+	Name `yaml:"resource_name" env:"-"`
 
 	Host string `yaml:"host"`
 	Port uint64 `yaml:"port"`
@@ -18,7 +18,7 @@ type Postgres struct {
 	Pwd  string `yaml:"pwd"`
 
 	DbName  string `yaml:"name"`
-	SSLMode string `yaml:"ssl_mode"`
+	SslMode string `yaml:"ssl_mode"`
 }
 
 func NewPostgres(n Name) Resource {

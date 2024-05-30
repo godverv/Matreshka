@@ -3,7 +3,7 @@ package resources
 const RedisResourceName = "redis"
 
 type Redis struct {
-	Name `yaml:"resource_name"`
+	Name `yaml:"resource_name" env:"-"`
 
 	Host string `yaml:"host"`
 	Port uint16 `yaml:"port"`

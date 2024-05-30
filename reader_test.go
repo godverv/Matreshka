@@ -95,7 +95,7 @@ func Test_MergeConfigs(t *testing.T) {
 				Version:         "v0.0.1",
 				StartupDuration: time.Second * 10,
 			},
-			Resources: []resources.Resource{
+			DataSources: []resources.Resource{
 				getPostgresClientTest(),
 				getRedisClientTest(),
 				getTelegramClientTest(),

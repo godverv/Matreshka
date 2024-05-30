@@ -2,7 +2,7 @@ package matreshka
 
 import (
 	"github.com/godverv/matreshka/api"
-	"github.com/godverv/matreshka/internal/env_parser"
+	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/resources"
 )
 
@@ -14,14 +14,14 @@ func getPostgresClientTest() *resources.Postgres {
 		DbName:  "matreshka",
 		User:    "matreshka",
 		Pwd:     "matreshka",
-		SSLMode: "disable",
+		SslMode: "disable",
 	}
 }
-func getPostgresClientEnvs() []env_parser.EnvVal {
+func getPostgresClientEnvs() []env.EnvVal {
 	pg := getPostgresClientTest()
 
 	prefix := resourcePrefix + pg.GetName()
-	return []env_parser.EnvVal{
+	return []env.EnvVal{
 		{
 			Name:  prefix,
 			Value: pg,
@@ -52,7 +52,7 @@ func getPostgresClientEnvs() []env_parser.EnvVal {
 		},
 		{
 			Name:  prefix + "_ssl_mode",
-			Value: pg.SSLMode,
+			Value: pg.SslMode,
 		},
 	}
 }
@@ -67,11 +67,11 @@ func getRedisClientTest() *resources.Redis {
 		Db:   0,
 	}
 }
-func getRedisClientEnvs() []env_parser.EnvVal {
+func getRedisClientEnvs() []env.EnvVal {
 	redis := getRedisClientTest()
 	name := resourcePrefix + redis.GetName()
 
-	return []env_parser.EnvVal{
+	return []env.EnvVal{
 		{
 			Name:  name,
 			Value: redis,
@@ -110,10 +110,10 @@ func getGRPCClientTest() *resources.GRPC {
 		Module:           "github.com/Red-Sock/rscli_example",
 	}
 }
-func getGRPCClientEnvs() []env_parser.EnvVal {
+func getGRPCClientEnvs() []env.EnvVal {
 	grpcClient := getGRPCClientTest()
 	name := resourcePrefix + grpcClient.GetName()
-	return []env_parser.EnvVal{
+	return []env.EnvVal{
 		{
 			Name:  name,
 			Value: grpcClient,
@@ -139,10 +139,10 @@ func getTelegramClientTest() *resources.Telegram {
 		ApiKey: "some_api_key",
 	}
 }
-func getTelegramClientEnvs() []env_parser.EnvVal {
+func getTelegramClientEnvs() []env.EnvVal {
 	telegram := getTelegramClientTest()
 	name := resourcePrefix + telegram.GetName()
-	return []env_parser.EnvVal{
+	return []env.EnvVal{
 		{
 			Name:  name,
 			Value: telegram,
@@ -165,11 +165,11 @@ func getRestServerTest() *api.Rest {
 		Port: 8080,
 	}
 }
-func getRestServerEnvs() []env_parser.EnvVal {
+func getRestServerEnvs() []env.EnvVal {
 	rest := getRestServerTest()
 	serverName := apiPrefix + rest.GetName()
 
-	return []env_parser.EnvVal{
+	return []env.EnvVal{
 		{
 			Name:  serverName,
 			Value: rest,
@@ -191,11 +191,11 @@ func getGRPCServerTest() *api.GRPC {
 		Port: 50051,
 	}
 }
-func getGRPCServerEnvs() []env_parser.EnvVal {
+func getGRPCServerEnvs() []env.EnvVal {
 	grpc := getGRPCServerTest()
 
 	serverName := apiPrefix + grpc.GetName()
-	return []env_parser.EnvVal{
+	return []env.EnvVal{
 		{
 			Name:  serverName,
 			Value: grpc,

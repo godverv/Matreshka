@@ -6,12 +6,13 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
+	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/resources"
 )
 
-type Resources []resources.Resource
+type DataSources []resources.Resource
 
-func (r *Resources) Postgres(name string) (out *resources.Postgres, err error) {
+func (r *DataSources) Postgres(name string) (out *resources.Postgres, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
@@ -25,7 +26,7 @@ func (r *Resources) Postgres(name string) (out *resources.Postgres, err error) {
 	return out, nil
 }
 
-func (r *Resources) Telegram(name string) (out *resources.Telegram, err error) {
+func (r *DataSources) Telegram(name string) (out *resources.Telegram, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
@@ -39,7 +40,7 @@ func (r *Resources) Telegram(name string) (out *resources.Telegram, err error) {
 	return out, nil
 }
 
-func (r *Resources) Redis(name string) (out *resources.Redis, err error) {
+func (r *DataSources) Redis(name string) (out *resources.Redis, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
@@ -53,7 +54,7 @@ func (r *Resources) Redis(name string) (out *resources.Redis, err error) {
 	return out, nil
 }
 
-func (r *Resources) GRPC(name string) (out *resources.GRPC, err error) {
+func (r *DataSources) GRPC(name string) (out *resources.GRPC, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
@@ -67,7 +68,7 @@ func (r *Resources) GRPC(name string) (out *resources.GRPC, err error) {
 	return out, nil
 }
 
-func (r *Resources) Sqlite(name string) (out *resources.Sqlite, err error) {
+func (r *DataSources) Sqlite(name string) (out *resources.Sqlite, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
@@ -81,7 +82,7 @@ func (r *Resources) Sqlite(name string) (out *resources.Sqlite, err error) {
 	return out, nil
 }
 
-func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var resourceNodes []yaml.Node
 	err := unmarshal(&resourceNodes)
 	if err != nil {
@@ -106,7 +107,20 @@ func (r *Resources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (r *Resources) get(name string) resources.Resource {
+func (r DataSources) MarshalEnv(prefix string) []env.EnvVal {
+	if prefix != "" {
+		prefix += "_"
+	}
+
+	out := make([]env.EnvVal, 0, len(r))
+	for _, resource := range r {
+		out = append(out, env.MarshalEnvWithPrefix(prefix+resource.GetName(), resource)...)
+	}
+
+	return out
+}
+
+func (r *DataSources) get(name string) resources.Resource {
 	name = strings.TrimPrefix(name, resourcePrefix)
 	for _, item := range *r {
 		if item.GetName() == name {

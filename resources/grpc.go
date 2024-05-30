@@ -3,7 +3,7 @@ package resources
 const GrpcResourceName = "grpc"
 
 type GRPC struct {
-	Name `yaml:"resource_name"`
+	Name `yaml:"resource_name" env:"-"`
 
 	ConnectionString string `yaml:"connection_string"`
 	Module           string `yaml:"module"`
