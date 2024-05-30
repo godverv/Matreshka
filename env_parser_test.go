@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/godverv/matreshka/api"
 	"github.com/godverv/matreshka/internal/env"
 	"github.com/godverv/matreshka/resources"
 )
@@ -158,7 +159,16 @@ MATRESHKA_SERVERS_GRPC_PORT=50051
 				Module:           "github.com/Red-Sock/rscli_example",
 			},
 		},
-		Servers:     nil,
+		Servers: Servers{
+			&api.Rest{
+				Name: "rest",
+				Port: 8080,
+			},
+			&api.GRPC{
+				Name: "grpc",
+				Port: 50051,
+			},
+		},
 		Environment: nil,
 	}
 	require.Equal(t, c, expected)

@@ -81,12 +81,31 @@ func (s *Servers) MarshalEnv(prefix string) []env.EnvVal {
 
 	out := make([]env.EnvVal, 0)
 	for _, srv := range *s {
-		out = append(out, env.MarshalEnvWithPrefix(prefix+srv.GetName(), srv)...)
+		serverName := strings.Replace(srv.GetName(), "_", "-", -1)
+		out = append(out, env.MarshalEnvWithPrefix(prefix+serverName, srv)...)
 	}
 
 	return out
 }
-func (s *Servers) UnmarshalEnv(node *env.Node) error {
+func (s *Servers) UnmarshalEnv(rootNode *env.Node) error {
+	servers := make(Servers, 0)
+	for _, serverNode := range rootNode.InnerNodes {
+		name := serverNode.Name
+
+		if strings.HasPrefix(serverNode.Name, rootNode.Name) {
+			name = name[len(rootNode.Name)+1:]
+		}
+
+		name = strings.Replace(name, "-", "_", -1)
+
+		dst := api.GetServerByName(name)
+
+		env.NodeToStruct(serverNode.Name, serverNode, dst)
+		servers = append(servers, dst)
+	}
+
+	*s = servers
+
 	return nil
 }
 

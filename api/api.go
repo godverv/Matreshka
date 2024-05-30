@@ -27,6 +27,7 @@ var apis = map[string]func(n Name) Api{
 }
 
 func GetServerByName(name string) Api {
+	name = strings.ToLower(name)
 	a := apis[strings.Split(name, "_")[0]]
 
 	if a == nil {

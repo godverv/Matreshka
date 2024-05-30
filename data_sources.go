@@ -121,7 +121,6 @@ func (r *DataSources) MarshalEnv(prefix string) []env.EnvVal {
 	return out
 }
 func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
-
 	sources := make(DataSources, 0)
 	for _, dataSourceNode := range rootNode.InnerNodes {
 		name := dataSourceNode.Name
