@@ -53,29 +53,29 @@ func Test_Environment_OK(t *testing.T) {
 func Test_Environment_Invalid(t *testing.T) {
 	t.Parallel()
 
-	cfg, err := ParseConfig(invalidEnvironmentConfig)
+	cfg, err := ParseConfig(environmentConfig)
 	require.NoError(t, err)
 
 	t.Run("int", func(t *testing.T) {
-		val, err := cfg.TryGetInt("matreshka_int")
+		val, err := cfg.TryGetInt("matreshka_string")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})
 
 	t.Run("string", func(t *testing.T) {
-		val, err := cfg.TryGetString("matreshka_string")
+		val, err := cfg.TryGetString("matreshka_int")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})
 
 	t.Run("bool", func(t *testing.T) {
-		val, err := cfg.TryGetBool("matreshka_bool")
+		val, err := cfg.TryGetBool("matreshka_duration")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})
 
 	t.Run("duration", func(t *testing.T) {
-		val, err := cfg.TryGetDuration("matreshka_duration")
+		val, err := cfg.TryGetDuration("matreshka_bool")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Empty(t, val)
 	})

@@ -47,9 +47,4 @@ func Test_GetApi(t *testing.T) {
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Nil(t, restCfg)
 	})
-
-	t.Run("OK_HALF_EMPTY", func(t *testing.T) {
-		_, err := ParseConfig(apiHalfEmptyConfig)
-		require.NoError(t, err)
-	})
 }

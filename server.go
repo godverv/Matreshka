@@ -110,7 +110,6 @@ func (s *Servers) UnmarshalEnv(rootNode *evon.Node) error {
 }
 
 func (s *Servers) get(name string) servers.Api {
-	name = strings.TrimLeft(name, apiPrefix)
 	for _, item := range *s {
 		if item.GetName() == name {
 			return item

@@ -1,14 +1,34 @@
 package matreshka
 
 import (
+	_ "embed"
+
 	"github.com/Red-Sock/evon"
 
-	"github.com/godverv/matreshka/data_sources"
+	"github.com/godverv/matreshka/resources"
 	"github.com/godverv/matreshka/servers"
 )
 
-func getPostgresClientTest() *data_sources.Postgres {
-	return &data_sources.Postgres{
+var (
+	//go:embed tests/empty_config.yaml
+	emptyConfig []byte
+
+	//go:embed tests/resourced_config.yaml
+	resourcedConfig []byte
+	//go:embed tests/api_config.yaml
+	apiConfig []byte
+	//go:embed tests/environment_config.yaml
+	environmentConfig []byte
+
+	//go:embed tests/full_config.yaml
+	fullConfig []byte
+
+	//go:embed tests/.env.full_config
+	dotEnvFullConfig []byte
+)
+
+func getPostgresClientTest() *resources.Postgres {
+	return &resources.Postgres{
 		Name:    "postgres",
 		Host:    "localhost",
 		Port:    5432,
@@ -21,7 +41,7 @@ func getPostgresClientTest() *data_sources.Postgres {
 func getPostgresClientEnvs() []evon.Node {
 	pg := getPostgresClientTest()
 
-	prefix := resourcePrefix + pg.GetName()
+	prefix := pg.GetName()
 	return []evon.Node{
 		{
 			Name:  prefix,
@@ -58,8 +78,8 @@ func getPostgresClientEnvs() []evon.Node {
 	}
 }
 
-func getRedisClientTest() *data_sources.Redis {
-	return &data_sources.Redis{
+func getRedisClientTest() *resources.Redis {
+	return &resources.Redis{
 		Name: "redis",
 		Host: "localhost",
 		Port: 6379,
@@ -70,7 +90,7 @@ func getRedisClientTest() *data_sources.Redis {
 }
 func getRedisClientEnvs() []evon.Node {
 	redis := getRedisClientTest()
-	name := resourcePrefix + redis.GetName()
+	name := redis.GetName()
 
 	return []evon.Node{
 		{
@@ -104,8 +124,8 @@ func getRedisClientEnvs() []evon.Node {
 	}
 }
 
-func getGRPCClientTest() *data_sources.GRPC {
-	return &data_sources.GRPC{
+func getGRPCClientTest() *resources.GRPC {
+	return &resources.GRPC{
 		Name:             "grpc_rscli_example",
 		ConnectionString: "0.0.0.0:50051",
 		Module:           "github.com/Red-Sock/rscli_example",
@@ -113,7 +133,7 @@ func getGRPCClientTest() *data_sources.GRPC {
 }
 func getGRPCClientEnvs() []evon.Node {
 	grpcClient := getGRPCClientTest()
-	name := resourcePrefix + grpcClient.GetName()
+	name := grpcClient.GetName()
 	return []evon.Node{
 		{
 			Name:  name,
@@ -134,15 +154,15 @@ func getGRPCClientEnvs() []evon.Node {
 	}
 }
 
-func getTelegramClientTest() *data_sources.Telegram {
-	return &data_sources.Telegram{
+func getTelegramClientTest() *resources.Telegram {
+	return &resources.Telegram{
 		Name:   "telegram",
 		ApiKey: "some_api_key",
 	}
 }
 func getTelegramClientEnvs() []evon.Node {
 	telegram := getTelegramClientTest()
-	name := resourcePrefix + telegram.GetName()
+	name := telegram.GetName()
 	return []evon.Node{
 		{
 			Name:  name,
@@ -168,7 +188,7 @@ func getRestServerTest() *servers.Rest {
 }
 func getRestServerEnvs() []evon.Node {
 	rest := getRestServerTest()
-	serverName := apiPrefix + rest.GetName()
+	serverName := rest.GetName()
 
 	return []evon.Node{
 		{
@@ -195,7 +215,7 @@ func getGRPCServerTest() *servers.GRPC {
 func getGRPCServerEnvs() []evon.Node {
 	grpc := getGRPCServerTest()
 
-	serverName := apiPrefix + grpc.GetName()
+	serverName := grpc.GetName()
 	return []evon.Node{
 		{
 			Name:  serverName,

@@ -7,18 +7,18 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/godverv/matreshka/data_sources"
+	"github.com/godverv/matreshka/resources"
 )
 
-type DataSources []data_sources.Resource
+type DataSources []resources.Resource
 
-func (r *DataSources) Postgres(name string) (out *data_sources.Postgres, err error) {
+func (r *DataSources) Postgres(name string) (out *resources.Postgres, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*data_sources.Postgres)
+	out, ok := res.(*resources.Postgres)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -26,13 +26,13 @@ func (r *DataSources) Postgres(name string) (out *data_sources.Postgres, err err
 	return out, nil
 }
 
-func (r *DataSources) Telegram(name string) (out *data_sources.Telegram, err error) {
+func (r *DataSources) Telegram(name string) (out *resources.Telegram, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*data_sources.Telegram)
+	out, ok := res.(*resources.Telegram)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -40,13 +40,13 @@ func (r *DataSources) Telegram(name string) (out *data_sources.Telegram, err err
 	return out, nil
 }
 
-func (r *DataSources) Redis(name string) (out *data_sources.Redis, err error) {
+func (r *DataSources) Redis(name string) (out *resources.Redis, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*data_sources.Redis)
+	out, ok := res.(*resources.Redis)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -54,13 +54,13 @@ func (r *DataSources) Redis(name string) (out *data_sources.Redis, err error) {
 	return out, nil
 }
 
-func (r *DataSources) GRPC(name string) (out *data_sources.GRPC, err error) {
+func (r *DataSources) GRPC(name string) (out *resources.GRPC, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*data_sources.GRPC)
+	out, ok := res.(*resources.GRPC)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -68,13 +68,13 @@ func (r *DataSources) GRPC(name string) (out *data_sources.GRPC, err error) {
 	return out, nil
 }
 
-func (r *DataSources) Sqlite(name string) (out *data_sources.Sqlite, err error) {
+func (r *DataSources) Sqlite(name string) (out *resources.Sqlite, err error) {
 	res := r.get(name)
 	if res == nil {
 		return nil, ErrNotFound
 	}
 
-	out, ok := res.(*data_sources.Sqlite)
+	out, ok := res.(*resources.Sqlite)
 	if !ok {
 		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
@@ -89,14 +89,14 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	actualResources := make([]data_sources.Resource, len(resourceNodes))
+	actualResources := make([]resources.Resource, len(resourceNodes))
 
 	for resIdx, node := range resourceNodes {
 		if len(node.Content) == 0 {
 			continue
 		}
 
-		actualResources[resIdx] = data_sources.GetResourceByName(findResourceName(node.Content))
+		actualResources[resIdx] = resources.GetResourceByName(findResourceName(node.Content))
 		err = node.Decode(actualResources[resIdx])
 		if err != nil {
 			return err
@@ -131,7 +131,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 
 		name = strings.Replace(name, "-", "_", -1)
 
-		dst := data_sources.GetResourceByName(name)
+		dst := resources.GetResourceByName(name)
 
 		evon.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
 		sources = append(sources, dst)
@@ -142,8 +142,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 	return nil
 }
 
-func (r *DataSources) get(name string) data_sources.Resource {
-	name = strings.TrimPrefix(name, resourcePrefix)
+func (r *DataSources) get(name string) resources.Resource {
 	for _, item := range *r {
 		if item.GetName() == name {
 			return item

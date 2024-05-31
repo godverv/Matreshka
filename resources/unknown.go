@@ -1,4 +1,4 @@
-package data_sources
+package resources
 
 type Unknown struct {
 	Name `yaml:"resource_name" env:"-"`

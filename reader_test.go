@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/data_sources"
+	"github.com/godverv/matreshka/resources"
 	"github.com/godverv/matreshka/servers"
 )
 
@@ -95,7 +95,7 @@ func Test_MergeConfigs(t *testing.T) {
 				Version:         "v0.0.1",
 				StartupDuration: time.Second * 10,
 			},
-			DataSources: []data_sources.Resource{
+			DataSources: []resources.Resource{
 				getPostgresClientTest(),
 				getRedisClientTest(),
 				getTelegramClientTest(),

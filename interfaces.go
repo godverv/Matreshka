@@ -3,7 +3,7 @@ package matreshka
 import (
 	"time"
 
-	"github.com/godverv/matreshka/data_sources"
+	"github.com/godverv/matreshka/resources"
 	"github.com/godverv/matreshka/servers"
 )
 
@@ -31,9 +31,9 @@ type API interface {
 }
 
 type Resource interface {
-	Postgres(name string) (*data_sources.Postgres, error)
-	Telegram(name string) (*data_sources.Telegram, error)
-	Redis(name string) (*data_sources.Redis, error)
-	GRPC(name string) (*data_sources.GRPC, error)
-	Sqlite(name string) (*data_sources.Sqlite, error)
+	Postgres(name string) (*resources.Postgres, error)
+	Telegram(name string) (*resources.Telegram, error)
+	Redis(name string) (*resources.Redis, error)
+	GRPC(name string) (*resources.GRPC, error)
+	Sqlite(name string) (*resources.Sqlite, error)
 }
