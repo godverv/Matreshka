@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Red-Sock/env"
+	"github.com/Red-Sock/evon"
 	"github.com/stretchr/testify/require"
 
 	"github.com/godverv/matreshka/data_sources"
@@ -18,9 +18,9 @@ func Test_marshalling_env(t *testing.T) {
 	err := ai.Unmarshal(fullConfig)
 	require.NoError(t, err)
 
-	res := env.MarshalEnvWithPrefix("MATRESHKA", &ai)
+	res := evon.MarshalEnvWithPrefix("MATRESHKA", &ai)
 
-	expected := []env.Node{
+	expected := []evon.Node{
 		{
 			Name:  "MATRESHKA_APP_INFO_NAME",
 			Value: "matreshka",
@@ -124,7 +124,7 @@ MATRESHKA_SERVERS_REST_PORT=8080
 MATRESHKA_SERVERS_GRPC_PORT=50051
 `
 	var c AppConfig
-	env.UnmarshalWithPrefix("MATRESHKA", []byte(fileIn), &c)
+	evon.UnmarshalWithPrefix("MATRESHKA", []byte(fileIn), &c)
 	expected := AppConfig{
 		AppInfo: AppInfo{
 			Name:            "matreshka",

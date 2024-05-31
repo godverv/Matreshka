@@ -3,7 +3,7 @@ package matreshka
 import (
 	"strings"
 
-	"github.com/Red-Sock/env"
+	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
@@ -107,20 +107,20 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (r *DataSources) MarshalEnv(prefix string) []env.Node {
+func (r *DataSources) MarshalEnv(prefix string) []evon.Node {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]env.Node, 0, len(*r))
+	out := make([]evon.Node, 0, len(*r))
 	for _, resource := range *r {
 		resourceName := strings.Replace(resource.GetName(), "_", "-", -1)
-		out = append(out, env.MarshalEnvWithPrefix(prefix+resourceName, resource)...)
+		out = append(out, evon.MarshalEnvWithPrefix(prefix+resourceName, resource)...)
 	}
 
 	return out
 }
-func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
+func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 	sources := make(DataSources, 0)
 	for _, dataSourceNode := range rootNode.InnerNodes {
 		name := dataSourceNode.Name
@@ -133,7 +133,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *env.Node) error {
 
 		dst := data_sources.GetResourceByName(name)
 
-		env.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
+		evon.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
 		sources = append(sources, dst)
 	}
 

@@ -3,7 +3,7 @@ package matreshka
 import (
 	"strings"
 
-	"github.com/Red-Sock/env"
+	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
@@ -74,20 +74,20 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (s *Servers) MarshalEnv(prefix string) []env.Node {
+func (s *Servers) MarshalEnv(prefix string) []evon.Node {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]env.Node, 0)
+	out := make([]evon.Node, 0)
 	for _, srv := range *s {
 		serverName := strings.Replace(srv.GetName(), "_", "-", -1)
-		out = append(out, env.MarshalEnvWithPrefix(prefix+serverName, srv)...)
+		out = append(out, evon.MarshalEnvWithPrefix(prefix+serverName, srv)...)
 	}
 
 	return out
 }
-func (s *Servers) UnmarshalEnv(rootNode *env.Node) error {
+func (s *Servers) UnmarshalEnv(rootNode *evon.Node) error {
 	srvs := make(Servers, 0)
 	for _, serverNode := range rootNode.InnerNodes {
 		name := serverNode.Name
@@ -100,7 +100,7 @@ func (s *Servers) UnmarshalEnv(rootNode *env.Node) error {
 
 		dst := servers.GetServerByName(name)
 
-		env.NodeToStruct(serverNode.Name, serverNode, dst)
+		evon.NodeToStruct(serverNode.Name, serverNode, dst)
 		srvs = append(srvs, dst)
 	}
 

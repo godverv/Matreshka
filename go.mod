@@ -3,7 +3,7 @@ module github.com/godverv/matreshka
 go 1.22
 
 require (
-	github.com/Red-Sock/env v0.0.2
+	github.com/Red-Sock/evon v0.0.4
 	github.com/Red-Sock/trace-errors v0.0.6
 	github.com/godverv/matreshka-be v1.0.27
 	github.com/stretchr/testify v1.9.0
@@ -14,7 +14,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
