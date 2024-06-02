@@ -14,7 +14,23 @@ type AppConfig struct {
 	AppInfo     `yaml:"app_info"`
 	DataSources `yaml:"data_sources"`
 	Servers     `yaml:"server"`
-	Environment map[string]interface{} `yaml:"environment"`
+	Environment `yaml:"environment"`
+}
+
+func (a *AppConfig) GetAppInfo() AppInfo {
+	return a.AppInfo
+}
+
+func (a *AppConfig) GetServers() API {
+	return &a.Servers
+}
+
+func (a *AppConfig) GetDataSources() Resources {
+	return &a.DataSources
+}
+
+func (a *AppConfig) GetMatreshka() *AppConfig {
+	return a
 }
 
 func (a *AppConfig) Marshal() ([]byte, error) {

@@ -8,9 +8,9 @@ import (
 )
 
 type Config interface {
-	AppInfo() AppInfo
-	Api() API
-	Resources() Resource
+	GetAppInfo() AppInfo
+	GetServers() API
+	GetDataSources() Resources
 
 	GetInt(key string) (out int)
 	GetString(key string) (out string)
@@ -30,7 +30,7 @@ type API interface {
 	GRPC(name string) (*servers.GRPC, error)
 }
 
-type Resource interface {
+type Resources interface {
 	Postgres(name string) (*resources.Postgres, error)
 	Telegram(name string) (*resources.Telegram, error)
 	Redis(name string) (*resources.Redis, error)

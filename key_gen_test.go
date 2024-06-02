@@ -12,17 +12,11 @@ func Test_KeyGen(t *testing.T) {
 	require.NoError(t, err)
 
 	keys := GenerateKeys(cfg)
-	expected := []string{
-		"rest",
-		"grpc",
-		"postgres",
-		"redis",
-		"telegram",
-		"grpc_rscli_example",
-		"int",
-		"string",
-		"bool",
-		"duration",
+
+	expected := ApplicationKeys{
+		Servers:     []string{"rest", "grpc"},
+		DataSources: []string{"postgres", "redis", "telegram", "grpc_rscli_example"},
+		Environment: []string{"bool", "duration", "int", "string"},
 	}
-	require.ElementsMatch(t, keys, expected)
+	require.Equal(t, keys, expected)
 }

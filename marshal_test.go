@@ -59,7 +59,6 @@ func Test_Marshal(t *testing.T) {
 		t.Parallel()
 
 		ai := NewEmptyConfig()
-
 		err := ai.Unmarshal(fullConfig)
 		require.NoError(t, err)
 
@@ -142,6 +141,22 @@ func Test_Marshal(t *testing.T) {
 				Name:  "MATRESHKA_SERVERS_GRPC_PORT",
 				Value: uint16(50051),
 			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_STRING",
+				Value: "not so basic 🤡 string",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_INT",
+				Value: 1,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_DURATION",
+				Value: "10s",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_BOOL",
+				Value: true,
+			},
 		}
 
 		require.ElementsMatch(t, expected, res)
@@ -152,7 +167,7 @@ func Test_Unmarshal(t *testing.T) {
 	t.Parallel()
 	t.Run("ENV_FULL", func(t *testing.T) {
 		t.Parallel()
-		var c AppConfig
+		c := NewEmptyConfig()
 		evon.UnmarshalWithPrefix("MATRESHKA", dotEnvFullConfig, &c)
 		expected := AppConfig{
 			AppInfo: AppInfo{
@@ -198,7 +213,12 @@ func Test_Unmarshal(t *testing.T) {
 					Port: 50051,
 				},
 			},
-			Environment: nil,
+			Environment: Environment{
+				"bool":     "true",
+				"duration": "10s",
+				"int":      "1",
+				"string":   "not so basic 🤡 string",
+			},
 		}
 		require.Equal(t, c, expected)
 	})

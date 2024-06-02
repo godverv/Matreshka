@@ -1,15 +1,11 @@
 package matreshka
 
 import (
-	"context"
 	stderrors "errors"
 	"os"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
-	"github.com/godverv/matreshka-be/pkg/matreshka_api"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,20 +19,17 @@ func NewEmptyConfig() AppConfig {
 		AppInfo:     AppInfo{},
 		DataSources: make(DataSources, 0),
 		Servers:     make(Servers, 0),
-		Environment: make(map[string]interface{}),
+		Environment: make(Environment),
 	}
 }
 
-func ReadConfigs(paths ...string) (*AppConfig, error) {
-	masterConfig, err := getFromApi()
-	if err != nil {
-		return nil, errors.Wrap(err, "error getting config via api")
-	}
+func ReadConfigs(paths ...string) (AppConfig, error) {
+	masterConfig := NewEmptyConfig()
 
 	if len(paths) != 0 {
 		fileConfig, err := getFromFile(paths[0])
 		if err != nil {
-			return nil, errors.Wrap(err, "error reading master config")
+			return masterConfig, errors.Wrap(err, "error reading master config")
 		}
 
 		masterConfig = MergeConfigs(masterConfig, fileConfig)
@@ -53,19 +46,19 @@ func ReadConfigs(paths ...string) (*AppConfig, error) {
 		}
 
 		if len(errs) != 0 {
-			return &masterConfig, stderrors.Join(errs...)
+			return masterConfig, stderrors.Join(errs...)
 		}
 	}
 
 	masterConfig = MergeConfigs(getFromEnvironment(), masterConfig)
 
-	return &masterConfig, nil
+	return masterConfig, nil
 }
 
 func ParseConfig(in []byte) (AppConfig, error) {
 	a := NewEmptyConfig()
 
-	err := yaml.Unmarshal(in, &a)
+	err := a.Unmarshal(in)
 	if err != nil {
 		return a, err
 	}
@@ -169,58 +162,4 @@ func getFromFile(pth string) (AppConfig, error) {
 	c.Environment = flatten(c.Environment)
 
 	return c, nil
-}
-
-func getFromApi() (AppConfig, error) {
-	configFromApi := NewEmptyConfig()
-
-	url := os.Getenv(ApiURL)
-	if url == "" {
-		return configFromApi, nil
-	}
-
-	projectName := os.Getenv(VervName)
-	if projectName == "" {
-		return configFromApi, nil
-	}
-
-	ctx := context.Background()
-
-	opts := grpc.WithTransportCredentials(insecure.NewCredentials())
-	dial, err := grpc.DialContext(ctx, url, opts)
-	if err != nil {
-		return configFromApi, errors.Wrap(err, "")
-	}
-
-	client := matreshka_api.NewMatreshkaBeAPIClient(dial)
-
-	getRawConfigRequest := &matreshka_api.GetConfig_Request{ServiceName: projectName}
-	configRaw, err := client.GetConfig(ctx, getRawConfigRequest)
-	if err != nil {
-		return configFromApi, errors.Wrap(err, "error getting config from matreshka api")
-	}
-
-	err = configFromApi.Unmarshal(configRaw.Config)
-	if err != nil {
-		return configFromApi, errors.Wrap(err, "error unmarshalling matreshka response")
-	}
-
-	return configFromApi, nil
-}
-
-func flatten(in map[string]interface{}) map[string]interface{} {
-	out := make(map[string]interface{})
-
-	for k, v := range in {
-		switch t := v.(type) {
-		case map[string]interface{}:
-			for flatK, flatV := range flatten(t) {
-				out[k+"_"+flatK] = flatV
-			}
-		default:
-			out[k] = v
-		}
-	}
-
-	return out
 }

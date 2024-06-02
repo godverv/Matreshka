@@ -89,7 +89,7 @@ func Test_MergeConfigs(t *testing.T) {
 					os.ModePerm))
 		}
 
-		fullConfigExpect := &AppConfig{
+		fullConfigExpect := AppConfig{
 			AppInfo: AppInfo{
 				Name:            "matreshka",
 				Version:         "v0.0.1",
@@ -127,7 +127,7 @@ func Test_MergeConfigs(t *testing.T) {
 	t.Run("EMPTY_PARAMS", func(t *testing.T) {
 		c, e := ReadConfigs()
 		require.Nil(t, e)
-		require.Equal(t, *c, NewEmptyConfig())
+		require.Equal(t, c, NewEmptyConfig())
 	})
 
 	t.Run("INVALID_READING_ONE_CONFIG", func(t *testing.T) {
@@ -145,12 +145,12 @@ func Test_MergeConfigs(t *testing.T) {
 
 		cfg, err := ReadConfigs(cfgPath, "unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Equal(t, *cfg, NewEmptyConfig())
+		require.Equal(t, cfg, NewEmptyConfig())
 	})
 
 	t.Run("INVALID_READING_FIRST_CONFIG", func(t *testing.T) {
 		cfg, err := ReadConfigs("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Nil(t, cfg)
+		require.Equal(t, cfg, NewEmptyConfig())
 	})
 }
