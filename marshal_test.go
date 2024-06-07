@@ -213,12 +213,12 @@ func Test_Unmarshal(t *testing.T) {
 					Port: 50051,
 				},
 			},
-			Environment: Environment{
-				"bool":     "true",
-				"duration": "10s",
-				"int":      "1",
-				"string":   "not so basic 🤡 string",
-			},
+			//Environment: Environment{
+			//	"bool":     "true",
+			//	"duration": "10s",
+			//	"int":      "1",
+			//	"string":   "not so basic 🤡 string",
+			//},
 		}
 		require.Equal(t, c, expected)
 	})

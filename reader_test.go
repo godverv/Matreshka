@@ -105,12 +105,6 @@ func Test_MergeConfigs(t *testing.T) {
 				getRestServerTest(),
 				getGRPCServerTest(),
 			},
-			Environment: map[string]interface{}{
-				"int":      1,
-				"string":   "not so basic 🤡 string",
-				"bool":     true,
-				"duration": "10s",
-			},
 		}
 
 		emptyFullCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)

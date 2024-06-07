@@ -1,33 +1,66 @@
 app_info:
-    name: matreshka
-    version: v0.0.1
-    startup_duration: 10s
+  name: matreshka
+  version: v0.0.1
+  startup_duration: 10s
 server:
-    - name: rest
-      port: 8080
-    - name: grpc
-      port: 50051
+  - name: rest
+    port: 8080
+  - name: grpc
+    port: 50051
 data_sources:
-    - resource_name: postgres
-      host: localhost
-      port: 5432
-      user: matreshka
-      pwd: matreshka
-      name: matreshka
-      ssl_mode: "disable"
-    - resource_name: redis
-      host: localhost
-      port: 6379
-      user: ""
-      pwd: ""
-      db: 0
-    - resource_name: telegram
-      api_key: "some_api_key"
-    - resource_name: grpc_rscli_example
-      connection_string: 0.0.0.0:50051
-      module: github.com/Red-Sock/rscli_example
+  - resource_name: postgres
+    host: localhost
+    port: 5432
+    user: matreshka
+    pwd: matreshka
+    name: matreshka
+    ssl_mode: "disable"
+  - resource_name: redis
+    host: localhost
+    port: 6379
+    user: ""
+    pwd: ""
+    db: 0
+  - resource_name: telegram
+    api_key: "some_api_key"
+  - resource_name: grpc_rscli_example
+    connection_string: 0.0.0.0:50051
+    module: github.com/Red-Sock/rscli_example
 environment:
-  int: 1
-  string: "not so basic 🤡 string"
-  bool: true
-  duration: 10s
+
+  - name: database_max_connections
+    value: 1
+    type: int
+
+  - name: welcome_string
+    type: string
+    value: "not so basic 🤡 string"
+
+  - name: one of welcome string
+    type: string
+    value: "one"
+    enum: [ one, two, three ]
+
+  - name: true falser
+    type: bool
+    value: true
+
+  - name: request timeout
+    type: duration
+    value: 10s
+
+  - name: available ports
+    type: int
+    value: [ 10, 12, 34-40 ]
+
+  - name: usernames to ban
+    type: string
+    value: [ hacker228, mothe4acker ]
+
+  - name: credit percent
+    type: float
+    value: 0.01
+
+  - name: credit percents based on year of birth
+    type: float
+    value: [ 0.01, 0.02, 0.03,0.04 ]

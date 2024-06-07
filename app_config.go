@@ -7,7 +7,7 @@ import (
 
 var (
 	ErrNotFound       = errors.New("no such key in config")
-	ErrUnexpectedType = errors.New("error casting value to wanted type")
+	ErrUnexpectedType = errors.New("error casting value to target type")
 )
 
 type AppConfig struct {

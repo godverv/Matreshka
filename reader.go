@@ -19,7 +19,7 @@ func NewEmptyConfig() AppConfig {
 		AppInfo:     AppInfo{},
 		DataSources: make(DataSources, 0),
 		Servers:     make(Servers, 0),
-		Environment: make(Environment),
+		Environment: make(Environment, 0),
 	}
 }
 
@@ -63,15 +63,15 @@ func ParseConfig(in []byte) (AppConfig, error) {
 		return a, err
 	}
 
-	a.Environment = flatten(a.Environment)
-
-	namedMap := make(map[string]interface{})
-
-	for k, v := range a.Environment {
-		namedMap[a.Name+"_"+k] = v
-	}
-
-	a.Environment = namedMap
+	//a.Environment = flatten(a.Environment)
+	//
+	//namedMap := make(map[string]interface{})
+	//
+	//for k, v := range a.Environment {
+	//	namedMap[a.Name+"_"+k] = v
+	//}
+	//
+	//a.Environment = namedMap
 
 	return a, nil
 }
@@ -87,11 +87,11 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 		master.StartupDuration = slave.StartupDuration
 	}
 
-	for name, value := range slave.Environment {
-		if _, ok := master.Environment[name]; !ok {
-			master.Environment[name] = value
-		}
-	}
+	//for name, value := range slave.Environment {
+	//	if _, ok := master.Environment[name]; !ok {
+	//		master.Environment[name] = value
+	//	}
+	//}
 
 	for i := range slave.Servers {
 		if master.Servers.get(slave.Servers[i].GetName()) == nil {
@@ -131,7 +131,7 @@ func getFromEnvironment() AppConfig {
 			continue
 		}
 
-		envConfig.Environment[strings.ToLower(name[len(prefix)+1:])] = variable[idx+1:]
+		//envConfig.Environment[strings.ToLower(name[len(prefix)+1:])] = variable[idx+1:]
 	}
 
 	return envConfig
@@ -159,7 +159,7 @@ func getFromFile(pth string) (AppConfig, error) {
 		return c, errors.Wrap(err, "error decoding config to struct")
 	}
 
-	c.Environment = flatten(c.Environment)
+	//c.Environment = flatten(c.Environment)
 
 	return c, nil
 }

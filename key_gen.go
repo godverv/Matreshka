@@ -27,9 +27,9 @@ func GenerateKeys(a AppConfig) ApplicationKeys {
 	if name != "" {
 		name += "_"
 	}
-	for k := range a.Environment {
-		keys.Environment = append(keys.Environment, k)
-	}
+	//for k := range a.Environment {
+	//	keys.Environment = append(keys.Environment, k)
+	//}
 
 	sort.Strings(keys.Environment)
 
