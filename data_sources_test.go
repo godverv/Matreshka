@@ -10,7 +10,7 @@ func Test_GetResources(t *testing.T) {
 	t.Parallel()
 
 	t.Run("OK", func(t *testing.T) {
-		cfg, err := ParseConfig(resourcedConfig)
+		cfg, err := ParseConfig(fullConfig)
 		require.NoError(t, err)
 
 		postgresCfg, err := cfg.DataSources.Postgres("postgres")
@@ -52,7 +52,7 @@ func Test_GetResources(t *testing.T) {
 	})
 
 	t.Run("ERROR_INVALID_RESOURCE_TYPE", func(t *testing.T) {
-		cfg, err := ParseConfig(resourcedConfig)
+		cfg, err := ParseConfig(fullConfig)
 		require.NoError(t, err)
 
 		postgresCfg, err := cfg.DataSources.Redis("postgres")

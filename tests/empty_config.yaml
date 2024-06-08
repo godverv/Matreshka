@@ -4,4 +4,4 @@ app_info:
     startup_duration: 0s
 data_sources: []
 server: []
-environment: {}
+environment: []

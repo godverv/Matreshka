@@ -24,8 +24,8 @@ const (
 type Variable struct {
 	Name  string       `yaml:"name"`
 	Type  variableType `yaml:"type"`
-	Enum  []any        `yaml:"enum"`
-	Value any          `yaml:"value"`
+	Enum  []any        `yaml:"enum,omitempty"`
+	Value any          `yaml:"value,omitempty"`
 }
 
 func (a *Variable) UnmarshalYAML(unmarshal func(a any) error) error {

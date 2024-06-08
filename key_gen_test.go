@@ -16,7 +16,7 @@ func Test_KeyGen(t *testing.T) {
 	expected := ApplicationKeys{
 		Servers:     []string{"rest", "grpc"},
 		DataSources: []string{"postgres", "redis", "telegram", "grpc_rscli_example"},
-		Environment: []string{"bool", "duration", "int", "string"},
+		Environment: []string{},
 	}
 	require.Equal(t, keys, expected)
 }

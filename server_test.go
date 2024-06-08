@@ -10,7 +10,7 @@ func Test_GetApi(t *testing.T) {
 	t.Parallel()
 
 	t.Run("OK", func(t *testing.T) {
-		cfg, err := ParseConfig(apiConfig)
+		cfg, err := ParseConfig(fullConfig)
 		require.NoError(t, err)
 
 		grpcCfg, err := cfg.Servers.GRPC("grpc")
@@ -36,7 +36,7 @@ func Test_GetApi(t *testing.T) {
 	})
 
 	t.Run("ERROR_INVALID_TYPE", func(t *testing.T) {
-		cfg, err := ParseConfig(apiConfig)
+		cfg, err := ParseConfig(fullConfig)
 		require.NoError(t, err)
 
 		grpcCfg, err := cfg.Servers.GRPC("rest")

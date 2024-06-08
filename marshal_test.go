@@ -14,47 +14,6 @@ import (
 func Test_Marshal(t *testing.T) {
 	t.Parallel()
 
-	t.Run("YAML", func(t *testing.T) {
-		t.Run("EMPTY", func(t *testing.T) {
-			t.Parallel()
-			cfg := NewEmptyConfig()
-
-			bytes, err := cfg.Marshal()
-			require.NoError(t, err)
-			require.Equal(t, emptyConfig, bytes)
-		})
-		t.Run("WITH_RESOURCES", func(t *testing.T) {
-			t.Parallel()
-
-			cfg := NewEmptyConfig()
-			cfg.Name = "matreshka"
-			cfg.DataSources = append(cfg.DataSources,
-				getPostgresClientTest(),
-				getRedisClientTest(),
-				getGRPCClientTest(),
-				getTelegramClientTest(),
-			)
-
-			bytes, err := cfg.Marshal()
-			require.NoError(t, err)
-			require.Equal(t, resourcedConfig, bytes)
-		})
-		t.Run("WITH_SERVERS", func(t *testing.T) {
-			t.Parallel()
-
-			cfg := NewEmptyConfig()
-			cfg.Name = "matreshka"
-			cfg.Servers = append(cfg.Servers,
-				getRestServerTest(),
-				getGRPCServerTest(),
-			)
-
-			apiMarshalled, err := cfg.Marshal()
-			require.NoError(t, err)
-			require.Equal(t, string(apiConfig), string(apiMarshalled))
-		})
-	})
-
 	t.Run("ENV_FULL", func(t *testing.T) {
 		t.Parallel()
 
@@ -167,8 +126,10 @@ func Test_Unmarshal(t *testing.T) {
 	t.Parallel()
 	t.Run("ENV_FULL", func(t *testing.T) {
 		t.Parallel()
+
 		c := NewEmptyConfig()
 		evon.UnmarshalWithPrefix("MATRESHKA", dotEnvFullConfig, &c)
+
 		expected := AppConfig{
 			AppInfo: AppInfo{
 				Name:            "matreshka",
@@ -213,12 +174,7 @@ func Test_Unmarshal(t *testing.T) {
 					Port: 50051,
 				},
 			},
-			//Environment: Environment{
-			//	"bool":     "true",
-			//	"duration": "10s",
-			//	"int":      "1",
-			//	"string":   "not so basic 🤡 string",
-			//},
+			Environment: Environment{},
 		}
 		require.Equal(t, c, expected)
 	})

@@ -9,7 +9,7 @@ import (
 	"github.com/godverv/matreshka/environment"
 )
 
-type Environment []environment.Variable
+type Environment []*environment.Variable
 
 func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 	if prefix != "" {

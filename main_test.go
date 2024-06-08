@@ -2,9 +2,11 @@ package matreshka
 
 import (
 	_ "embed"
+	"time"
 
 	"github.com/Red-Sock/evon"
 
+	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/resources"
 	"github.com/godverv/matreshka/servers"
 )
@@ -12,13 +14,6 @@ import (
 var (
 	//go:embed tests/empty_config.yaml
 	emptyConfig []byte
-
-	//go:embed tests/resourced_config.yaml
-	resourcedConfig []byte
-	//go:embed tests/api_config.yaml
-	apiConfig []byte
-	//go:embed tests/environment_config.yaml
-	environmentConfig []byte
 
 	//go:embed tests/full_config.yaml
 	fullConfig []byte
@@ -228,6 +223,62 @@ func getGRPCServerEnvs() []evon.Node {
 		{
 			Name:  serverName + "_port",
 			Value: int(grpc.Port),
+		},
+	}
+}
+
+func getEnvironmentVariables() []*environment.Variable {
+	return []*environment.Variable{
+		{
+			Name:  "database_max_connections",
+			Value: 1,
+			Type:  environment.VariableTypeInt,
+		},
+		{
+			Name:  "welcome_string",
+			Type:  environment.VariableTypeStr,
+			Value: "not so basic 🤡 string",
+		},
+		{
+			Name:  "one of welcome string",
+			Type:  environment.VariableTypeStr,
+			Value: "one",
+			Enum:  []any{"one", "two", "three"},
+		},
+		{
+			Name:  "true falser",
+			Type:  environment.VariableTypeBool,
+			Value: true,
+		},
+
+		{
+			Name:  "request timeout",
+			Type:  environment.VariableTypeDuration,
+			Value: time.Second * 10,
+		},
+
+		{
+			Name:  "available ports",
+			Type:  environment.VariableTypeInt,
+			Value: []any{10, 12, 34, 35, 36, 37, 38, 39, 40},
+		},
+
+		{
+			Name:  "usernames to ban",
+			Type:  environment.VariableTypeStr,
+			Value: []any{"hacker228", "mothe4acker"},
+		},
+
+		{
+			Name:  "credit percent",
+			Type:  environment.VariableTypeFloat,
+			Value: 0.01,
+		},
+
+		{
+			Name:  "credit percents based on year of birth",
+			Type:  environment.VariableTypeFloat,
+			Value: []any{0.01, 0.02, 0.03, 0.04},
 		},
 	}
 }

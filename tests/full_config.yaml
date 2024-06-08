@@ -27,7 +27,6 @@ data_sources:
     connection_string: 0.0.0.0:50051
     module: github.com/Red-Sock/rscli_example
 environment:
-
   - name: database_max_connections
     value: 1
     type: int

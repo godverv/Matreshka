@@ -10,7 +10,8 @@ import (
 func toFloatVariable(val any) (any, error) {
 	switch switchValue := val.(type) {
 	case []interface{}:
-		return anySliceToFloatSlice(switchValue)
+		v, err := anySliceToFloatSlice(switchValue)
+		return v, err
 
 	default:
 		return anyToFloat(val)
