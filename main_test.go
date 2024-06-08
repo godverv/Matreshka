@@ -260,13 +260,13 @@ func getEnvironmentVariables() []*environment.Variable {
 		{
 			Name:  "available ports",
 			Type:  environment.VariableTypeInt,
-			Value: []any{10, 12, 34, 35, 36, 37, 38, 39, 40},
+			Value: []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
 		},
 
 		{
 			Name:  "usernames to ban",
 			Type:  environment.VariableTypeStr,
-			Value: []any{"hacker228", "mothe4acker"},
+			Value: []string{"hacker228", "mothe4acker"},
 		},
 
 		{
@@ -278,7 +278,7 @@ func getEnvironmentVariables() []*environment.Variable {
 		{
 			Name:  "credit percents based on year of birth",
 			Type:  environment.VariableTypeFloat,
-			Value: []any{0.01, 0.02, 0.03, 0.04},
+			Value: []float64{0.01, 0.02, 0.03, 0.04},
 		},
 	}
 }

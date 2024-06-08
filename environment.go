@@ -1,6 +1,7 @@
 package matreshka
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -18,10 +19,24 @@ func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 
 	out := make([]evon.Node, 0, len(*a))
 	for _, v := range *a {
-		out = append(out, evon.Node{
-			Name:  prefix + strings.ToUpper(v.Name),
-			Value: v,
-		})
+		pref := prefix + strings.ReplaceAll(strings.ToUpper(v.Name), " ", "_")
+		out = append(out,
+			evon.Node{
+				Name:  pref,
+				Value: fmt.Sprint(v.Value),
+			},
+			evon.Node{
+				Name:  pref + "_TYPE",
+				Value: v.Type,
+			},
+		)
+
+		if len(v.Enum) != 0 {
+			out = append(out, evon.Node{
+				Name:  pref + "_ENUM",
+				Value: fmt.Sprint(v.Enum),
+			})
+		}
 	}
 
 	sort.Slice(out, func(i, j int) bool {

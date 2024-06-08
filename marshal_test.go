@@ -7,6 +7,7 @@ import (
 	"github.com/Red-Sock/evon"
 	"github.com/stretchr/testify/require"
 
+	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/resources"
 	"github.com/godverv/matreshka/servers"
 )
@@ -24,6 +25,7 @@ func Test_Marshal(t *testing.T) {
 		res := evon.MarshalEnvWithPrefix("MATRESHKA", &ai)
 
 		expected := []evon.Node{
+			// APP INFO
 			{
 				Name:  "MATRESHKA_APP_INFO_NAME",
 				Value: "matreshka",
@@ -36,6 +38,7 @@ func Test_Marshal(t *testing.T) {
 				Name:  "MATRESHKA_APP_INFO_STARTUP_DURATION",
 				Value: time.Second * 10,
 			},
+			// DATA SOURCES
 			{
 				Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_HOST",
 				Value: "localhost",
@@ -92,6 +95,7 @@ func Test_Marshal(t *testing.T) {
 				Name:  "MATRESHKA_DATA_SOURCES_GRPC-RSCLI-EXAMPLE_MODULE",
 				Value: "github.com/Red-Sock/rscli_example",
 			},
+			// SERVERS
 			{
 				Name:  "MATRESHKA_SERVERS_REST_PORT",
 				Value: uint16(8080),
@@ -100,25 +104,86 @@ func Test_Marshal(t *testing.T) {
 				Name:  "MATRESHKA_SERVERS_GRPC_PORT",
 				Value: uint16(50051),
 			},
+			// ENVIRONMENT
 			{
-				Name:  "MATRESHKA_ENVIRONMENT_STRING",
+				Name:  "MATRESHKA_ENVIRONMENT_WELCOME_STRING_TYPE",
+				Value: environment.VariableTypeStr,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_WELCOME_STRING",
 				Value: "not so basic 🤡 string",
 			},
 			{
-				Name:  "MATRESHKA_ENVIRONMENT_INT",
-				Value: 1,
+				Name:  "MATRESHKA_ENVIRONMENT_USERNAMES_TO_BAN_TYPE",
+				Value: environment.VariableTypeStr,
 			},
 			{
-				Name:  "MATRESHKA_ENVIRONMENT_DURATION",
+				Name:  "MATRESHKA_ENVIRONMENT_USERNAMES_TO_BAN",
+				Value: "[hacker228 mothe4acker]",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_TRUE_FALSER_TYPE",
+				Value: environment.VariableTypeBool,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_TRUE_FALSER",
+				Value: "true",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_REQUEST_TIMEOUT_TYPE",
+				Value: environment.VariableTypeDuration,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_REQUEST_TIMEOUT",
 				Value: "10s",
 			},
 			{
-				Name:  "MATRESHKA_ENVIRONMENT_BOOL",
-				Value: true,
+				Name:  "MATRESHKA_ENVIRONMENT_ONE_OF_WELCOME_STRING_TYPE",
+				Value: environment.VariableTypeStr,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_ONE_OF_WELCOME_STRING_ENUM",
+				Value: "[one two three]",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_ONE_OF_WELCOME_STRING",
+				Value: "one",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_DATABASE_MAX_CONNECTIONS_TYPE",
+				Value: environment.VariableTypeInt,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_DATABASE_MAX_CONNECTIONS",
+				Value: "1",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_CREDIT_PERCENT_TYPE",
+				Value: environment.VariableTypeFloat,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_CREDIT_PERCENTS_BASED_ON_YEAR_OF_BIRTH_TYPE",
+				Value: environment.VariableTypeFloat,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_CREDIT_PERCENTS_BASED_ON_YEAR_OF_BIRTH",
+				Value: "[0.01 0.02 0.03 0.04]",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_CREDIT_PERCENT",
+				Value: "0.01",
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE_PORTS_TYPE",
+				Value: environment.VariableTypeInt,
+			},
+			{
+				Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE_PORTS",
+				Value: "[10 12 34 35 36 37 38 39 40]",
 			},
 		}
 
-		require.ElementsMatch(t, expected, res)
+		require.Equal(t, res, expected)
 	})
 }
 

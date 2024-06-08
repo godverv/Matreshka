@@ -23,6 +23,7 @@ func Test_ReadConfig(t *testing.T) {
 		defer func() {
 			require.NoError(t, os.RemoveAll(cfgPath))
 		}()
+
 		require.NoError(t,
 			os.WriteFile(
 				cfgPath,
@@ -105,6 +106,7 @@ func Test_MergeConfigs(t *testing.T) {
 				getRestServerTest(),
 				getGRPCServerTest(),
 			},
+			Environment: Environment{},
 		}
 
 		emptyFullCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)

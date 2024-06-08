@@ -14,11 +14,11 @@ var (
 type variableType string
 
 const (
-	VariableTypeInt      = "int"
-	VariableTypeStr      = "string"
-	VariableTypeBool     = "bool"
-	VariableTypeFloat    = "float"
-	VariableTypeDuration = "duration"
+	VariableTypeInt      variableType = "int"
+	VariableTypeStr      variableType = "string"
+	VariableTypeBool     variableType = "bool"
+	VariableTypeFloat    variableType = "float"
+	VariableTypeDuration variableType = "duration"
 )
 
 type Variable struct {

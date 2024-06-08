@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/servers"
 )
 
@@ -35,7 +34,7 @@ func Test_Read_Config(t *testing.T) {
 		getGRPCServerTest(),
 	}
 
-	cfgExpect.Environment = []*environment.Variable{}
+	cfgExpect.Environment = getEnvironmentVariables()
 
 	require.Equal(t, cfgExpect, cfgGot)
 }
