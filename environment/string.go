@@ -2,6 +2,7 @@ package environment
 
 import (
 	"fmt"
+	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
 )
@@ -9,6 +10,11 @@ import (
 func toStringValue(in any) (any, error) {
 	switch v := in.(type) {
 	case string:
+		if v[0] == '[' && v[len(v)-1] == ']' {
+			out := strings.Split(v[1:len(v)-1], ",")
+			return out, nil
+		}
+
 		return v, nil
 	case []interface{}:
 		out := make([]string, 0, len(v))

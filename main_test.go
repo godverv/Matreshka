@@ -230,25 +230,32 @@ func getGRPCServerEnvs() []evon.Node {
 func getEnvironmentVariables() []*environment.Variable {
 	return []*environment.Variable{
 		{
-			Name:  "database_max_connections",
+			Name:  "available ports",
+			Type:  environment.VariableTypeInt,
+			Value: []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
+		},
+		{
+			Name:  "credit percent",
+			Type:  environment.VariableTypeFloat,
+			Value: 0.01,
+		},
+		{
+			Name:  "credit percents based on year of birth",
+			Type:  environment.VariableTypeFloat,
+			Value: []float64{0.01, 0.02, 0.03, 0.04},
+		},
+
+		{
+			Name:  "database max connections",
 			Value: 1,
 			Type:  environment.VariableTypeInt,
 		},
-		{
-			Name:  "welcome_string",
-			Type:  environment.VariableTypeStr,
-			Value: "not so basic 🤡 string",
-		},
+
 		{
 			Name:  "one of welcome string",
 			Type:  environment.VariableTypeStr,
 			Value: "one",
 			Enum:  []any{"one", "two", "three"},
-		},
-		{
-			Name:  "true falser",
-			Type:  environment.VariableTypeBool,
-			Value: true,
 		},
 
 		{
@@ -258,9 +265,9 @@ func getEnvironmentVariables() []*environment.Variable {
 		},
 
 		{
-			Name:  "available ports",
-			Type:  environment.VariableTypeInt,
-			Value: []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
+			Name:  "true falser",
+			Type:  environment.VariableTypeBool,
+			Value: true,
 		},
 
 		{
@@ -270,15 +277,9 @@ func getEnvironmentVariables() []*environment.Variable {
 		},
 
 		{
-			Name:  "credit percent",
-			Type:  environment.VariableTypeFloat,
-			Value: 0.01,
-		},
-
-		{
-			Name:  "credit percents based on year of birth",
-			Type:  environment.VariableTypeFloat,
-			Value: []float64{0.01, 0.02, 0.03, 0.04},
+			Name:  "welcome string",
+			Type:  environment.VariableTypeStr,
+			Value: "not so basic 🤡 string",
 		},
 	}
 }

@@ -46,7 +46,7 @@ func (a *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
 		return ErrNoValue
 	}
 
-	err = extractValue(val, a)
+	a.Value, err = extractValue(val, a.Type)
 	if err != nil {
 		return errors.Wrap(err, "error reading value")
 	}
@@ -86,10 +86,24 @@ func (a *Variable) UnmarshalEnv(node *evon.Node) error {
 
 	a.Type = variableType(fmt.Sprint(tp.Value))
 	if enum != nil {
-		a.Enum = make([]any, 0, len(enum.InnerNodes))
+		enumVal, err := extractValue(enum.Value, a.Type)
+		if err != nil {
+			// TODO
+			return errors.Wrap(err, "error extracting enum value")
+		}
+
+		enumRef := reflect.ValueOf(enumVal)
+		if enumRef.Kind() != reflect.Slice {
+			return errors.New("expected enum to be slice, but got " + enumRef.Kind().String())
+		}
+
+		for i := 0; i < enumRef.Len(); i++ {
+			a.Enum = append(a.Enum, enumRef.Index(i).Interface())
+		}
 	}
 
-	err := extractValue(node.Value, a)
+	var err error
+	a.Value, err = extractValue(node.Value, a.Type)
 	if err != nil {
 		return errors.Wrap(err, "error extracting value")
 	}
@@ -114,23 +128,21 @@ func (a *Variable) ValueString() string {
 	return fmt.Sprint(a.Value)
 }
 
-func extractValue(val any, v *Variable) (err error) {
-	switch v.Type {
+func extractValue(val any, vType variableType) (out any, err error) {
+	switch vType {
 	case VariableTypeInt:
-		v.Value, err = toIntVariable(val)
+		return toIntVariable(val)
 	case VariableTypeStr:
-		v.Value, err = toStringValue(val)
+		return toStringValue(val)
 	case VariableTypeBool:
-		v.Value, err = toBool(val)
+		return toBool(val)
 	case VariableTypeFloat:
-		v.Value, err = toFloatVariable(val)
+		return toFloatVariable(val)
 	case VariableTypeDuration:
-		v.Value, err = toDuration(val)
+		return toDuration(val)
 	default:
-		err = ErrUnknownEnvVariableType
+		return nil, ErrUnknownEnvVariableType
 	}
-
-	return err
 }
 
 func toStringArray(vRef reflect.Value) string {
