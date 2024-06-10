@@ -6,7 +6,7 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 )
 
-func toStringVariable(in any) (any, error) {
+func toStringValue(in any) (any, error) {
 	switch v := in.(type) {
 	case string:
 		return v, nil

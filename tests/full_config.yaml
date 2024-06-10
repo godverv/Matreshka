@@ -18,9 +18,9 @@ data_sources:
   - resource_name: redis
     host: localhost
     port: 6379
-    user: ""
-    pwd: ""
-    db: 0
+    user: "redis_matreshka"
+    pwd: "redis_matreshka_pwd"
+    db: 2
   - resource_name: telegram
     api_key: "some_api_key"
   - resource_name: grpc_rscli_example

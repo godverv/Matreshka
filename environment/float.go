@@ -3,6 +3,7 @@ package environment
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
 )
@@ -12,7 +13,16 @@ func toFloatVariable(val any) (any, error) {
 	case []interface{}:
 		v, err := anySliceToFloatSlice(switchValue)
 		return v, err
-
+	case string:
+		if switchValue[0] == '[' && switchValue[len(switchValue)-1] == ']' {
+			strSlice := strings.Split(switchValue[1:len(switchValue)-1], ",")
+			anySlice := make([]any, 0, len(switchValue)/2)
+			for _, v := range strSlice {
+				anySlice = append(anySlice, v)
+			}
+			return anySliceToFloatSlice(anySlice)
+		}
+		return anyToFloat(val)
 	default:
 		return anyToFloat(val)
 	}
@@ -49,8 +59,9 @@ func anyToFloat(val any) (float64, error) {
 	switch switchValue := val.(type) {
 	case float64:
 		return switchValue, nil
-
+	case string:
+		return strconv.ParseFloat(switchValue, 64)
 	default:
-		return 0, errors.New(fmt.Sprintf("can't cast %T to int", val))
+		return 0, errors.New(fmt.Sprintf("can't cast %T to float", val))
 	}
 }

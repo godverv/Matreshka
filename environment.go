@@ -1,11 +1,11 @@
 package matreshka
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/Red-Sock/evon"
+	errors "github.com/Red-Sock/trace-errors"
 
 	"github.com/godverv/matreshka/environment"
 )
@@ -19,11 +19,11 @@ func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 
 	out := make([]evon.Node, 0, len(*a))
 	for _, v := range *a {
-		pref := prefix + strings.ReplaceAll(strings.ToUpper(v.Name), " ", "_")
+		pref := prefix + strings.NewReplacer(" ", "-", "_", "-").Replace(strings.ToUpper(v.Name))
 		out = append(out,
 			evon.Node{
 				Name:  pref,
-				Value: fmt.Sprint(v.Value),
+				Value: v.ValueString(),
 			},
 			evon.Node{
 				Name:  pref + "_TYPE",
@@ -34,7 +34,7 @@ func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 		if len(v.Enum) != 0 {
 			out = append(out, evon.Node{
 				Name:  pref + "_ENUM",
-				Value: fmt.Sprint(v.Enum),
+				Value: v.EnumString(),
 			})
 		}
 	}
@@ -46,9 +46,19 @@ func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 	return out
 }
 func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
-	//for _, n := range rootNode.InnerNodes {
-	//a[strings.ToLower(n.Name[len(rootNode.Name)+1:])] = n.Value
-	//}
+	env := make([]*environment.Variable, 0, len(rootNode.InnerNodes))
 
+	for _, e := range rootNode.InnerNodes {
+		ev := &environment.Variable{
+			Name: strings.ToLower(e.Name[len(rootNode.Name)+1:]),
+		}
+		err := ev.UnmarshalEnv(e)
+		if err != nil {
+			return errors.Wrap(err, "error unmarshalling environment variable")
+		}
+		env = append(env, ev)
+	}
+
+	*a = env
 	return nil
 }
