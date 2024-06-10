@@ -88,7 +88,6 @@ func (a *Variable) UnmarshalEnv(node *evon.Node) error {
 	if enum != nil {
 		enumVal, err := extractValue(enum.Value, a.Type)
 		if err != nil {
-			// TODO
 			return errors.Wrap(err, "error extracting enum value")
 		}
 
