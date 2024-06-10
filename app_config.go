@@ -1,6 +1,8 @@
 package matreshka
 
 import (
+	"sort"
+
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 )
@@ -38,5 +40,14 @@ func (a *AppConfig) Marshal() ([]byte, error) {
 }
 
 func (a *AppConfig) Unmarshal(b []byte) error {
-	return yaml.Unmarshal(b, a)
+	err := yaml.Unmarshal(b, a)
+	if err != nil {
+		return err
+	}
+
+	sort.Slice(a.Environment, func(i, j int) bool {
+		return a.Environment[i].Name < a.Environment[j].Name
+	})
+
+	return nil
 }

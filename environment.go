@@ -40,7 +40,7 @@ func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 	}
 
 	sort.Slice(out, func(i, j int) bool {
-		return out[i].Name > out[j].Name
+		return out[i].Name < out[j].Name
 	})
 
 	return out
