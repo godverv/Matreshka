@@ -1,6 +1,8 @@
 package matreshka
 
 import (
+	"bytes"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -8,7 +10,10 @@ import (
 	errors "github.com/Red-Sock/trace-errors"
 
 	"github.com/godverv/matreshka/environment"
+	"github.com/godverv/matreshka/internal/cases"
 )
+
+var ErrNotAPointer = errors.New("not a pointer")
 
 type Environment []*environment.Variable
 
@@ -69,5 +74,50 @@ func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
 	})
 
 	*a = env
+	return nil
+}
+
+func (a *Environment) GenerateCustomGoStruct() []byte {
+	buf := bytes.NewBuffer(nil)
+	buf.WriteString("package config\n")
+	buf.WriteString("type EnvironmentConfig struct {\n")
+	for _, env := range *a {
+		buf.WriteByte('\t')
+		name := strings.ReplaceAll(env.Name, " ", "_")
+		buf.WriteString(cases.SnakeToPascal(name))
+		buf.WriteByte(' ')
+		buf.WriteString(environment.MapVariableToGoType(*env))
+		buf.WriteByte('\n')
+	}
+
+	buf.WriteByte('}')
+	return buf.Bytes()
+}
+
+func (a *Environment) ParseToStruct(dst any) error {
+	dstRef := reflect.ValueOf(dst)
+	if dstRef.Kind() != reflect.Ptr {
+		return errors.Wrap(ErrNotAPointer, "expected destination to be a pointer ")
+	}
+
+	dstRef = dstRef.Elem()
+	numFields := dstRef.NumField()
+
+	dstMapping := make(map[string]reflect.Value)
+
+	for i := 0; i < numFields; i++ {
+		field := dstRef.Type().Field(i)
+		dstMapping[field.Name] = dstRef.Field(i)
+	}
+
+	for _, env := range *a {
+		name := env.Name
+		name = strings.ReplaceAll(name, " ", "_")
+		name = cases.SnakeToPascal(name)
+		v := dstMapping[name]
+
+		v.Set(reflect.ValueOf(env.Value))
+	}
+
 	return nil
 }

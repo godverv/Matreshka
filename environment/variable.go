@@ -152,3 +152,30 @@ func toStringArray(vRef reflect.Value) string {
 
 	return "[" + strings.Join(vals, ",") + "]"
 }
+
+func MapVariableToGoType(variable Variable) string {
+	var out string
+
+	switch variable.Type {
+	case VariableTypeInt:
+		out = "int"
+	case VariableTypeStr:
+		out = "string"
+	case VariableTypeBool:
+		out = "bool"
+	case VariableTypeFloat:
+
+		out = "float64"
+	case VariableTypeDuration:
+		out = "time.Duration"
+	default:
+		return "any"
+	}
+
+	varRef := reflect.ValueOf(variable.Value)
+	if varRef.Kind() == reflect.Slice {
+		return "[]" + out
+	}
+
+	return out
+}

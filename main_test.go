@@ -20,6 +20,9 @@ var (
 
 	//go:embed tests/.env.full_config
 	dotEnvFullConfig []byte
+
+	//go:embed tests/go.environment_struct.generated
+	goCustomEnvStruct []byte
 )
 
 func getPostgresClientTest() *resources.Postgres {

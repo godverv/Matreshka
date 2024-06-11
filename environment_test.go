@@ -1,107 +1,47 @@
 package matreshka
 
-//
-//func Test_Environment_OK(t *testing.T) {
-//	t.Parallel()
-//
-//	cfg, err := ParseConfig(environmentConfig)
-//	require.NoError(t, err)
-//
-//	t.Run("int", func(t *testing.T) {
-//		require.Equal(t,
-//			1,
-//			cfg.GetInt("matreshka_int"))
-//	})
-//
-//	t.Run("string", func(t *testing.T) {
-//		require.Equal(t,
-//			"not so basic 🤡 string",
-//			cfg.GetString("matreshka_string"))
-//	})
-//
-//	t.Run("bool", func(t *testing.T) {
-//		require.Equal(t,
-//			true,
-//			cfg.GetBool("matreshka_bool"))
-//	})
-//
-//	t.Run("duration", func(t *testing.T) {
-//		require.Equal(t,
-//			time.Second*10,
-//			cfg.GetDuration("matreshka_duration"))
-//	})
-//
-//	t.Run("slice", func(t *testing.T) {
-//		var s []any
-//		err = ReadSliceFromConfig(cfg, "matreshka_slice", &s)
-//		require.NoError(t, err)
-//		require.Equal(t, []any{"1", "2", "3", "4"}, s)
-//	})
-//
-//	t.Run("inner_struct", func(t *testing.T) {
-//		v := cfg.GetBool("matreshka_inner_struct")
-//		require.True(t, v)
-//	})
-//}
-//
-//func Test_Environment_Invalid(t *testing.T) {
-//	t.Parallel()
-//
-//	cfg, err := ParseConfig(environmentConfig)
-//	require.NoError(t, err)
-//
-//	t.Run("int", func(t *testing.T) {
-//		val, err := cfg.TryGetInt("matreshka_string")
-//		require.ErrorIs(t, err, ErrUnexpectedType)
-//		require.Empty(t, val)
-//	})
-//
-//	t.Run("string", func(t *testing.T) {
-//		val, err := cfg.TryGetString("matreshka_int")
-//		require.ErrorIs(t, err, ErrUnexpectedType)
-//		require.Empty(t, val)
-//	})
-//
-//	t.Run("bool", func(t *testing.T) {
-//		val, err := cfg.TryGetBool("matreshka_duration")
-//		require.ErrorIs(t, err, ErrUnexpectedType)
-//		require.Empty(t, val)
-//	})
-//
-//	t.Run("duration", func(t *testing.T) {
-//		val, err := cfg.TryGetDuration("matreshka_bool")
-//		require.ErrorIs(t, err, ErrUnexpectedType)
-//		require.Empty(t, val)
-//	})
-//}
-//
-//func Test_Environment_NotFound(t *testing.T) {
-//	t.Parallel()
-//
-//	cfg, err := ParseConfig(emptyConfig)
-//	require.NoError(t, err)
-//
-//	t.Run("int", func(t *testing.T) {
-//		val, err := cfg.TryGetInt("matreshka_not_found_int")
-//		require.ErrorIs(t, err, ErrNotFound)
-//		require.Empty(t, val)
-//	})
-//
-//	t.Run("string", func(t *testing.T) {
-//		val, err := cfg.TryGetString("matreshka_string")
-//		require.ErrorIs(t, err, ErrNotFound)
-//		require.Empty(t, val)
-//	})
-//
-//	t.Run("bool", func(t *testing.T) {
-//		val, err := cfg.TryGetBool("matreshka_bool")
-//		require.ErrorIs(t, err, ErrNotFound)
-//		require.Empty(t, val)
-//	})
-//
-//	t.Run("duration", func(t *testing.T) {
-//		val, err := cfg.TryGetDuration("matreshka_duration")
-//		require.ErrorIs(t, err, ErrNotFound)
-//		require.Empty(t, val)
-//	})
-//}
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+
+	config "github.com/godverv/matreshka/config_test"
+)
+
+func Test_Environment(t *testing.T) {
+	t.Parallel()
+
+	t.Run("gen_go_struct", func(t *testing.T) {
+		t.Parallel()
+
+		env := Environment(getEnvironmentVariables())
+
+		generatedCustomGoStruct := env.GenerateCustomGoStruct()
+		require.Equal(t, goCustomEnvStruct, generatedCustomGoStruct)
+	})
+
+	t.Run("parse_env_to_struct", func(t *testing.T) {
+		t.Parallel()
+
+		env := Environment(getEnvironmentVariables())
+
+		customEnvConf := &config.EnvironmentConfig{}
+
+		err := env.ParseToStruct(customEnvConf)
+		require.NoError(t, err)
+
+		expected := &config.EnvironmentConfig{
+			AvailablePorts:                   []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
+			CreditPercent:                    0.01,
+			CreditPercentsBasedOnYearOfBirth: []float64{0.01, 0.02, 0.03, 0.04},
+			DatabaseMaxConnections:           1,
+			OneOfWelcomeString:               "one",
+			RequestTimeout:                   time.Second * 10,
+			TrueFalser:                       true,
+			UsernamesToBan:                   []string{"hacker228", "mothe4acker"},
+			WelcomeString:                    "not so basic 🤡 string",
+		}
+		require.Equal(t, expected, customEnvConf)
+	})
+}
