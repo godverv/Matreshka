@@ -7,6 +7,8 @@ import (
 
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
+
+	"github.com/godverv/matreshka/environment"
 )
 
 const (
@@ -63,16 +65,6 @@ func ParseConfig(in []byte) (AppConfig, error) {
 		return a, err
 	}
 
-	//a.Environment = flatten(a.Environment)
-	//
-	//namedMap := make(map[string]interface{})
-	//
-	//for k, v := range a.Environment {
-	//	namedMap[a.Name+"_"+k] = v
-	//}
-	//
-	//a.Environment = namedMap
-
 	return a, nil
 }
 
@@ -87,11 +79,20 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 		master.StartupDuration = slave.StartupDuration
 	}
 
-	//for name, value := range slave.Environment {
-	//	if _, ok := master.Environment[name]; !ok {
-	//		master.Environment[name] = value
-	//	}
-	//}
+	for _, slaveVal := range slave.Environment {
+		var mv *environment.Variable
+		for _, masterVal := range master.Environment {
+			if masterVal.Name == slaveVal.Name {
+				mv = masterVal
+				break
+			}
+		}
+		if mv != nil {
+			continue
+		}
+
+		master.Environment = append(master.Environment, slaveVal)
+	}
 
 	for i := range slave.Servers {
 		if master.Servers.get(slave.Servers[i].GetName()) == nil {

@@ -19,22 +19,6 @@ type AppConfig struct {
 	Environment `yaml:"environment"`
 }
 
-func (a *AppConfig) GetAppInfo() AppInfo {
-	return a.AppInfo
-}
-
-func (a *AppConfig) GetServers() API {
-	return &a.Servers
-}
-
-func (a *AppConfig) GetDataSources() Resources {
-	return &a.DataSources
-}
-
-func (a *AppConfig) GetMatreshka() *AppConfig {
-	return a
-}
-
 func (a *AppConfig) Marshal() ([]byte, error) {
 	return yaml.Marshal(*a)
 }
