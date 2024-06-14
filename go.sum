@@ -1,7 +1,5 @@
-github.com/Red-Sock/evon v0.0.6 h1:6MgEINGpqJ16o5uxEvsluaxO6IHswNVPOdWPAVGNh2o=
-github.com/Red-Sock/evon v0.0.6/go.mod h1:BSqhsH7BWJu59QFmyzpIc7kqNQkvVi5Gb1MhZMx7mlc=
-github.com/Red-Sock/evon v0.0.7 h1:SMmqm9jY5IgeFW7TrN+uPYdCM5RxMYsnnVQTbw9neMw=
-github.com/Red-Sock/evon v0.0.7/go.mod h1:BSqhsH7BWJu59QFmyzpIc7kqNQkvVi5Gb1MhZMx7mlc=
+github.com/Red-Sock/evon v0.0.8 h1:0WLzhGqccbpXKFTNve8XuPA3NqU6Zbrmb/Fgy1yjfrs=
+github.com/Red-Sock/evon v0.0.8/go.mod h1:BSqhsH7BWJu59QFmyzpIc7kqNQkvVi5Gb1MhZMx7mlc=
 github.com/Red-Sock/trace-errors v0.0.6 h1:+ZXWC8yCeSRqtch1yL87zD3phL2CWU3F/qJGkfYPXQQ=
 github.com/Red-Sock/trace-errors v0.0.6/go.mod h1:rvIxpJ2M7/XkEnXjXfmQjsaKXYRVGM4TFQ8R5Zo4mSk=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
