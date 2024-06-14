@@ -18,12 +18,15 @@ func Test_Marshal(t *testing.T) {
 		err := srcConfig.Unmarshal(fullConfig)
 		require.NoError(t, err)
 
-		evonNodes := evon.MarshalEnvWithPrefix("MATRESHKA", &srcConfig)
+		evonNodes, err := evon.MarshalEnvWithPrefix("MATRESHKA", &srcConfig)
+		require.NoError(t, err)
+
 		expected := getEvonFullConfig()
 		require.Equal(t, evonNodes, expected)
 
-		evonBytes := evon.Marshal(evonNodes)
-		require.Equal(t, string(dotEnvFullConfig), string(evonBytes))
+		evonBytes := evon.Marshal(evonNodes.InnerNodes)
+		require.Equal(t, string(dotEnvFullConfig), string(evonBytes),
+			"expected to match environment in dotenv file")
 	})
 }
 

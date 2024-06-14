@@ -3,6 +3,7 @@ package matreshka
 import (
 	stderrors "errors"
 	"os"
+	"sort"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
@@ -53,6 +54,10 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 	}
 
 	masterConfig = MergeConfigs(getFromEnvironment(), masterConfig)
+
+	sort.Slice(masterConfig.Environment, func(i, j int) bool {
+		return masterConfig.Environment[i].Name < masterConfig.Environment[j].Name
+	})
 
 	return masterConfig, nil
 }
@@ -159,8 +164,6 @@ func getFromFile(pth string) (AppConfig, error) {
 	if err != nil {
 		return c, errors.Wrap(err, "error decoding config to struct")
 	}
-
-	//c.Environment = flatten(c.Environment)
 
 	return c, nil
 }

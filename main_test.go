@@ -287,168 +287,221 @@ func getEnvironmentVariables() []*environment.Variable {
 	}
 }
 
-func getEvonFullConfig() []evon.Node {
-	return []evon.Node{
-		// APP INFO
-		{
-			Name:  "MATRESHKA_APP_INFO_NAME",
-			Value: "matreshka",
-		},
-		{
-			Name:  "MATRESHKA_APP_INFO_VERSION",
-			Value: "v0.0.1",
-		},
-		{
-			Name:  "MATRESHKA_APP_INFO_STARTUP_DURATION",
-			Value: time.Second * 10,
-		},
-		// DATA SOURCES
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_HOST",
-			Value: "localhost",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_PORT",
-			Value: uint64(5432),
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_USER",
-			Value: "matreshka",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_PWD",
-			Value: "matreshka",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_DB_NAME",
-			Value: "matreshka",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_POSTGRES_SSL_MODE",
-			Value: "disable",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_REDIS_HOST",
-			Value: "localhost",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_REDIS_PORT",
-			Value: uint16(6379),
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_REDIS_USER",
-			Value: "redis_matreshka",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_REDIS_PWD",
-			Value: "redis_matreshka_pwd",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_REDIS_DB",
-			Value: 2,
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_TELEGRAM_API_KEY",
-			Value: "some_api_key",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_GRPC-RSCLI-EXAMPLE_CONNECTION_STRING",
-			Value: "0.0.0.0:50051",
-		},
-		{
-			Name:  "MATRESHKA_DATA_SOURCES_GRPC-RSCLI-EXAMPLE_MODULE",
-			Value: "github.com/Red-Sock/rscli_example",
-		},
-		// SERVERS
-		{
-			Name:  "MATRESHKA_SERVERS_REST_PORT",
-			Value: uint16(8080),
-		},
-		{
-			Name:  "MATRESHKA_SERVERS_GRPC_PORT",
-			Value: uint16(50051),
-		},
-		// ENVIRONMENT
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS",
-			Value: "[10,12,34,35,36,37,38,39,40]",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS_TYPE",
-			Value: environment.VariableTypeInt,
-		},
+func getEvonFullConfig() *evon.Node {
+	return &evon.Node{
+		Name: "MATRESHKA",
+		InnerNodes: []*evon.Node{
+			// APP INFO
+			{
+				Name: "MATRESHKA_APP-INFO",
+				InnerNodes: []*evon.Node{
+					{
+						Name:  "MATRESHKA_APP-INFO_NAME",
+						Value: "matreshka",
+					},
+					{
+						Name:  "MATRESHKA_APP-INFO_VERSION",
+						Value: "v0.0.1",
+					},
+					{
+						Name:  "MATRESHKA_APP-INFO_STARTUP-DURATION",
+						Value: time.Second * 10,
+					},
+				},
+			},
 
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT",
-			Value: "0.01",
-		},
+			{
+				Name: "MATRESHKA_DATA-SOURCES",
+				InnerNodes: []*evon.Node{
+					{
+						Name: "MATRESHKA_DATA-SOURCES_POSTGRES",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_POSTGRES_HOST",
+								Value: "localhost",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_POSTGRES_PORT",
+								Value: uint64(5432),
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_POSTGRES_USER",
+								Value: "matreshka",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_POSTGRES_PWD",
+								Value: "matreshka",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_POSTGRES_DB-NAME",
+								Value: "matreshka",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_POSTGRES_SSL-MODE",
+								Value: "disable",
+							},
+						},
+					},
+					{
+						Name: "MATRESHKA_DATA-SOURCES_REDIS",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_REDIS_HOST",
+								Value: "localhost",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_REDIS_PORT",
+								Value: uint16(6379),
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_REDIS_USER",
+								Value: "redis_matreshka",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_REDIS_PWD",
+								Value: "redis_matreshka_pwd",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_REDIS_DB",
+								Value: 2,
+							},
+						},
+					},
+					{
+						Name: "MATRESHKA_DATA-SOURCES_TELEGRAM",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_TELEGRAM_API-KEY",
+								Value: "some_api_key",
+							},
+						},
+					},
+					{
+						Name: "MATRESHKA_DATA-SOURCES_GRPC-RSCLI-EXAMPLE",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_GRPC-RSCLI-EXAMPLE_CONNECTION-STRING",
+								Value: "0.0.0.0:50051",
+							},
+							{
+								Name:  "MATRESHKA_DATA-SOURCES_GRPC-RSCLI-EXAMPLE_MODULE",
+								Value: "github.com/Red-Sock/rscli_example",
+							},
+						},
+					},
+				},
+			},
+			// SERVERS
+			{
+				Name: "MATRESHKA_SERVERS",
+				InnerNodes: []*evon.Node{
+					{
+						Name: "MATRESHKA_SERVERS_REST",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_SERVERS_REST_PORT",
+								Value: uint16(8080),
+							},
+						},
+					},
+					{
+						Name: "MATRESHKA_SERVERS_GRPC",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_SERVERS_GRPC_PORT",
+								Value: uint16(50051),
+							},
+						},
+					},
+				},
+			},
 
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH",
-			Value: "[0.01,0.02,0.03,0.04]",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH_TYPE",
-			Value: environment.VariableTypeFloat,
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT_TYPE",
-			Value: environment.VariableTypeFloat,
-		},
+			{
+				Name: "MATRESHKA_ENVIRONMENT",
+				InnerNodes: []*evon.Node{
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS",
+						Value: "[10,12,34,35,36,37,38,39,40]",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS_TYPE",
+						Value: environment.VariableTypeInt,
+					},
 
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS",
-			Value: "1",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS_TYPE",
-			Value: environment.VariableTypeInt,
-		},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT",
+						Value: "0.01",
+					},
 
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING",
-			Value: "one",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_ENUM",
-			Value: "[one,two,three]",
-		},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH",
+						Value: "[0.01,0.02,0.03,0.04]",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH_TYPE",
+						Value: environment.VariableTypeFloat,
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT_TYPE",
+						Value: environment.VariableTypeFloat,
+					},
 
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_TYPE",
-			Value: environment.VariableTypeStr,
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT",
-			Value: "10s",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT_TYPE",
-			Value: environment.VariableTypeDuration,
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER",
-			Value: "true",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER_TYPE",
-			Value: environment.VariableTypeBool,
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN",
-			Value: "[hacker228,mothe4acker]",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN_TYPE",
-			Value: environment.VariableTypeStr,
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING",
-			Value: "not so basic 🤡 string",
-		},
-		{
-			Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING_TYPE",
-			Value: environment.VariableTypeStr,
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS",
+						Value: "1",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS_TYPE",
+						Value: environment.VariableTypeInt,
+					},
+
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING",
+						Value: "one",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_ENUM",
+						Value: "[one,two,three]",
+					},
+
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_TYPE",
+						Value: environment.VariableTypeStr,
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT",
+						Value: "10s",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT_TYPE",
+						Value: environment.VariableTypeDuration,
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER",
+						Value: "true",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER_TYPE",
+						Value: environment.VariableTypeBool,
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN",
+						Value: "[hacker228,mothe4acker]",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN_TYPE",
+						Value: environment.VariableTypeStr,
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING",
+						Value: "not so basic 🤡 string",
+					},
+					{
+						Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING_TYPE",
+						Value: environment.VariableTypeStr,
+					},
+				},
+			},
 		},
 	}
 }

@@ -107,18 +107,23 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (r *DataSources) MarshalEnv(prefix string) []evon.Node {
+func (r *DataSources) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]evon.Node, 0, len(*r))
+	out := make([]*evon.Node, 0, len(*r))
 	for _, resource := range *r {
 		resourceName := strings.Replace(resource.GetName(), "_", "-", -1)
-		out = append(out, evon.MarshalEnvWithPrefix(prefix+resourceName, resource)...)
+
+		nodes, err := evon.MarshalEnvWithPrefix(prefix+resourceName, resource)
+		if err != nil {
+			return nil, errors.Wrap(err, "error marshalling resource")
+		}
+		out = append(out, nodes)
 	}
 
-	return out
+	return out, nil
 }
 func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 	sources := make(DataSources, 0)

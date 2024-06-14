@@ -17,27 +17,27 @@ var ErrNotAPointer = errors.New("not a pointer")
 
 type Environment []*environment.Variable
 
-func (a *Environment) MarshalEnv(prefix string) []evon.Node {
+func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]evon.Node, 0, len(*a))
+	out := make([]*evon.Node, 0, len(*a))
 	for _, v := range *a {
 		pref := prefix + strings.NewReplacer(" ", "-", "_", "-").Replace(strings.ToUpper(v.Name))
 		out = append(out,
-			evon.Node{
+			&evon.Node{
 				Name:  pref,
 				Value: v.ValueString(),
 			},
-			evon.Node{
+			&evon.Node{
 				Name:  pref + "_TYPE",
 				Value: v.Type,
 			},
 		)
 
 		if len(v.Enum) != 0 {
-			out = append(out, evon.Node{
+			out = append(out, &evon.Node{
 				Name:  pref + "_ENUM",
 				Value: v.EnumString(),
 			})
@@ -48,7 +48,7 @@ func (a *Environment) MarshalEnv(prefix string) []evon.Node {
 		return out[i].Name < out[j].Name
 	})
 
-	return out
+	return out, nil
 }
 func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
 	env := make([]*environment.Variable, 0, len(rootNode.InnerNodes))

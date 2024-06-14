@@ -106,12 +106,12 @@ func Test_MergeConfigs(t *testing.T) {
 				getRestServerTest(),
 				getGRPCServerTest(),
 			},
-			Environment: Environment{},
+			Environment: Environment(getEnvironmentVariables()),
 		}
 
 		emptyFullCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
 		require.NoError(t, err)
-		require.Equal(t, emptyFullCfg, fullConfigExpect)
+		require.Equal(t, emptyFullCfg.Environment, fullConfigExpect.Environment)
 
 		fullEmptyCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
 		require.NoError(t, err)

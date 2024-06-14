@@ -74,18 +74,24 @@ func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (s *Servers) MarshalEnv(prefix string) []evon.Node {
+func (s *Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]evon.Node, 0)
+	out := make([]*evon.Node, 0)
 	for _, srv := range *s {
 		serverName := strings.Replace(srv.GetName(), "_", "-", -1)
-		out = append(out, evon.MarshalEnvWithPrefix(prefix+serverName, srv)...)
+
+		nodes, err := evon.MarshalEnvWithPrefix(prefix+serverName, srv)
+		if err != nil {
+			return nil, errors.Wrap(err, "error marshalling server")
+		}
+
+		out = append(out, nodes)
 	}
 
-	return out
+	return out, nil
 }
 func (s *Servers) UnmarshalEnv(rootNode *evon.Node) error {
 	srvs := make(Servers, 0)
