@@ -3,7 +3,7 @@ module github.com/godverv/matreshka
 go 1.22
 
 require (
-	github.com/Red-Sock/evon v0.0.8
+	github.com/Red-Sock/evon v0.0.9
 	github.com/Red-Sock/trace-errors v0.0.6
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
