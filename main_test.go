@@ -505,3 +505,27 @@ func getEvonFullConfig() *evon.Node {
 		},
 	}
 }
+
+func getFullConfig() AppConfig {
+	cfgExpect := NewEmptyConfig()
+	cfgExpect.AppInfo = AppInfo{
+		Name:            "matreshka",
+		Version:         "v0.0.1",
+		StartupDuration: 10 * time.Second,
+	}
+
+	cfgExpect.DataSources = append(cfgExpect.DataSources,
+		getPostgresClientTest(),
+		getRedisClientTest(),
+		getTelegramClientTest(),
+		getGRPCClientTest(),
+	)
+
+	cfgExpect.Servers = []servers.Api{
+		getRestServerTest(),
+		getGRPCServerTest(),
+	}
+
+	cfgExpect.Environment = getEnvironmentVariables()
+	return cfgExpect
+}

@@ -1,11 +1,13 @@
 package matreshka
 
 import (
+	"bytes"
 	stderrors "errors"
 	"os"
 	"sort"
 	"strings"
 
+	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
@@ -14,7 +16,6 @@ import (
 
 const (
 	VervName = "VERV_NAME"
-	ApiURL   = "MATRESHKA_URL"
 )
 
 func NewEmptyConfig() AppConfig {
@@ -125,6 +126,8 @@ func getFromEnvironment() AppConfig {
 	environ := os.Environ()
 
 	prefix := strings.ToUpper(projectName)
+
+	envVars := bytes.NewBuffer(nil)
 	for _, variable := range environ {
 		idx := strings.Index(variable, "=")
 		if idx == -1 {
@@ -133,12 +136,15 @@ func getFromEnvironment() AppConfig {
 
 		name := strings.ToUpper(variable[:idx])
 
-		if !strings.HasPrefix(name, prefix) {
-			continue
+		if strings.HasPrefix(name, prefix) {
+			envVars.WriteString(name)
+			envVars.WriteByte('=')
+			envVars.WriteString(os.Getenv(name))
+			envVars.WriteByte('\n')
 		}
-
-		//envConfig.Environment[strings.ToLower(name[len(prefix)+1:])] = variable[idx+1:]
 	}
+
+	evon.UnmarshalWithPrefix(prefix, envVars.Bytes(), &envConfig)
 
 	return envConfig
 }

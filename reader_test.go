@@ -1,6 +1,7 @@
 package matreshka
 
 import (
+	"bytes"
 	"os"
 	"path"
 	"testing"
@@ -33,6 +34,34 @@ func Test_ReadConfig(t *testing.T) {
 		cfg, err := getFromFile(cfgPath)
 		require.NoError(t, err)
 		require.Equal(t, cfg, NewEmptyConfig())
+	})
+
+	t.Run("OK_READ_FULL_FROM_FILE", func(t *testing.T) {
+		t.Parallel()
+
+		cfgGot, err := ParseConfig(fullConfig)
+		require.NoError(t, err)
+
+		cfgExpect := getFullConfig()
+
+		require.Equal(t, cfgExpect, cfgGot)
+	})
+
+	t.Run("OK_READ_FULL_FROM_ENVIRONMENT", func(t *testing.T) {
+		require.NoError(t, os.Setenv(VervName, "MATRESHKA"))
+		splitedEnvs := bytes.Split(dotEnvFullConfig, []byte{'\n'})
+
+		for _, env := range splitedEnvs {
+			if len(env) == 0 {
+				continue
+			}
+
+			nameVal := bytes.Split(env, []byte{'='})
+			require.NoError(t, os.Setenv(string(nameVal[0]), string(nameVal[1])))
+		}
+		envConfig := getFromEnvironment()
+		cfgExpect := getFullConfig()
+		require.Equal(t, cfgExpect, envConfig)
 	})
 
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
