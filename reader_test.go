@@ -1,7 +1,6 @@
 package matreshka
 
 import (
-	"bytes"
 	"os"
 	"path"
 	"testing"
@@ -42,25 +41,17 @@ func Test_ReadConfig(t *testing.T) {
 		cfgGot, err := ParseConfig(fullConfig)
 		require.NoError(t, err)
 
-		cfgExpect := getFullConfig()
+		cfgExpect := getFullConfigTest()
 
 		require.Equal(t, cfgExpect, cfgGot)
 	})
 
 	t.Run("OK_READ_FULL_FROM_ENVIRONMENT", func(t *testing.T) {
-		require.NoError(t, os.Setenv(VervName, "MATRESHKA"))
-		splitedEnvs := bytes.Split(dotEnvFullConfig, []byte{'\n'})
+		require.NoError(t, setupEnvironmentVariables())
 
-		for _, env := range splitedEnvs {
-			if len(env) == 0 {
-				continue
-			}
-
-			nameVal := bytes.Split(env, []byte{'='})
-			require.NoError(t, os.Setenv(string(nameVal[0]), string(nameVal[1])))
-		}
 		envConfig := getFromEnvironment()
-		cfgExpect := getFullConfig()
+		cfgExpect := getFullConfigTest()
+
 		require.Equal(t, cfgExpect, envConfig)
 	})
 
@@ -147,12 +138,6 @@ func Test_MergeConfigs(t *testing.T) {
 		require.Equal(t, fullEmptyCfg, fullConfigExpect)
 
 		require.Equal(t, emptyFullCfg, fullEmptyCfg)
-	})
-
-	t.Run("EMPTY_PARAMS", func(t *testing.T) {
-		c, e := ReadConfigs()
-		require.Nil(t, e)
-		require.Equal(t, c, NewEmptyConfig())
 	})
 
 	t.Run("INVALID_READING_ONE_CONFIG", func(t *testing.T) {

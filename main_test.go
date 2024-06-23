@@ -1,10 +1,13 @@
 package matreshka
 
 import (
+	"bytes"
 	_ "embed"
+	"os"
 	"time"
 
 	"github.com/Red-Sock/evon"
+	errors "github.com/Red-Sock/trace-errors"
 
 	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/resources"
@@ -506,7 +509,7 @@ func getEvonFullConfig() *evon.Node {
 	}
 }
 
-func getFullConfig() AppConfig {
+func getFullConfigTest() AppConfig {
 	cfgExpect := NewEmptyConfig()
 	cfgExpect.AppInfo = AppInfo{
 		Name:            "matreshka",
@@ -528,4 +531,30 @@ func getFullConfig() AppConfig {
 
 	cfgExpect.Environment = getEnvironmentVariables()
 	return cfgExpect
+}
+
+func setupEnvironmentVariables() error {
+	if os.Getenv(VervName) != "" {
+		return nil
+	}
+
+	err := os.Setenv(VervName, "MATRESHKA")
+	if err != nil {
+		return errors.Wrap(err, "error setting service name variable")
+	}
+
+	splitedEnvs := bytes.Split(dotEnvFullConfig, []byte{'\n'})
+
+	for _, env := range splitedEnvs {
+		if len(env) == 0 {
+			continue
+		}
+
+		nameVal := bytes.Split(env, []byte{'='})
+		err = os.Setenv(string(nameVal[0]), string(nameVal[1]))
+		if err != nil {
+			return errors.Wrap(err, "error setting env variable")
+		}
+	}
+	return nil
 }
