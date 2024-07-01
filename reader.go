@@ -64,8 +64,10 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 
 	for _, n := range env {
 		masterNode, ok := masterEnvStorage[n.Name]
-		if !ok || masterNode.Value == nil {
+		if !ok {
 			masterEnvStorage[n.Name] = n
+		} else if masterNode.Value == nil {
+			masterNode.Value = n.Value
 		}
 	}
 	masterConfig = NewEmptyConfig()
