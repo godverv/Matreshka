@@ -66,7 +66,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 		masterNode, ok := masterEnvStorage[n.Name]
 		if !ok {
 			masterEnvStorage[n.Name] = n
-		} else if masterNode.Value == nil {
+		} else {
 			masterNode.Value = n.Value
 		}
 	}
