@@ -25,23 +25,24 @@ func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	out := make([]*evon.Node, 0, len(*a))
 	for _, v := range *a {
 		pref := prefix + strings.NewReplacer(" ", "-", "_", "-").Replace(strings.ToUpper(v.Name))
-		out = append(out,
-			&evon.Node{
-				Name:  pref,
-				Value: v.ValueString(),
-			},
-			&evon.Node{
+		root := &evon.Node{
+			Name:  pref,
+			Value: v.ValueString(),
+			InnerNodes: []*evon.Node{{
 				Name:  pref + "_TYPE",
 				Value: v.Type,
 			},
-		)
+			},
+		}
 
 		if len(v.Enum) != 0 {
-			out = append(out, &evon.Node{
-				Name:  pref + "_ENUM",
-				Value: v.EnumString(),
-			})
+			root.InnerNodes = append(root.InnerNodes,
+				&evon.Node{
+					Name:  pref + "_ENUM",
+					Value: v.EnumString(),
+				})
 		}
+		out = append(out, root)
 	}
 
 	sort.Slice(out, func(i, j int) bool {

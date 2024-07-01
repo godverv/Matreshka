@@ -1,7 +1,6 @@
 package matreshka
 
 import (
-	"bytes"
 	stderrors "errors"
 	"os"
 	"sort"
@@ -54,7 +53,26 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 		}
 	}
 
-	masterConfig = MergeConfigs(getFromEnvironment(), masterConfig)
+	prefix, env := getEnvVars()
+
+	masterEnvStorage := evon.NodeStorage{}
+	masterEnv, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
+	if err != nil {
+		return masterConfig, errors.Wrap(err, "error marshalling to env")
+	}
+	masterEnvStorage.AddNode(masterEnv)
+
+	for _, n := range env {
+		masterNode, ok := masterEnvStorage[n.Name]
+		if !ok || masterNode.Value == nil {
+			masterEnvStorage[n.Name] = n
+		}
+	}
+	masterConfig = NewEmptyConfig()
+	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEnvStorage, &masterConfig)
+	if err != nil {
+		return masterConfig, errors.Wrap(err, "error unmarshalling back to config")
+	}
 
 	sort.Slice(masterConfig.Environment, func(i, j int) bool {
 		return masterConfig.Environment[i].Name < masterConfig.Environment[j].Name
@@ -115,19 +133,18 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	return master
 }
 
-func getFromEnvironment() AppConfig {
-	envConfig := NewEmptyConfig()
+func getEnvVars() (prefix string, envConfig evon.NodeStorage) {
+	envConfig = evon.NodeStorage{}
 
 	projectName := os.Getenv(VervName)
 	if projectName == "" {
-		return envConfig
+		return "", envConfig
 	}
 
 	environ := os.Environ()
 
-	prefix := strings.ToUpper(projectName)
+	prefix = strings.ToUpper(projectName)
 
-	envVars := bytes.NewBuffer(nil)
 	for _, variable := range environ {
 		idx := strings.Index(variable, "=")
 		if idx == -1 {
@@ -137,16 +154,15 @@ func getFromEnvironment() AppConfig {
 		name := strings.ToUpper(variable[:idx])
 
 		if strings.HasPrefix(name, prefix) {
-			envVars.WriteString(name)
-			envVars.WriteByte('=')
-			envVars.WriteString(os.Getenv(name))
-			envVars.WriteByte('\n')
+			envConfig.AddNode(&evon.Node{
+				Name:       name,
+				Value:      os.Getenv(name),
+				InnerNodes: nil,
+			})
 		}
 	}
 
-	evon.UnmarshalWithPrefix(prefix, envVars.Bytes(), &envConfig)
-
-	return envConfig
+	return prefix, envConfig
 }
 
 func getFromFile(pth string) (AppConfig, error) {

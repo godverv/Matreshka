@@ -138,7 +138,10 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 
 		dst := resources.GetResourceByName(name)
 
-		evon.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
+		err := evon.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
+		if err != nil {
+			return errors.Wrap(err, "error unmarshalling resource from env")
+		}
 		sources = append(sources, dst)
 	}
 

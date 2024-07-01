@@ -49,10 +49,12 @@ func Test_ReadConfig(t *testing.T) {
 	t.Run("OK_READ_FULL_FROM_ENVIRONMENT", func(t *testing.T) {
 		require.NoError(t, setupEnvironmentVariables())
 
-		envConfig := getFromEnvironment()
+		cfgGot, err := ReadConfigs()
+		require.NoError(t, err)
+
 		cfgExpect := getFullConfigTest()
 
-		require.Equal(t, cfgExpect, envConfig)
+		require.Equal(t, cfgGot, cfgExpect)
 	})
 
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
@@ -129,15 +131,25 @@ func Test_MergeConfigs(t *testing.T) {
 			Environment: Environment(getEnvironmentVariables()),
 		}
 
-		emptyFullCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
-		require.NoError(t, err)
-		require.Equal(t, emptyFullCfg.Environment, fullConfigExpect.Environment)
+		t.Run("EMPTY_MERGE_FULL", func(t *testing.T) {
+			// empty and full config merge
+			gotCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
+			require.NoError(t, err)
+			require.Equal(t, gotCfg, fullConfigExpect)
+		})
 
-		fullEmptyCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
-		require.NoError(t, err)
-		require.Equal(t, fullEmptyCfg, fullConfigExpect)
+		t.Run("FULL_MERGE_EMPTY", func(t *testing.T) {
+			gotCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
+			require.NoError(t, err)
+			require.Equal(t, gotCfg, fullConfigExpect)
+		})
 
-		require.Equal(t, emptyFullCfg, fullEmptyCfg)
+		t.Run("FULL_MERGE_ENV", func(t *testing.T) {
+			//require.NoError(t, setupEnvironmentVariables())
+			//gotCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
+			//require.NoError(t, err)
+			//require.Equal(t, gotCfg, fullConfigExpect)
+		})
 	})
 
 	t.Run("INVALID_READING_ONE_CONFIG", func(t *testing.T) {
