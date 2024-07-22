@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/Red-Sock/evon v0.0.13
-	github.com/Red-Sock/trace-errors v0.0.6
+	github.com/Red-Sock/trace-errors v0.0.7
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )

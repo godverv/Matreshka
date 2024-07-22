@@ -425,83 +425,103 @@ func getEvonFullConfig() *evon.Node {
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS",
 						Value: "[10,12,34,35,36,37,38,39,40]",
-					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS_TYPE",
-						Value: environment.VariableTypeInt,
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_AVAILABLE-PORTS_TYPE",
+								Value: environment.VariableTypeInt,
+							},
+						},
 					},
 
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT",
 						Value: "0.01",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT_TYPE",
+								Value: environment.VariableTypeFloat,
+							},
+						},
 					},
 
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH",
 						Value: "[0.01,0.02,0.03,0.04]",
-					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH_TYPE",
-						Value: environment.VariableTypeFloat,
-					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENT_TYPE",
-						Value: environment.VariableTypeFloat,
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_CREDIT-PERCENTS-BASED-ON-YEAR-OF-BIRTH_TYPE",
+								Value: environment.VariableTypeFloat,
+							},
+						},
 					},
 
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS",
 						Value: "1",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS_TYPE",
+								Value: environment.VariableTypeInt,
+							},
+						},
 					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_DATABASE-MAX-CONNECTIONS_TYPE",
-						Value: environment.VariableTypeInt,
-					},
-
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING",
 						Value: "one",
-					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_ENUM",
-						Value: "[one,two,three]",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_TYPE",
+								Value: environment.VariableTypeStr,
+							},
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_ENUM",
+								Value: "[one,two,three]",
+							},
+						},
 					},
 
 					{
-						Name:  "MATRESHKA_ENVIRONMENT_ONE-OF-WELCOME-STRING_TYPE",
-						Value: environment.VariableTypeStr,
-					},
-					{
 						Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT",
 						Value: "10s",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT_TYPE",
+								Value: environment.VariableTypeDuration,
+							},
+						},
 					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_REQUEST-TIMEOUT_TYPE",
-						Value: environment.VariableTypeDuration,
-					},
+
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER",
 						Value: "true",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER_TYPE",
+								Value: environment.VariableTypeBool,
+							},
+						},
 					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_TRUE-FALSER_TYPE",
-						Value: environment.VariableTypeBool,
-					},
+
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN",
 						Value: "[hacker228,mothe4acker]",
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN_TYPE",
+								Value: environment.VariableTypeStr,
+							},
+						},
 					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_USERNAMES-TO-BAN_TYPE",
-						Value: environment.VariableTypeStr,
-					},
+
 					{
 						Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING",
 						Value: "not so basic 🤡 string",
-					},
-					{
-						Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING_TYPE",
-						Value: environment.VariableTypeStr,
+						InnerNodes: []*evon.Node{
+							{
+								Name:  "MATRESHKA_ENVIRONMENT_WELCOME-STRING_TYPE",
+								Value: environment.VariableTypeStr,
+							},
+						},
 					},
 				},
 			},
