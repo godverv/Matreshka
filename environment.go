@@ -79,20 +79,43 @@ func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
 }
 
 func (a *Environment) GenerateCustomGoStruct() []byte {
-	buf := bytes.NewBuffer(nil)
-	buf.WriteString("package config\n")
-	buf.WriteString("type EnvironmentConfig struct {\n")
+	structBuffer := bytes.NewBuffer(nil)
+	imports := make(map[string]struct{})
+
+	structBuffer.WriteString("type EnvironmentConfig struct {\n")
 	for _, env := range *a {
-		buf.WriteByte('\t')
+		structBuffer.WriteByte('\t')
 		name := strings.ReplaceAll(env.Name, " ", "_")
-		buf.WriteString(cases.SnakeToPascal(name))
-		buf.WriteByte(' ')
-		buf.WriteString(environment.MapVariableToGoType(*env))
-		buf.WriteByte('\n')
+		structBuffer.WriteString(cases.SnakeToPascal(name))
+		structBuffer.WriteByte(' ')
+		typeName, importName := environment.MapVariableToGoType(*env)
+		structBuffer.WriteString(typeName)
+		structBuffer.WriteByte('\n')
+
+		if importName != "" {
+			imports[importName] = struct{}{}
+		}
 	}
 
-	buf.WriteByte('}')
-	return buf.Bytes()
+	structBuffer.WriteByte('}')
+
+	fileBuffer := bytes.NewBuffer(nil)
+	fileBuffer.WriteString("package config\n\n")
+
+	if len(imports) != 0 {
+		fileBuffer.WriteString("import (\n")
+		for importName := range imports {
+			fileBuffer.WriteByte('\t')
+			fileBuffer.WriteByte('"')
+			fileBuffer.WriteString(importName)
+			fileBuffer.WriteByte('"')
+			fileBuffer.WriteString("\n")
+		}
+		fileBuffer.WriteString(")\n\n")
+	}
+
+	fileBuffer.Write(structBuffer.Bytes())
+	return fileBuffer.Bytes()
 }
 
 func (a *Environment) ParseToStruct(dst any) error {

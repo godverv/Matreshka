@@ -18,7 +18,7 @@ func Test_Environment(t *testing.T) {
 		env := Environment(getEnvironmentVariables())
 
 		generatedCustomGoStruct := env.GenerateCustomGoStruct()
-		require.Equal(t, goCustomEnvStruct, generatedCustomGoStruct)
+		require.Equal(t, string(goCustomEnvStruct), string(generatedCustomGoStruct))
 	})
 
 	t.Run("parse_env_to_struct", func(t *testing.T) {
