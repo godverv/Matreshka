@@ -132,6 +132,19 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 		}
 	}
 
+	for _, slaveOverride := range slave.ServiceDiscovery.Overrides {
+		found := false
+		for _, masterOverride := range master.ServiceDiscovery.Overrides {
+			if masterOverride.ServiceName == slaveOverride.ServiceName {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			master.ServiceDiscovery.Overrides = append(master.ServiceDiscovery.Overrides, slaveOverride)
+		}
+	}
 	return master
 }
 

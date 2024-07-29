@@ -13,10 +13,11 @@ var (
 )
 
 type AppConfig struct {
-	AppInfo     `yaml:"app_info"`
-	DataSources `yaml:"data_sources"`
-	Servers     `yaml:"server"`
-	Environment `yaml:"environment"`
+	AppInfo          `yaml:"app_info"`
+	DataSources      `yaml:"data_sources"`
+	Servers          `yaml:"server"`
+	Environment      `yaml:"environment"`
+	ServiceDiscovery `yaml:"service_discovery,omitempty"`
 }
 
 func (a *AppConfig) Marshal() ([]byte, error) {

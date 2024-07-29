@@ -312,7 +312,7 @@ func getEvonFullConfig() *evon.Node {
 					},
 				},
 			},
-
+			// Data sources
 			{
 				Name: "MATRESHKA_DATA-SOURCES",
 				InnerNodes: []*evon.Node{
@@ -418,7 +418,7 @@ func getEvonFullConfig() *evon.Node {
 					},
 				},
 			},
-
+			// Environment
 			{
 				Name: "MATRESHKA_ENVIRONMENT",
 				InnerNodes: []*evon.Node{
@@ -524,6 +524,11 @@ func getEvonFullConfig() *evon.Node {
 						},
 					},
 				},
+			},
+			// ServiceDiscovery
+			{
+				Name:       "MATRESHKA_SERVICE-DISCOVERY",
+				InnerNodes: make([]*evon.Node, 0),
 			},
 		},
 	}

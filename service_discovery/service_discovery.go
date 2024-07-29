@@ -1,0 +1,77 @@
+package service_discovery
+
+import (
+	"strings"
+
+	"github.com/Red-Sock/evon"
+	errors "github.com/Red-Sock/trace-errors"
+)
+
+type Override struct {
+	ServiceName string `yaml:"service_name"`
+	Urls        Urls   `yaml:"urls"`
+}
+
+type Overrides []*Override
+
+type Urls []string
+
+func (o *Overrides) UnmarshalEnv(rootNode *evon.Node) error {
+	overrides := make(Overrides, 0)
+	for _, overrideNode := range rootNode.InnerNodes {
+		name := overrideNode.Name
+
+		if strings.HasPrefix(overrideNode.Name, rootNode.Name) {
+			name = name[len(rootNode.Name)+1:]
+		}
+
+		name = strings.Replace(name, "-", "_", -1)
+
+		dst := &Override{}
+
+		err := evon.NodeToStruct(overrideNode.Name, overrideNode, dst)
+		if err != nil {
+			return errors.Wrap(err, "error unmarshalling resource from env")
+		}
+		overrides = append(overrides, dst)
+	}
+
+	*o = overrides
+
+	return nil
+}
+func (o *Overrides) MarshalEnv(prefix string) ([]*evon.Node, error) {
+	if prefix != "" {
+		prefix += "_"
+	}
+
+	out := make([]*evon.Node, 0, len(*o))
+	for _, override := range *o {
+		overrideServiceName := strings.Replace(override.ServiceName, "_", "-", -1)
+
+		nodes, err := evon.MarshalEnvWithPrefix(prefix+overrideServiceName, override)
+		if err != nil {
+			return nil, errors.Wrap(err, "error marshalling service discovery override")
+		}
+
+		out = append(out, nodes)
+	}
+
+	return out, nil
+}
+
+func (o *Override) UnmarshalEnv(n *evon.Node) error {
+	return nil
+}
+
+func (u *Urls) UnmarshalEnv(n *evon.Node) error {
+	switch v := n.Value.(type) {
+	case string:
+		*u = strings.Split(v, " ")
+		return nil
+	default:
+		return errors.New("not a string value")
+	}
+
+	return nil
+}
