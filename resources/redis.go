@@ -24,3 +24,11 @@ func NewRedis(n Name) Resource {
 func (p *Redis) GetType() string {
 	return RedisResourceName
 }
+
+func (p *Redis) Obfuscate() Resource {
+	return &Redis{
+		Name: p.Name,
+		Host: "localhost",
+		Port: 6379,
+	}
+}

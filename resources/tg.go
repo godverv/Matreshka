@@ -17,3 +17,10 @@ func NewTelegram(n Name) Resource {
 func (t *Telegram) GetType() string {
 	return TelegramResourceName
 }
+
+func (t *Telegram) Obfuscate() Resource {
+	return &Telegram{
+		Name:   t.Name,
+		ApiKey: "123",
+	}
+}
