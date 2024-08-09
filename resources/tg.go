@@ -21,6 +21,6 @@ func (t *Telegram) GetType() string {
 func (t *Telegram) Obfuscate() Resource {
 	return &Telegram{
 		Name:   t.Name,
-		ApiKey: "123",
+		ApiKey: "",
 	}
 }
