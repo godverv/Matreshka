@@ -2,13 +2,14 @@ app_info:
   name: matreshka
   version: v0.0.1
   startup_duration: 10s
-server:
-  8080:
-    /{grpc}:
+servers:
+  "8080":
+    /{FS}:
+      dist: web/dist
+  "50051":
+    /{GRPC}:
       module: pkg/matreshka_be_api
       gateway: /api
-    /{client}:
-      path: web/dist
 data_sources:
   - resource_name: postgres
     host: localhost

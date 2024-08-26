@@ -39,13 +39,10 @@ func (s Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (s Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
-	if prefix != "" {
-		prefix += "_"
+	root := evon.Node{
+		Name: prefix,
 	}
 
-	root := evon.Node{
-		Name: prefix + "SERVERS",
-	}
 	ports := make([]int, 0, len(s))
 	for port := range s {
 		ports = append(ports, port)
@@ -56,9 +53,13 @@ func (s Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
 
 	sort.Ints(ports)
 
+	if prefix != "" {
+		prefix += "_"
+	}
+
 	for _, port := range ports {
 		srv := s[port]
-		subPrefix := root.Name + "_" + strconv.Itoa(port)
+		subPrefix := prefix + strconv.Itoa(port)
 		serverNodes, err := srv.MarshalEnv(subPrefix)
 		if err != nil {
 			return nil, errors.Wrap(err, "error marshalling server")

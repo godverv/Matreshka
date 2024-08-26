@@ -3,6 +3,7 @@ package matreshka
 import (
 	"os"
 	"path"
+	"sort"
 	"testing"
 	"time"
 
@@ -37,23 +38,39 @@ func Test_ReadConfig(t *testing.T) {
 	t.Run("OK_READ_FULL_FROM_FILE", func(t *testing.T) {
 		t.Parallel()
 
-		cfgGot, err := ParseConfig(fullConfig)
+		cfgActual, err := ParseConfig(fullConfig)
 		require.NoError(t, err)
 
 		cfgExpect := getFullConfigTest()
 
-		require.Equal(t, cfgExpect, cfgGot)
+		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
+			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
+		})
+
+		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
+			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
+		})
+
+		require.Equal(t, cfgExpect, cfgActual)
 	})
 
 	t.Run("OK_READ_FULL_FROM_ENVIRONMENT", func(t *testing.T) {
 		require.NoError(t, setupEnvironmentVariables())
 
-		cfgGot, err := ReadConfigs()
+		cfgActual, err := ReadConfigs()
 		require.NoError(t, err)
 
 		cfgExpect := getFullConfigTest()
 
-		require.Equal(t, cfgGot, cfgExpect)
+		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
+			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
+		})
+
+		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
+			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
+		})
+
+		require.Equal(t, cfgExpect, cfgActual)
 	})
 
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
@@ -111,7 +128,7 @@ func Test_MergeConfigs(t *testing.T) {
 					os.ModePerm))
 		}
 
-		fullConfigExpect := AppConfig{
+		expectedCfg := AppConfig{
 			AppInfo: AppInfo{
 				Name:            "matreshka",
 				Version:         "v0.0.1",
@@ -123,27 +140,28 @@ func Test_MergeConfigs(t *testing.T) {
 				getTelegramClientTest(),
 				getGRPCClientTest(),
 			},
+			Servers:     getConfigServersFull(),
 			Environment: Environment(getEnvironmentVariables()),
 		}
 
 		t.Run("EMPTY_MERGE_FULL", func(t *testing.T) {
 			// empty and full config merge
-			gotCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
+			actualCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
 			require.NoError(t, err)
-			require.Equal(t, gotCfg, fullConfigExpect)
+			require.Equal(t, expectedCfg, actualCfg)
 		})
 
 		t.Run("FULL_MERGE_EMPTY", func(t *testing.T) {
-			gotCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
+			actualCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
 			require.NoError(t, err)
-			require.Equal(t, gotCfg, fullConfigExpect)
+			require.Equal(t, expectedCfg, actualCfg)
 		})
 
 		t.Run("FULL_MERGE_ENV", func(t *testing.T) {
 			//require.NoError(t, setupEnvironmentVariables())
 			//gotCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
 			//require.NoError(t, err)
-			//require.Equal(t, gotCfg, fullConfigExpect)
+			//require.Equal(t, gotCfg, expectedCfg)
 		})
 	})
 

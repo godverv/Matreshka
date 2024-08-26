@@ -60,12 +60,13 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 	if err != nil {
 		return masterConfig, errors.Wrap(err, "error marshalling to env")
 	}
+
 	masterEnvStorage.AddNode(masterEnv)
 
 	for _, n := range env {
 		masterNode, ok := masterEnvStorage[n.Name]
 		if !ok {
-			masterEnvStorage[n.Name] = n
+			masterEnvStorage.AddNode(n)
 		} else {
 			masterNode.Value = n.Value
 		}
@@ -120,12 +121,12 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 		master.Environment = append(master.Environment, slaveVal)
 	}
 
-	// TODO
-	//for i := range slave.Servers {
-	//if master.Servers.get(slave.Servers[i].GetName()) == nil {
-	//	master.Servers = append(master.Servers, slave.Servers[i])
-	//}
-	//}
+	for slavePort, slaveServer := range slave.Servers {
+		_, ok := master.Servers[slavePort]
+		if !ok {
+			master.Servers[slavePort] = slaveServer
+		}
+	}
 
 	for i := range slave.DataSources {
 		if master.DataSources.get(slave.DataSources[i].GetName()) == nil {

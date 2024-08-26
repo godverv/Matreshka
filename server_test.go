@@ -61,7 +61,7 @@ func Test_Servers(t *testing.T) {
 			var cfgIn AppConfig
 			cfgIn.Servers = getConfigServersFull()
 
-			marshaledNodes, err := cfgIn.Servers.MarshalEnv("MATRESHKA")
+			marshaledNodes, err := cfgIn.Servers.MarshalEnv("MATRESHKA_SERVERS")
 			require.NoError(t, err)
 
 			marshalledBytes := evon.Marshal(marshaledNodes)

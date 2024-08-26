@@ -494,11 +494,11 @@ func getFullConfigTest() AppConfig {
 	cfgExpect.DataSources = append(cfgExpect.DataSources,
 		getPostgresClientTest(),
 		getRedisClientTest(),
-		getTelegramClientTest(),
 		getGRPCClientTest(),
+		getTelegramClientTest(),
 	)
 
-	//cfgExpect.Servers = []servers.Server{}
+	cfgExpect.Servers = getConfigServersFull()
 
 	cfgExpect.Environment = getEnvironmentVariables()
 	return cfgExpect
