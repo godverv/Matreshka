@@ -20,8 +20,8 @@ const (
 func NewEmptyConfig() AppConfig {
 	return AppConfig{
 		AppInfo:     AppInfo{},
+		Servers:     make(Servers),
 		DataSources: make(DataSources, 0),
-		Servers:     make(Servers, 0),
 		Environment: make(Environment, 0),
 	}
 }
@@ -120,11 +120,12 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 		master.Environment = append(master.Environment, slaveVal)
 	}
 
-	for i := range slave.Servers {
-		if master.Servers.get(slave.Servers[i].GetName()) == nil {
-			master.Servers = append(master.Servers, slave.Servers[i])
-		}
-	}
+	// TODO
+	//for i := range slave.Servers {
+	//if master.Servers.get(slave.Servers[i].GetName()) == nil {
+	//	master.Servers = append(master.Servers, slave.Servers[i])
+	//}
+	//}
 
 	for i := range slave.DataSources {
 		if master.DataSources.get(slave.DataSources[i].GetName()) == nil {

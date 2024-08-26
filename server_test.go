@@ -3,48 +3,103 @@ package matreshka
 import (
 	"testing"
 
+	"github.com/Red-Sock/evon"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
+
+	"github.com/godverv/matreshka/server"
 )
 
-func Test_GetApi(t *testing.T) {
-	t.Parallel()
+func Test_Servers(t *testing.T) {
+	t.Run("YAML", func(t *testing.T) {
+		t.Run("Marshal_OK", func(t *testing.T) {
+			t.Parallel()
 
-	t.Run("OK", func(t *testing.T) {
-		cfg, err := ParseConfig(fullConfig)
-		require.NoError(t, err)
+			var cfgIn AppConfig
+			cfgIn.Servers = getConfigServersFull()
 
-		grpcCfg, err := cfg.Servers.GRPC("grpc")
-		require.NoError(t, err)
-		require.Equal(t, grpcCfg, getGRPCServerTest())
+			marshaled, err := cfgIn.Marshal()
+			require.NoError(t, err)
 
-		restCfg, err := cfg.Servers.REST("rest")
-		require.NoError(t, err)
-		require.Equal(t, restCfg, getRestServerTest())
+			var actual map[any]any
+
+			require.NoError(t, yaml.Unmarshal(marshaled, &actual))
+
+			expected := map[any]any{
+				"servers": map[any]any{
+					8080: map[string]any{
+						"/{FS}": map[string]any{
+							"dist": "web/dist",
+						},
+					},
+					50051: map[string]any{
+						"/{GRPC}": map[string]any{
+							"module":  "pkg/matreshka_be_api",
+							"gateway": "/api",
+						},
+					},
+				},
+			}
+
+			require.Equal(t, expected, actual)
+		})
+		t.Run("Unmarshal_OK", func(t *testing.T) {
+			t.Parallel()
+
+			cfg, err := ParseConfig(apiConfig)
+			require.NoError(t, err)
+
+			servers := getConfigServersFull()
+			require.Equal(t, cfg.Servers, servers)
+		})
 	})
 
-	t.Run("ERROR_NOT_FOUND", func(t *testing.T) {
-		cfg, err := ParseConfig(emptyConfig)
-		require.NoError(t, err)
+	t.Run("ENV", func(t *testing.T) {
+		t.Run("Marshal", func(t *testing.T) {
+			t.Parallel()
 
-		grpcCfg, err := cfg.Servers.GRPC("jrpc_server")
-		require.ErrorIs(t, err, ErrNotFound)
-		require.Nil(t, grpcCfg)
+			var cfgIn AppConfig
+			cfgIn.Servers = getConfigServersFull()
 
-		restCfg, err := cfg.Servers.REST("full_rest_server")
-		require.ErrorIs(t, err, ErrNotFound)
-		require.Nil(t, restCfg)
+			marshaledNodes, err := cfgIn.Servers.MarshalEnv("MATRESHKA")
+			require.NoError(t, err)
+
+			marshalledBytes := evon.Marshal(marshaledNodes)
+			require.Equal(t, string(apiEnvConfig), string(marshalledBytes))
+		})
+		t.Run("Unmarshal", func(t *testing.T) {
+			t.Parallel()
+			cfg := NewEmptyConfig()
+			err := evon.UnmarshalWithPrefix("MATRESHKA", apiEnvConfig, &cfg)
+			require.NoError(t, err)
+
+			servers := getConfigServersFull()
+			require.Equal(t, cfg.Servers, servers)
+		})
 	})
 
-	t.Run("ERROR_INVALID_TYPE", func(t *testing.T) {
-		cfg, err := ParseConfig(fullConfig)
-		require.NoError(t, err)
+}
 
-		grpcCfg, err := cfg.Servers.GRPC("rest")
-		require.ErrorIs(t, err, ErrUnexpectedType)
-		require.Nil(t, grpcCfg)
-
-		restCfg, err := cfg.Servers.REST("grpc")
-		require.ErrorIs(t, err, ErrUnexpectedType)
-		require.Nil(t, restCfg)
-	})
+func getConfigServersFull() Servers {
+	return Servers{
+		8080: {
+			GRPC: map[string]*server.GRPC{},
+			FS: map[string]*server.FS{
+				"/{FS}": {
+					Dist: "web/dist",
+				},
+			},
+			HTTP: map[string]*server.HTTP{},
+		},
+		50051: {
+			GRPC: map[string]*server.GRPC{
+				"/{GRPC}": {
+					Module:  "pkg/matreshka_be_api",
+					Gateway: "/api",
+				},
+			},
+			FS:   map[string]*server.FS{},
+			HTTP: map[string]*server.HTTP{},
+		},
+	}
 }

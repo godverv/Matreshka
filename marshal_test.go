@@ -45,10 +45,7 @@ func Test_Unmarshal(t *testing.T) {
 			getTelegramClientTest(),
 			getGRPCClientTest(),
 		},
-		Servers: Servers{
-			getRestServerTest(),
-			getGRPCServerTest(),
-		},
+		Servers:     Servers{},
 		Environment: getEnvironmentVariables(),
 	}
 	t.Run("ENV", func(t *testing.T) {

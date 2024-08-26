@@ -11,21 +11,22 @@ import (
 
 	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/resources"
-	"github.com/godverv/matreshka/servers"
 )
 
 var (
 	//go:embed tests/empty_config.yaml
 	emptyConfig []byte
 
+	//go:embed tests/api_config.yaml
+	apiConfig []byte
+	//go:embed tests/.env.api_config
+	apiEnvConfig []byte
+
 	//go:embed tests/full_config.yaml
 	fullConfig []byte
 
 	//go:embed tests/.env.full_config
 	dotEnvFullConfig []byte
-
-	//go:embed tests/go.environment_struct.generated
-	goCustomEnvStruct []byte
 )
 
 func getPostgresClientTest() *resources.Postgres {
@@ -177,58 +178,6 @@ func getTelegramClientEnvs() []evon.Node {
 		{
 			Name:  name + "_resource_name",
 			Value: telegram.GetName(),
-		},
-	}
-}
-
-func getRestServerTest() *servers.Rest {
-	return &servers.Rest{
-		Name: "rest",
-		Port: 8080,
-	}
-}
-func getRestServerEnvs() []evon.Node {
-	rest := getRestServerTest()
-	serverName := rest.GetName()
-
-	return []evon.Node{
-		{
-			Name:  serverName,
-			Value: rest,
-		},
-		{
-			Name:  serverName + "_name",
-			Value: rest.GetName(),
-		},
-		{
-			Name:  serverName + "_port",
-			Value: int(rest.Port),
-		},
-	}
-}
-
-func getGRPCServerTest() *servers.GRPC {
-	return &servers.GRPC{
-		Name: "grpc",
-		Port: 50051,
-	}
-}
-func getGRPCServerEnvs() []evon.Node {
-	grpc := getGRPCServerTest()
-
-	serverName := grpc.GetName()
-	return []evon.Node{
-		{
-			Name:  serverName,
-			Value: grpc,
-		},
-		{
-			Name:  serverName + "_name",
-			Value: grpc.GetName(),
-		},
-		{
-			Name:  serverName + "_port",
-			Value: int(grpc.Port),
 		},
 	}
 }
@@ -549,10 +498,7 @@ func getFullConfigTest() AppConfig {
 		getGRPCClientTest(),
 	)
 
-	cfgExpect.Servers = []servers.Api{
-		getRestServerTest(),
-		getGRPCServerTest(),
-	}
+	//cfgExpect.Servers = []servers.Server{}
 
 	cfgExpect.Environment = getEnvironmentVariables()
 	return cfgExpect

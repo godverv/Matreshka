@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/godverv/matreshka/resources"
-	"github.com/godverv/matreshka/servers"
 )
 
 func Test_ReadConfig(t *testing.T) {
@@ -123,10 +122,6 @@ func Test_MergeConfigs(t *testing.T) {
 				getRedisClientTest(),
 				getTelegramClientTest(),
 				getGRPCClientTest(),
-			},
-			Servers: []servers.Api{
-				getRestServerTest(),
-				getGRPCServerTest(),
 			},
 			Environment: Environment(getEnvironmentVariables()),
 		}

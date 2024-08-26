@@ -1,126 +1,90 @@
 package matreshka
 
 import (
-	"strings"
+	"sort"
+	"strconv"
 
 	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/godverv/matreshka/servers"
+	"github.com/godverv/matreshka/server"
 )
 
-type Servers []servers.Api
+type Servers map[int]*server.Server
 
-func (s *Servers) GRPC(name string) (*servers.GRPC, error) {
-	res := s.get(name)
-	if res == nil {
-		return nil, ErrNotFound
-	}
-
-	out, ok := res.(*servers.GRPC)
-	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
-	}
-
-	return out, nil
-}
-
-func (s *Servers) REST(name string) (*servers.Rest, error) {
-	res := s.get(name)
-	if res == nil {
-		return nil, ErrNotFound
-	}
-
-	out, ok := res.(*servers.Rest)
-	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
-	}
-
-	return out, nil
-}
-
-func (s *Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var apiNodes []yaml.Node
-	err := unmarshal(&apiNodes)
+func (s Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var portToServers map[string]yaml.Node
+	err := unmarshal(&portToServers)
 	if err != nil {
 		return errors.Wrap(err, "error unmarshalling to yaml.Nodes")
 	}
 
-	actualApi := make([]servers.Api, len(apiNodes))
-
-	for apiIdx, apiNode := range apiNodes {
-		if len(apiNode.Content) == 0 {
-			continue
-		}
-
-		var apiName string
-		for nodeIdx := 0; nodeIdx < len(apiNode.Content); nodeIdx += 2 {
-			if apiNode.Content[nodeIdx].Value == "name" {
-				apiName = apiNode.Content[nodeIdx+1].Value
-				break
-			}
-		}
-
-		actualApi[apiIdx] = servers.GetServerByName(apiName)
-		err = apiNode.Decode(actualApi[apiIdx])
+	for portStr, node := range portToServers {
+		srv := &server.Server{}
+		err = node.Decode(&srv)
 		if err != nil {
-			return errors.Wrapf(err, "error decoding to struct of type %T", actualApi[apiIdx])
+			return errors.Wrap(err, "error decoding server")
 		}
-	}
 
-	*s = actualApi
+		port, err := strconv.Atoi(portStr)
+		if err != nil {
+			return errors.Wrap(err, "error converting port to int")
+		}
+
+		s[port] = srv
+	}
 
 	return nil
 }
 
-func (s *Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
+func (s Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]*evon.Node, 0)
-	for _, srv := range *s {
-		serverName := strings.Replace(srv.GetName(), "_", "-", -1)
+	root := evon.Node{
+		Name: prefix + "SERVERS",
+	}
+	ports := make([]int, 0, len(s))
+	for port := range s {
+		ports = append(ports, port)
+	}
+	if len(ports) == 0 {
+		return nil, nil
+	}
 
-		nodes, err := evon.MarshalEnvWithPrefix(prefix+serverName, srv)
+	sort.Ints(ports)
+
+	for _, port := range ports {
+		srv := s[port]
+		subPrefix := root.Name + "_" + strconv.Itoa(port)
+		serverNodes, err := srv.MarshalEnv(subPrefix)
 		if err != nil {
 			return nil, errors.Wrap(err, "error marshalling server")
 		}
 
-		out = append(out, nodes)
+		root.InnerNodes = append(root.InnerNodes, serverNodes...)
+
 	}
-
-	return out, nil
-}
-func (s *Servers) UnmarshalEnv(rootNode *evon.Node) error {
-	srvs := make(Servers, 0)
-	for _, serverNode := range rootNode.InnerNodes {
-		name := serverNode.Name
-
-		if strings.HasPrefix(serverNode.Name, rootNode.Name) {
-			name = name[len(rootNode.Name)+1:]
-		}
-
-		name = strings.Replace(name, "-", "_", -1)
-
-		dst := servers.GetServerByName(name)
-
-		evon.NodeToStruct(serverNode.Name, serverNode, dst)
-		srvs = append(srvs, dst)
-	}
-
-	*s = srvs
-
-	return nil
+	return []*evon.Node{&root}, nil
 }
 
-func (s *Servers) get(name string) servers.Api {
-	for _, item := range *s {
-		if item.GetName() == name {
-			return item
-		}
-	}
+func (s Servers) UnmarshalEnv(rootNode *evon.Node) error {
+	for _, v := range rootNode.InnerNodes {
+		port := v.Name[len(rootNode.Name)+1:]
 
+		p, err := strconv.Atoi(port)
+		if err != nil {
+			return errors.Wrap(err, "expected port value to be integer")
+		}
+		srv := &server.Server{}
+		err = srv.UnmarshalEnv(v)
+		if err != nil {
+			return errors.Wrap(err, "error unmarshalling server description")
+		}
+
+		s[p] = srv
+	}
 	return nil
 }

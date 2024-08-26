@@ -1,0 +1,9 @@
+package config
+
+import (
+    "github.com/matreshka/resources"
+)
+
+type DataSources struct {
+    {{ range .DataSources }} {{ . }} {{ end }}
+}

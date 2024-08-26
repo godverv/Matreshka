@@ -1,11 +1,8 @@
-app_info:
-    name: matreshka
-    version: ""
-    startup_duration: 0s
-data_sources: []
-server:
-    - name: rest
-      port: 8080
-    - name: grpc
-      port: 50051
-environment: {}
+servers:
+  "8080":
+    /{FS}:
+      dist: web/dist
+  "50051":
+    /{GRPC}:
+      module: pkg/matreshka_be_api
+      gateway: /api
