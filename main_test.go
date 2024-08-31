@@ -21,6 +21,12 @@ var (
 	apiConfig []byte
 	//go:embed tests/.env.api_config
 	apiEnvConfig []byte
+	//go:embed tests/api_config.invalid_port.yaml
+	apiInvalidPortConfig []byte
+	//go:embed tests/api_config.invalid.yaml
+	apiInvalidStructConfig []byte
+	//go:embed tests/api_config.invalid_item.yaml
+	apiInvalidItemConfig []byte
 
 	//go:embed tests/full_config.yaml
 	fullConfig []byte

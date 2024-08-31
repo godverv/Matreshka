@@ -1,0 +1,4 @@
+servers:
+  "string":
+    /{FS}:
+      dist: web/dist

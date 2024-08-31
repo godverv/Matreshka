@@ -1,12 +1,14 @@
 package matreshka
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
 
+	"github.com/godverv/matreshka/internal/cases"
 	"github.com/godverv/matreshka/resources"
 )
 
@@ -146,6 +148,34 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 	}
 
 	*r = sources
+
+	return nil
+}
+
+func (r *DataSources) ParseToStruct(dst any) error {
+	dstRef := reflect.ValueOf(dst)
+	if dstRef.Kind() != reflect.Ptr {
+		return errors.Wrap(ErrNotAPointer, "expected destination to be a pointer ")
+	}
+
+	dstRef = dstRef.Elem()
+	numFields := dstRef.NumField()
+
+	dstMapping := make(map[string]reflect.Value)
+
+	for i := 0; i < numFields; i++ {
+		field := dstRef.Type().Field(i)
+		dstMapping[field.Name] = dstRef.Field(i)
+	}
+
+	for _, ds := range *r {
+		name := ds.GetName()
+		name = strings.ReplaceAll(name, " ", "_")
+		name = cases.SnakeToPascal(name)
+		v := dstMapping[name]
+
+		v.Set(reflect.ValueOf(ds))
+	}
 
 	return nil
 }

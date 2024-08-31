@@ -1,7 +1,6 @@
 package matreshka
 
 import (
-	"bytes"
 	"reflect"
 	"sort"
 	"strings"
@@ -76,46 +75,6 @@ func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
 
 	*a = env
 	return nil
-}
-
-func (a *Environment) GenerateCustomGoStruct() []byte {
-	structBuffer := bytes.NewBuffer(nil)
-	imports := make(map[string]struct{})
-
-	structBuffer.WriteString("type EnvironmentConfig struct {\n")
-	for _, env := range *a {
-		structBuffer.WriteByte('\t')
-		name := strings.ReplaceAll(env.Name, " ", "_")
-		structBuffer.WriteString(cases.SnakeToPascal(name))
-		structBuffer.WriteByte(' ')
-		typeName, importName := environment.MapVariableToGoType(*env)
-		structBuffer.WriteString(typeName)
-		structBuffer.WriteByte('\n')
-
-		if importName != "" {
-			imports[importName] = struct{}{}
-		}
-	}
-
-	structBuffer.WriteByte('}')
-
-	fileBuffer := bytes.NewBuffer(nil)
-	fileBuffer.WriteString("package config\n\n")
-
-	if len(imports) != 0 {
-		fileBuffer.WriteString("import (\n")
-		for importName := range imports {
-			fileBuffer.WriteByte('\t')
-			fileBuffer.WriteByte('"')
-			fileBuffer.WriteString(importName)
-			fileBuffer.WriteByte('"')
-			fileBuffer.WriteString("\n")
-		}
-		fileBuffer.WriteString(")\n\n")
-	}
-
-	fileBuffer.Write(structBuffer.Bytes())
-	return fileBuffer.Bytes()
 }
 
 func (a *Environment) ParseToStruct(dst any) error {
