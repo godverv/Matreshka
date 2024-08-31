@@ -6,7 +6,7 @@ type Sqlite struct {
 	Name `yaml:"resource_name" env:"-"`
 
 	Path             string `yaml:"path"`
-	MigrationsFolder string `yaml:"migrations_folder,omitempty"`
+	MigrationsFolder `yaml:"migrations_folder,omitempty"`
 }
 
 func NewSqlite(n Name) Resource {
@@ -27,4 +27,12 @@ func (p *Sqlite) Obfuscate() Resource {
 		Path:             p.Path,
 		MigrationsFolder: p.MigrationsFolder,
 	}
+}
+
+func (p *Sqlite) ConnectionString() string {
+	return p.Path
+}
+
+func (p *Sqlite) SqlDialect() string {
+	return "sqlite"
 }

@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
@@ -10,6 +11,8 @@ const PostgresResourceName = "postgres"
 
 type Postgres struct {
 	Name `yaml:"resource_name" env:"-"`
+
+	MigrationsFolder `yaml:"migrations_folder"`
 
 	Host string `yaml:"host"`
 	Port uint64 `yaml:"port"`
@@ -55,4 +58,18 @@ func (p *Postgres) Obfuscate() Resource {
 		DbName:  "master",
 		SslMode: "",
 	}
+}
+
+func (p *Postgres) ConnectionString() string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s",
+		p.User,
+		p.Pwd,
+		p.Host,
+		p.Port,
+		p.DbName,
+	)
+}
+
+func (p *Postgres) SqlDialect() string {
+	return "postgres"
 }
