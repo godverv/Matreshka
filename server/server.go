@@ -11,9 +11,12 @@ const (
 
 	grpcPath       = "/{GRPC}"
 	fileServerPath = "/{FS}"
+
+	fieldName = "name"
 )
 
 type Server struct {
+	Name string `yaml:"name,omitempty"`
 	GRPC map[string]*GRPC
 	FS   map[string]*FS
 
@@ -33,17 +36,23 @@ func (s *Server) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	for key, value := range m {
-		// TODO пока что думаем что конфиг будет по корню,
-		// TODO но потом надо задуматься над не корневыми конфигами
-		vPtr := s.getPtrToImplByWebPath(key)
-		if vPtr == nil {
-			continue
+
+		switch key {
+		case fieldName:
+			s.Name = value.Value
+		default:
+			// TODO пока что думаем что конфиг будет по корню,
+			// TODO но потом надо задуматься над не корневыми конфигами
+			vPtr := s.getPtrToImplByWebPath(key)
+			if vPtr == nil {
+				continue
+			}
+			err = value.Decode(vPtr)
+			if err != nil {
+				return errors.Wrapf(err, "error decoding server description of type %T", vPtr)
+			}
 		}
 
-		err = value.Decode(vPtr)
-		if err != nil {
-			return errors.Wrapf(err, "error decoding server description of type %T", vPtr)
-		}
 	}
 
 	return nil
@@ -51,6 +60,10 @@ func (s *Server) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func (s *Server) MarshalYAML() (any, error) {
 	m := map[string]any{}
+
+	if s.Name != "" {
+		m[fieldName] = s.Name
+	}
 
 	for path, srv := range s.GRPC {
 		m[path] = srv

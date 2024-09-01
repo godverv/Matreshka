@@ -1,0 +1,9 @@
+servers:
+  "8080":
+    name: Main
+    /{FS}:
+      dist: web/dist
+  "50051":
+    /{GRPC}:
+      module: pkg/matreshka_be_api
+      gateway: /api

@@ -43,6 +43,41 @@ func Test_Servers(t *testing.T) {
 
 			require.Equal(t, expected, actual)
 		})
+		t.Run("Marshal_With_Name_OK", func(t *testing.T) {
+			t.Parallel()
+
+			var cfgIn AppConfig
+			cfgIn.Servers = getConfigServersFull()
+			cfgIn.Servers[8080].Name = "Main"
+			cfgIn.Servers[50051].Name = "Grpc"
+
+			marshaled, err := cfgIn.Marshal()
+			require.NoError(t, err)
+
+			var actual map[any]any
+
+			require.NoError(t, yaml.Unmarshal(marshaled, &actual))
+
+			expected := map[any]any{
+				"servers": map[any]any{
+					8080: map[string]any{
+						"name": "Main",
+						"/{FS}": map[string]any{
+							"dist": "web/dist",
+						},
+					},
+					50051: map[string]any{
+						"name": "Grpc",
+						"/{GRPC}": map[string]any{
+							"module":  "pkg/matreshka_be_api",
+							"gateway": "/api",
+						},
+					},
+				},
+			}
+
+			require.Equal(t, expected, actual)
+		})
 		t.Run("Unmarshal_OK", func(t *testing.T) {
 			t.Parallel()
 
@@ -50,6 +85,16 @@ func Test_Servers(t *testing.T) {
 			require.NoError(t, err)
 
 			servers := getConfigServersFull()
+			require.Equal(t, cfg.Servers, servers)
+		})
+		t.Run("Unmarshal_With_Name_OK", func(t *testing.T) {
+			t.Parallel()
+
+			cfg, err := ParseConfig(apiConfigWithName)
+			require.NoError(t, err)
+
+			servers := getConfigServersFull()
+			servers[8080].Name = "Main"
 			require.Equal(t, cfg.Servers, servers)
 		})
 
