@@ -53,7 +53,7 @@ func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
 	env := make([]*environment.Variable, 0, len(rootNode.InnerNodes))
 
-	replacer := strings.NewReplacer("-", " ")
+	replacer := strings.NewReplacer("-", "_")
 
 	for _, e := range rootNode.InnerNodes {
 		name := e.Name[len(rootNode.Name)+1:]
