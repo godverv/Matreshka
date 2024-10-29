@@ -21,14 +21,6 @@ func (p *Sqlite) GetType() string {
 	return SqliteResourceName
 }
 
-func (p *Sqlite) Obfuscate() Resource {
-	return &Sqlite{
-		Name:             p.Name,
-		Path:             p.Path,
-		MigrationsFolder: p.MigrationsFolder,
-	}
-}
-
 func (p *Sqlite) ConnectionString() string {
 	return p.Path
 }

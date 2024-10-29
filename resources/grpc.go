@@ -18,11 +18,3 @@ func NewGRPC(n Name) Resource {
 func (g *GRPC) GetType() string {
 	return GrpcResourceName
 }
-
-func (g *GRPC) Obfuscate() Resource {
-	return &GRPC{
-		Name:             g.Name,
-		ConnectionString: "localhost:50051",
-		Module:           g.Module,
-	}
-}

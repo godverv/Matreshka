@@ -48,18 +48,6 @@ func (p *Postgres) MarshalYAML() (interface{}, error) {
 	return *p, nil
 }
 
-func (p *Postgres) Obfuscate() Resource {
-	return &Postgres{
-		Name:    p.Name,
-		Host:    "localhost",
-		Port:    5432,
-		User:    "postgres",
-		Pwd:     "postgres",
-		DbName:  "master",
-		SslMode: "",
-	}
-}
-
 func (p *Postgres) ConnectionString() string {
 	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s",
 		p.User,

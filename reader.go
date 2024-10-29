@@ -2,13 +2,14 @@ package matreshka
 
 import (
 	stderrors "errors"
+	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
 
 	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
-	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/environment"
 )
@@ -198,8 +199,23 @@ func getFromFile(pth string) (AppConfig, error) {
 		err = stderrors.Join(err, closerErr)
 	}()
 
+	fi, err := f.Stat()
+	if err != nil {
+		return AppConfig{}, errors.Wrap(err, "error getting config file info")
+	}
+
+	if fi.Size() > 1_000_000 {
+		return AppConfig{}, fmt.Errorf("config file too large (more than a 1 MB)")
+	}
+
 	c := NewEmptyConfig()
-	err = yaml.NewDecoder(f).Decode(&c)
+
+	bts, err := io.ReadAll(f)
+	if err != nil {
+		return c, errors.Wrap(err, "error reading file")
+	}
+
+	err = c.Unmarshal(bts)
 	if err != nil {
 		return c, errors.Wrap(err, "error decoding config to struct")
 	}

@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/godverv/matreshka/resources"
 )
 
 const (
@@ -81,45 +79,4 @@ func Test_GetResources(t *testing.T) {
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Nil(t, tgCfg)
 	})
-}
-
-func Test_ResourceObfuscation(t *testing.T) {
-	t.Parallel()
-
-	cfg, err := ParseConfig(fullConfig)
-	require.NoError(t, err)
-
-	postgresCfg, _ := cfg.DataSources.Postgres(postgresResourceName)
-	expectedPg := &resources.Postgres{
-		Name:   postgresResourceName,
-		Host:   "localhost",
-		Port:   5432,
-		User:   "postgres",
-		Pwd:    "postgres",
-		DbName: "master",
-	}
-	require.Equal(t, expectedPg, postgresCfg.Obfuscate())
-
-	redisCfg, _ := cfg.DataSources.Redis(redisResourceName)
-	expectedRedis := &resources.Redis{
-		Name: redisResourceName,
-		Host: "localhost",
-		Port: 6379,
-	}
-
-	require.Equal(t, expectedRedis, redisCfg.Obfuscate())
-
-	grpcCfg, _ := cfg.DataSources.GRPC(grpcResourceName)
-	expectedGrpc := &resources.GRPC{
-		Name:             grpcResourceName,
-		ConnectionString: "localhost:50051",
-		Module:           grpcResourceModule,
-	}
-	require.Equal(t, expectedGrpc, grpcCfg.Obfuscate())
-
-	tgCfg, _ := cfg.DataSources.Telegram(telegramResourceName)
-	expectedTelegram := &resources.Telegram{
-		Name: telegramResourceName,
-	}
-	require.Equal(t, expectedTelegram, tgCfg.Obfuscate())
 }

@@ -6,8 +6,6 @@ type Unknown struct {
 	Content map[string]string
 }
 
-func (u *Unknown) Obfuscate() Resource { return u }
-
 func (u *Unknown) GetType() string {
 	return "Unknown"
 }

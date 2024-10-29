@@ -8,7 +8,6 @@ type Resource interface {
 	// GetName - returns Name defined in config file
 	GetName() string
 	GetType() string
-	Obfuscate() Resource
 }
 
 type Name string

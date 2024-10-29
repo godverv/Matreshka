@@ -1,7 +1,7 @@
 package matreshka
 
 import (
-	"sort"
+	"strings"
 
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
@@ -34,9 +34,11 @@ func (a *AppConfig) Unmarshal(b []byte) error {
 		return errors.Wrap(err)
 	}
 
-	sort.Slice(a.Environment, func(i, j int) bool {
-		return a.Environment[i].Name < a.Environment[j].Name
-	})
+	envNameReplacer := strings.NewReplacer(" ", "_", "-", "_")
+
+	for i := range a.Environment {
+		a.Environment[i].Name = envNameReplacer.Replace(a.Environment[i].Name)
+	}
 
 	return nil
 }
