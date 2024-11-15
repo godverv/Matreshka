@@ -1,6 +1,6 @@
 module github.com/godverv/matreshka
 
-go 1.22
+go 1.23.3
 
 require (
 	github.com/Red-Sock/evon v0.0.14

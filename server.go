@@ -13,6 +13,16 @@ import (
 
 type Servers map[int]*server.Server
 
+func (s Servers) GetByName(name string) *server.Server {
+	for _, serv := range s {
+		if serv.Name == name {
+			return serv
+		}
+	}
+
+	return nil
+}
+
 func (s Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var portToServers map[string]yaml.Node
 	err := unmarshal(&portToServers)
@@ -21,7 +31,10 @@ func (s Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	for portStr, node := range portToServers {
-		srv := &server.Server{}
+		srv := &server.Server{
+			Port: portStr,
+		}
+
 		err = node.Decode(&srv)
 		if err != nil {
 			return errors.Wrap(err, "error decoding server")

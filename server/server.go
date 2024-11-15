@@ -17,6 +17,8 @@ const (
 
 type Server struct {
 	Name string `yaml:"name,omitempty"`
+	Port string `yaml:"-"`
+
 	GRPC map[string]*GRPC
 	FS   map[string]*FS
 
