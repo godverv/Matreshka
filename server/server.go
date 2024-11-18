@@ -1,6 +1,9 @@
 package server
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/Red-Sock/evon"
 	errors "github.com/Red-Sock/trace-errors"
 	"gopkg.in/yaml.v3"
@@ -13,6 +16,7 @@ const (
 	fileServerPath = "/{FS}"
 
 	fieldName = "name"
+	portField = "port"
 )
 
 type Server struct {
@@ -38,7 +42,6 @@ func (s *Server) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	for key, value := range m {
-
 		switch key {
 		case fieldName:
 			s.Name = value.Value
@@ -86,6 +89,13 @@ func (s *Server) MarshalEnv(name string) ([]*evon.Node, error) {
 	root := &evon.Node{
 		Name: name,
 	}
+	if s.Port == "" {
+		return nil, errors.New("server must have port")
+	}
+	root.InnerNodes = append(root.InnerNodes, &evon.Node{
+		Name:  name + "_PORT",
+		Value: s.Port,
+	})
 
 	if name != "" {
 		name += "_"
@@ -130,6 +140,13 @@ func (s *Server) UnmarshalEnv(v *evon.Node) error {
 	s.FS = make(map[string]*FS)
 
 	for _, node := range v.InnerNodes {
+
+		suffix := node.Name[len(v.Name)+1:]
+		switch strings.ToLower(suffix) {
+		case portField:
+			s.Port = fmt.Sprint(node.Value)
+			continue
+		}
 		webPath := node.Name[len(v.Name)+1:]
 		ptr := s.getPtrToImplByWebPath(webPath)
 		if ptr == nil {

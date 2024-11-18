@@ -42,14 +42,9 @@ func Test_ReadConfig(t *testing.T) {
 		require.NoError(t, err)
 
 		cfgExpect := getFullConfigTest()
-
-		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
-			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
-			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
-		})
+		for _, s := range cfgExpect.Servers {
+			s.Name = ""
+		}
 
 		require.Equal(t, cfgExpect, cfgActual)
 	})
@@ -68,6 +63,14 @@ func Test_ReadConfig(t *testing.T) {
 
 		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
 			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
+		})
+
+		sort.Slice(cfgExpect.Environment, func(i, j int) bool {
+			return cfgExpect.Environment[i].Name > cfgExpect.Environment[j].Name
+		})
+
+		sort.Slice(cfgActual.Environment, func(i, j int) bool {
+			return cfgActual.Environment[i].Name > cfgActual.Environment[j].Name
 		})
 
 		require.Equal(t, cfgExpect, cfgActual)
@@ -91,7 +94,7 @@ func Test_ReadConfig(t *testing.T) {
 				os.ModePerm))
 
 		cfg, err := getFromFile(cfgPath)
-		require.Contains(t, err.Error(), "yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `1f!cked` into matreshka.AppConfig\nerror decoding config to struct")
+		require.Equal(t, err.Error(), "yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `1f!cked` into matreshka.AppConfig\n\nerror decoding config to struct")
 		require.Equal(t, cfg, NewEmptyConfig())
 	})
 }
@@ -144,15 +147,29 @@ func Test_MergeConfigs(t *testing.T) {
 			Environment: Environment(getEnvironmentVariables()),
 		}
 
+		sort.Slice(expectedCfg.Environment, func(i, j int) bool {
+			return expectedCfg.Environment[i].Name > expectedCfg.Environment[j].Name
+		})
+
 		t.Run("EMPTY_MERGE_FULL", func(t *testing.T) {
 			// empty and full config merge
 			actualCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
+
+			sort.Slice(actualCfg.Environment, func(i, j int) bool {
+				return actualCfg.Environment[i].Name > actualCfg.Environment[j].Name
+			})
+
 			require.NoError(t, err)
 			require.Equal(t, expectedCfg, actualCfg)
 		})
 
 		t.Run("FULL_MERGE_EMPTY", func(t *testing.T) {
 			actualCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
+
+			sort.Slice(actualCfg.Environment, func(i, j int) bool {
+				return actualCfg.Environment[i].Name > actualCfg.Environment[j].Name
+			})
+
 			require.NoError(t, err)
 			require.Equal(t, expectedCfg, actualCfg)
 		})

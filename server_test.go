@@ -31,12 +31,14 @@ func Test_Servers(t *testing.T) {
 						"/{FS}": map[string]any{
 							"dist": "web/dist",
 						},
+						"name": "MASTER",
 					},
 					50051: map[string]any{
 						"/{GRPC}": map[string]any{
 							"module":  "pkg/matreshka_be_api",
 							"gateway": "/api",
 						},
+						"name": "MASTER2",
 					},
 				},
 			}
@@ -146,6 +148,8 @@ func Test_Servers(t *testing.T) {
 func getConfigServersFull() Servers {
 	return Servers{
 		8080: {
+			Name: "MASTER",
+			Port: "8080",
 			GRPC: map[string]*server.GRPC{},
 			FS: map[string]*server.FS{
 				"/{FS}": {
@@ -155,6 +159,8 @@ func getConfigServersFull() Servers {
 			HTTP: map[string]*server.HTTP{},
 		},
 		50051: {
+			Name: "MASTER2",
+			Port: "50051",
 			GRPC: map[string]*server.GRPC{
 				"/{GRPC}": {
 					Module:  "pkg/matreshka_be_api",

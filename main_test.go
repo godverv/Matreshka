@@ -193,56 +193,51 @@ func getTelegramClientEnvs() []evon.Node {
 func getEnvironmentVariables() []*environment.Variable {
 	return []*environment.Variable{
 		{
-			Name:  "available ports",
-			Type:  environment.VariableTypeInt,
-			Value: []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
-		},
-		{
-			Name:  "credit percent",
-			Type:  environment.VariableTypeFloat,
-			Value: 0.01,
-		},
-		{
-			Name:  "credit percents based on year of birth",
-			Type:  environment.VariableTypeFloat,
-			Value: []float64{0.01, 0.02, 0.03, 0.04},
-		},
-
-		{
-			Name:  "database max connections",
+			Name:  "database_max_connections",
 			Value: 1,
 			Type:  environment.VariableTypeInt,
 		},
-
 		{
-			Name:  "one of welcome string",
+			Name:  "welcome_string",
+			Type:  environment.VariableTypeStr,
+			Value: "not so basic 🤡 string",
+		},
+		{
+			Name:  "one_of_welcome_string",
 			Type:  environment.VariableTypeStr,
 			Value: "one",
 			Enum:  []any{"one", "two", "three"},
 		},
-
 		{
-			Name:  "request timeout",
+			Name:  "true_falser",
+			Type:  environment.VariableTypeBool,
+			Value: true,
+		},
+		{
+			Name:  "request_timeout",
 			Type:  environment.VariableTypeDuration,
 			Value: time.Second * 10,
 		},
 
 		{
-			Name:  "true falser",
-			Type:  environment.VariableTypeBool,
-			Value: true,
+			Name:  "available_ports",
+			Type:  environment.VariableTypeInt,
+			Value: []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
 		},
-
 		{
-			Name:  "usernames to ban",
+			Name:  "usernames_to_ban",
 			Type:  environment.VariableTypeStr,
 			Value: []string{"hacker228", "mothe4acker"},
 		},
-
 		{
-			Name:  "welcome string",
-			Type:  environment.VariableTypeStr,
-			Value: "not so basic 🤡 string",
+			Name:  "credit_percent",
+			Type:  environment.VariableTypeFloat,
+			Value: 0.01,
+		},
+		{
+			Name:  "credit_percents_based_on_year_of_birth",
+			Type:  environment.VariableTypeFloat,
+			Value: []float64{0.01, 0.02, 0.03, 0.04},
 		},
 	}
 }
@@ -502,8 +497,8 @@ func getFullConfigTest() AppConfig {
 	cfgExpect.DataSources = append(cfgExpect.DataSources,
 		getPostgresClientTest(),
 		getRedisClientTest(),
-		getGRPCClientTest(),
 		getTelegramClientTest(),
+		getGRPCClientTest(),
 	)
 
 	cfgExpect.Servers = getConfigServersFull()

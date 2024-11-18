@@ -4,6 +4,7 @@ servers:
     /{FS}:
       dist: web/dist
   "50051":
+    name: MASTER2
     /{GRPC}:
       module: pkg/matreshka_be_api
       gateway: /api
