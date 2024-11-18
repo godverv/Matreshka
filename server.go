@@ -133,15 +133,15 @@ func (s Servers) ParseToStruct(dst any) error {
 
 	for i := 0; i < numFields; i++ {
 		field := dstRef.Type().Field(i)
-		dstMapping[field.Name] = dstRef.Field(i)
+		dstMapping[strings.ToLower(field.Name)] = dstRef.Field(i)
 	}
 
 	for _, serv := range s {
-		name := ServerName(serv.Name)
+		name := strings.ToLower(ServerName(serv.Name))
 
 		v, ok := dstMapping[name]
 		if !ok {
-			return errors.New("not found field with name" + name)
+			return errors.New("not found field with name: " + name)
 		}
 
 		v.Set(reflect.ValueOf(serv))
