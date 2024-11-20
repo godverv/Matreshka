@@ -6,7 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	config "github.com/godverv/matreshka/config_test"
+	"github.com/godverv/matreshka/environment"
+	config "github.com/godverv/matreshka/internal/config_test"
 )
 
 func Test_Environment(t *testing.T) {
@@ -33,6 +34,26 @@ func Test_Environment(t *testing.T) {
 			UsernamesToBan:                   []string{"hacker228", "mothe4acker"},
 			WelcomeString:                    "not so basic 🤡 string",
 		}
+		require.Equal(t, expected, customEnvConf)
+	})
+
+	t.Run("parse_env_more_than_have_in_struct", func(t *testing.T) {
+		t.Parallel()
+
+		env := Environment([]*environment.Variable{
+			{
+				Name:  "new_unknown",
+				Type:  environment.VariableTypeStr,
+				Value: "nil",
+			},
+		})
+
+		customEnvConf := &config.EnvironmentConfig{}
+
+		err := env.ParseToStruct(customEnvConf)
+		require.ErrorIs(t, err, ErrNotFound)
+
+		expected := &config.EnvironmentConfig{}
 		require.Equal(t, expected, customEnvConf)
 	})
 }

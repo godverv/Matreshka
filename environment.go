@@ -97,9 +97,13 @@ func (a *Environment) ParseToStruct(dst any) error {
 		name := env.Name
 		name = strings.ReplaceAll(name, " ", "_")
 		name = cases.SnakeToPascal(name)
-		v := dstMapping[name]
+		v, ok := dstMapping[name]
+		if !ok {
+			return errors.Wrap(ErrNotFound, "field with name "+name+" can't be found in target struct")
+		}
 
 		v.Set(reflect.ValueOf(env.Value))
+
 	}
 
 	return nil
