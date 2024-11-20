@@ -31,22 +31,46 @@ type Variable struct {
 	Value any          `yaml:"value,omitempty"`
 }
 
-func (a *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
+func (v *Variable) MarshalYAML() (any, error) {
+	out := map[string]any{
+		"name": v.Name,
+		"type": v.Type,
+	}
+
+	if len(v.Enum) != 0 {
+		out["enum"] = nil
+	}
+
+	var val any
+
+	switch v.Type {
+	case VariableTypeInt:
+		val = marshalInt(v.Value)
+	default:
+		val = v.Value
+	}
+
+	out["value"] = val
+
+	return out, nil
+}
+
+func (v *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
 	var vals map[string]any
 	err := unmarshal(&vals)
 	if err != nil {
 		return errors.Wrap(err, "error unmarshalling environment variable")
 	}
 
-	a.Name = vals["name"].(string)
-	a.Type = variableType(vals["type"].(string))
+	v.Name = vals["name"].(string)
+	v.Type = variableType(vals["type"].(string))
 
 	val := vals["value"]
 	if val == nil {
 		return ErrNoValue
 	}
 
-	a.Value, err = extractValue(val, a.Type)
+	v.Value, err = extractValue(val, v.Type)
 	if err != nil {
 		return errors.Wrap(err, "error reading value")
 	}
@@ -54,20 +78,20 @@ func (a *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
 	enum := vals["enum"]
 	if enum != nil {
 		var ok bool
-		a.Enum, ok = enum.([]any)
+		v.Enum, ok = enum.([]any)
 		if !ok {
 			return errors.New(fmt.Sprintf("enum expected to be slice, but got %v ", enum))
 		}
 
-		if !isValueInEnum(a.Value, a.Enum) {
-			return errors.New(fmt.Sprintf("value out of enum: `%v` expected to be in %v", a.Value, enum))
+		if !isValueInEnum(v.Value, v.Enum) {
+			return errors.New(fmt.Sprintf("value out of enum: `%v` expected to be in %v", v.Value, enum))
 		}
 	}
 
 	return nil
 }
 
-func (a *Variable) UnmarshalEnv(node *evon.Node) error {
+func (v *Variable) UnmarshalEnv(node *evon.Node) error {
 	var tp, enum *evon.Node
 	for _, n := range node.InnerNodes {
 		switch n.Name[len(node.Name)+1:] {
@@ -84,9 +108,9 @@ func (a *Variable) UnmarshalEnv(node *evon.Node) error {
 		return errors.New("environment variable type missing")
 	}
 
-	a.Type = variableType(fmt.Sprint(tp.Value))
+	v.Type = variableType(fmt.Sprint(tp.Value))
 	if enum != nil {
-		enumVal, err := extractValue(enum.Value, a.Type)
+		enumVal, err := extractValue(enum.Value, v.Type)
 		if err != nil {
 			return errors.Wrap(err, "error extracting enum value")
 		}
@@ -97,12 +121,12 @@ func (a *Variable) UnmarshalEnv(node *evon.Node) error {
 		}
 
 		for i := 0; i < enumRef.Len(); i++ {
-			a.Enum = append(a.Enum, enumRef.Index(i).Interface())
+			v.Enum = append(v.Enum, enumRef.Index(i).Interface())
 		}
 	}
 
 	var err error
-	a.Value, err = extractValue(node.Value, a.Type)
+	v.Value, err = extractValue(node.Value, v.Type)
 	if err != nil {
 		return errors.Wrap(err, "error extracting value")
 	}
@@ -110,21 +134,21 @@ func (a *Variable) UnmarshalEnv(node *evon.Node) error {
 	return nil
 }
 
-func (a *Variable) EnumString() string {
-	if len(a.Enum) == 0 {
+func (v *Variable) EnumString() string {
+	if len(v.Enum) == 0 {
 		return ""
 	}
 
-	return toStringArray(reflect.ValueOf(a.Enum))
+	return toStringArray(reflect.ValueOf(v.Enum))
 }
 
-func (a *Variable) ValueString() string {
-	ref := reflect.ValueOf(a.Value)
+func (v *Variable) ValueString() string {
+	ref := reflect.ValueOf(v.Value)
 	if ref.Kind() == reflect.Slice {
 		return toStringArray(ref)
 	}
 
-	return fmt.Sprint(a.Value)
+	return fmt.Sprint(v.Value)
 }
 
 func extractValue(val any, vType variableType) (out any, err error) {

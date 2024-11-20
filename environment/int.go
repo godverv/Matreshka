@@ -2,6 +2,7 @@ package environment
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -104,4 +105,46 @@ func toIntRange(rangeSeparatorIdx int, strValue string) ([]int, error) {
 	}
 
 	return out, nil
+}
+
+func marshalInt(in any) string {
+	switch newIn := in.(type) {
+	case []int:
+		ranges := make([]string, 0, len(newIn))
+		sort.Slice(newIn, func(i, j int) bool {
+			return newIn[i] < newIn[j]
+		})
+
+		if len(newIn) == 0 {
+			return "[]"
+		}
+
+		convertToRange := func(start, end int) string {
+			newRange := strconv.Itoa(start)
+			if start != end {
+				newRange += "-" + strconv.Itoa(end)
+			}
+
+			return newRange
+		}
+
+		prev := newIn[0]
+		rangeStart := prev
+
+		for _, v := range newIn[1:] {
+			if v-prev != 1 {
+				ranges = append(ranges, convertToRange(rangeStart, prev))
+
+				prev = v
+				rangeStart = v
+			}
+			prev = v
+		}
+
+		ranges = append(ranges, convertToRange(rangeStart, prev))
+
+		return "[" + strings.Join(ranges, ",") + "]"
+	default:
+		return fmt.Sprint(newIn)
+	}
 }

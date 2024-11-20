@@ -13,7 +13,7 @@ import (
 func Test_Environment(t *testing.T) {
 	t.Parallel()
 
-	t.Run("parse_env_to_struct", func(t *testing.T) {
+	t.Run("PARSE_ENV_TO_STRUCT", func(t *testing.T) {
 		t.Parallel()
 
 		env := Environment(getEnvironmentVariables())
@@ -37,7 +37,7 @@ func Test_Environment(t *testing.T) {
 		require.Equal(t, expected, customEnvConf)
 	})
 
-	t.Run("parse_env_more_than_have_in_struct", func(t *testing.T) {
+	t.Run("PARSE_ENV_MORE_THAN_HAVE_IN_STRUCT", func(t *testing.T) {
 		t.Parallel()
 
 		env := Environment([]*environment.Variable{
