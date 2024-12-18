@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	"go.redsock.ru/rerrors"
 
 	"github.com/godverv/matreshka/environment"
 )
@@ -33,7 +33,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 	if len(paths) != 0 {
 		fileConfig, err := getFromFile(paths[0])
 		if err != nil {
-			return masterConfig, errors.Wrap(err, "error reading master config")
+			return masterConfig, rerrors.Wrap(err, "error reading master config")
 		}
 
 		masterConfig = MergeConfigs(masterConfig, fileConfig)
@@ -42,7 +42,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 		for _, pth := range paths[1:] {
 			fileConfig, err = getFromFile(pth)
 			if err != nil {
-				errs = append(errs, errors.Wrapf(err, "error reading config at %s", pth))
+				errs = append(errs, rerrors.Wrapf(err, "error reading config at %s", pth))
 				continue
 			}
 
@@ -59,7 +59,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 	masterEnvStorage := evon.NodeStorage{}
 	masterEnv, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
 	if err != nil {
-		return masterConfig, errors.Wrap(err, "error marshalling to env")
+		return masterConfig, rerrors.Wrap(err, "error marshalling to env")
 	}
 
 	masterEnvStorage.AddNode(masterEnv)
@@ -75,7 +75,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 	masterConfig = NewEmptyConfig()
 	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEnvStorage, &masterConfig)
 	if err != nil {
-		return masterConfig, errors.Wrap(err, "error unmarshalling back to config")
+		return masterConfig, rerrors.Wrap(err, "error unmarshalling back to config")
 	}
 
 	sort.Slice(masterConfig.Environment, func(i, j int) bool {
@@ -201,7 +201,7 @@ func getFromFile(pth string) (AppConfig, error) {
 
 	fi, err := f.Stat()
 	if err != nil {
-		return AppConfig{}, errors.Wrap(err, "error getting config file info")
+		return AppConfig{}, rerrors.Wrap(err, "error getting config file info")
 	}
 
 	if fi.Size() > 1_000_000 {
@@ -212,12 +212,12 @@ func getFromFile(pth string) (AppConfig, error) {
 
 	bts, err := io.ReadAll(f)
 	if err != nil {
-		return c, errors.Wrap(err, "error reading file")
+		return c, rerrors.Wrap(err, "error reading file")
 	}
 
 	err = c.Unmarshal(bts)
 	if err != nil {
-		return c, errors.Wrap(err, "error decoding config to struct")
+		return c, rerrors.Wrap(err, "error decoding config to struct")
 	}
 
 	return c, nil

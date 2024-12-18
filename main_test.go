@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	"go.redsock.ru/rerrors"
 
 	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/resources"
@@ -514,7 +514,7 @@ func setupEnvironmentVariables() error {
 
 	err := os.Setenv(VervName, "MATRESHKA")
 	if err != nil {
-		return errors.Wrap(err, "error setting service name variable")
+		return rerrors.Wrap(err, "error setting service name variable")
 	}
 
 	splitedEnvs := bytes.Split(dotEnvFullConfig, []byte{'\n'})
@@ -527,7 +527,7 @@ func setupEnvironmentVariables() error {
 		nameVal := bytes.Split(env, []byte{'='})
 		err = os.Setenv(string(nameVal[0]), string(nameVal[1]))
 		if err != nil {
-			return errors.Wrap(err, "error setting env variable")
+			return rerrors.Wrap(err, "error setting env variable")
 		}
 	}
 	return nil

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	errors "github.com/Red-Sock/trace-errors"
+	errors "go.redsock.ru/rerrors"
 )
 
 func toDuration(val any) (any, error) {

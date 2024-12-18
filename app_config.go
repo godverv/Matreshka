@@ -3,13 +3,13 @@ package matreshka
 import (
 	"strings"
 
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 )
 
 var (
-	ErrNotFound       = errors.New("no such key in config")
-	ErrUnexpectedType = errors.New("error casting value to target type")
+	ErrNotFound       = rerrors.New("no such key in config")
+	ErrUnexpectedType = rerrors.New("error casting value to target type")
 )
 
 type AppConfig struct {
@@ -31,7 +31,7 @@ func (a *AppConfig) Unmarshal(b []byte) error {
 
 	err := yaml.Unmarshal(b, a)
 	if err != nil {
-		return errors.Wrap(err)
+		return rerrors.Wrap(err)
 	}
 
 	envNameReplacer := strings.NewReplacer(" ", "_", "-", "_")

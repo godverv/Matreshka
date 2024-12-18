@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	errors "github.com/Red-Sock/trace-errors"
+	errors "go.redsock.ru/rerrors"
 )
 
 func toFloatVariable(val any) (any, error) {

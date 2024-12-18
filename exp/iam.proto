@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package iam;
+
+option go_package = "/iam";
+
+message S3IamConfig {
+  string Version = 1;
+  repeated Statement Statement = 2;
+}
+
+message Statement {
+  Effect effect = 1;
+  Principal Principal = 2;
+  repeated string Action = 3;
+  repeated string Resource = 4;
+}
+
+message Principal {
+  repeated string AWS = 1;
+}
+
+enum Effect {
+  Effect_Unknown = 0;
+  Effect_Allow = 1;
+  Effect_Deny = 2;
+}
+
+enum Action {
+  Action_Unknown = 0;
+  Action_AllowAll = 1; // *
+}
