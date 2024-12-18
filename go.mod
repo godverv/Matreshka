@@ -1,4 +1,4 @@
-module github.com/godverv/matreshka
+module go.verv.tech/matreshka
 
 go 1.23.4
 

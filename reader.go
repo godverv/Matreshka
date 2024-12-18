@@ -11,7 +11,7 @@ import (
 	"go.redsock.ru/evon"
 	"go.redsock.ru/rerrors"
 
-	"github.com/godverv/matreshka/environment"
+	"go.verv.tech/matreshka/environment"
 )
 
 const (

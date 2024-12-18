@@ -8,8 +8,8 @@ import (
 	"go.redsock.ru/evon"
 	errors "go.redsock.ru/rerrors"
 
-	"github.com/godverv/matreshka/environment"
-	"github.com/godverv/matreshka/internal/cases"
+	"go.verv.tech/matreshka/environment"
+	"go.verv.tech/matreshka/internal/cases"
 )
 
 var ErrNotAPointer = errors.New("not a pointer")

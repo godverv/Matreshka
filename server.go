@@ -10,8 +10,8 @@ import (
 	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/godverv/matreshka/internal/cases"
-	"github.com/godverv/matreshka/server"
+	"go.verv.tech/matreshka/internal/cases"
+	"go.verv.tech/matreshka/server"
 )
 
 type Servers map[int]*server.Server
