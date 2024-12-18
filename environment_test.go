@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/godverv/matreshka/environment"
-	config "github.com/godverv/matreshka/internal/config_test"
+	"go.verv.tech/matreshka/environment"
+	config "go.verv.tech/matreshka/internal/config_test"
 )
 
 func Test_Environment(t *testing.T) {
