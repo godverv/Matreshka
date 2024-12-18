@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/internal/cases"
@@ -22,7 +22,7 @@ func (r *DataSources) Postgres(name string) (out *resources.Postgres, err error)
 
 	out, ok := res.(*resources.Postgres)
 	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
+		return nil, rerrors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -36,7 +36,7 @@ func (r *DataSources) Telegram(name string) (out *resources.Telegram, err error)
 
 	out, ok := res.(*resources.Telegram)
 	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
+		return nil, rerrors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -50,7 +50,7 @@ func (r *DataSources) Redis(name string) (out *resources.Redis, err error) {
 
 	out, ok := res.(*resources.Redis)
 	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
+		return nil, rerrors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -64,7 +64,7 @@ func (r *DataSources) GRPC(name string) (out *resources.GRPC, err error) {
 
 	out, ok := res.(*resources.GRPC)
 	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
+		return nil, rerrors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -78,7 +78,7 @@ func (r *DataSources) Sqlite(name string) (out *resources.Sqlite, err error) {
 
 	out, ok := res.(*resources.Sqlite)
 	if !ok {
-		return nil, errors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
+		return nil, rerrors.Wrapf(ErrUnexpectedType, "required type %T got %T", out, res)
 	}
 
 	return out, nil
@@ -120,7 +120,7 @@ func (r *DataSources) MarshalEnv(prefix string) ([]*evon.Node, error) {
 
 		nodes, err := evon.MarshalEnvWithPrefix(prefix+resourceName, resource)
 		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling resource")
+			return nil, rerrors.Wrap(err, "error marshalling resource")
 		}
 		out = append(out, nodes)
 	}
@@ -142,7 +142,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 
 		err := evon.NodeToStruct(dataSourceNode.Name, dataSourceNode, dst)
 		if err != nil {
-			return errors.Wrap(err, "error unmarshalling resource from env")
+			return rerrors.Wrap(err, "error unmarshalling resource from env")
 		}
 		sources = append(sources, dst)
 	}
@@ -155,7 +155,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 func (r *DataSources) ParseToStruct(dst any) error {
 	dstRef := reflect.ValueOf(dst)
 	if dstRef.Kind() != reflect.Ptr {
-		return errors.Wrap(ErrNotAPointer, "expected destination to be a pointer ")
+		return rerrors.Wrap(ErrNotAPointer, "expected destination to be a pointer ")
 	}
 
 	dstRef = dstRef.Elem()

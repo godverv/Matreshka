@@ -3,8 +3,8 @@ package service_discovery
 import (
 	"strings"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	"go.redsock.ru/rerrors"
 )
 
 type Override struct {
@@ -31,7 +31,7 @@ func (o *Overrides) UnmarshalEnv(rootNode *evon.Node) error {
 
 		err := evon.NodeToStruct(overrideNode.Name, overrideNode, dst)
 		if err != nil {
-			return errors.Wrap(err, "error unmarshalling resource from env")
+			return rerrors.Wrap(err, "error unmarshalling resource from env")
 		}
 		overrides = append(overrides, dst)
 	}
@@ -51,7 +51,7 @@ func (o *Overrides) MarshalEnv(prefix string) ([]*evon.Node, error) {
 
 		nodes, err := evon.MarshalEnvWithPrefix(prefix+overrideServiceName, override)
 		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling service discovery override")
+			return nil, rerrors.Wrap(err, "error marshalling service discovery override")
 		}
 
 		out = append(out, nodes)
@@ -70,7 +70,7 @@ func (u *Urls) UnmarshalEnv(n *evon.Node) error {
 		*u = strings.Split(v, " ")
 		return nil
 	default:
-		return errors.New("not a string value")
+		return rerrors.New("not a string value")
 	}
 
 	return nil

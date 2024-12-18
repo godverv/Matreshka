@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -38,7 +38,7 @@ func (s *Server) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	m := map[string]yaml.Node{}
 	err := unmarshal(m)
 	if err != nil {
-		return errors.Wrap(err, "error unmarshaling YAML")
+		return rerrors.Wrap(err, "error unmarshaling YAML")
 	}
 
 	for key, value := range m {
@@ -54,7 +54,7 @@ func (s *Server) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 			err = value.Decode(vPtr)
 			if err != nil {
-				return errors.Wrapf(err, "error decoding server description of type %T", vPtr)
+				return rerrors.Wrapf(err, "error decoding server description of type %T", vPtr)
 			}
 		}
 
@@ -90,7 +90,7 @@ func (s *Server) MarshalEnv(name string) ([]*evon.Node, error) {
 		Name: name,
 	}
 	if s.Port == "" {
-		return nil, errors.New("server must have port")
+		return nil, rerrors.New("server must have port")
 	}
 	root.InnerNodes = append(root.InnerNodes, &evon.Node{
 		Name:  name + "_PORT",
@@ -106,7 +106,7 @@ func (s *Server) MarshalEnv(name string) ([]*evon.Node, error) {
 
 		nodes, err := evon.MarshalEnvWithPrefix(subPrefix, srv)
 		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling grpc server desc to env")
+			return nil, rerrors.Wrap(err, "error marshalling grpc server desc to env")
 		}
 		root.InnerNodes = append(root.InnerNodes, nodes)
 	}
@@ -116,7 +116,7 @@ func (s *Server) MarshalEnv(name string) ([]*evon.Node, error) {
 
 		nodes, err := evon.MarshalEnvWithPrefix(subPrefix, srv)
 		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling grpc server desc to env")
+			return nil, rerrors.Wrap(err, "error marshalling grpc server desc to env")
 		}
 		root.InnerNodes = append(root.InnerNodes, nodes)
 	}
@@ -126,7 +126,7 @@ func (s *Server) MarshalEnv(name string) ([]*evon.Node, error) {
 
 		nodes, err := evon.MarshalEnvWithPrefix(subPrefix, srv)
 		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling grpc server desc to env")
+			return nil, rerrors.Wrap(err, "error marshalling grpc server desc to env")
 		}
 		root.InnerNodes = append(root.InnerNodes, nodes)
 	}
@@ -154,7 +154,7 @@ func (s *Server) UnmarshalEnv(v *evon.Node) error {
 		}
 		err := evon.NodeToStruct(node.Name, node, ptr)
 		if err != nil {
-			return errors.Wrap(err, "error unmarshalling value")
+			return rerrors.Wrap(err, "error unmarshalling value")
 		}
 
 	}

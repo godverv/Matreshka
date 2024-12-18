@@ -3,8 +3,8 @@ package matreshka
 import (
 	"testing"
 
-	"github.com/Red-Sock/evon"
 	"github.com/stretchr/testify/require"
+	"go.redsock.ru/evon"
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/server"

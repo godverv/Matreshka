@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	errors "github.com/Red-Sock/trace-errors"
+	errors "go.redsock.ru/rerrors"
 )
 
 func toBool(val any) (any, error) {

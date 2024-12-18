@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	errors "go.redsock.ru/rerrors"
 
 	"github.com/godverv/matreshka/environment"
 	"github.com/godverv/matreshka/internal/cases"

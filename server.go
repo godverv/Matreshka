@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Red-Sock/evon"
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/evon"
+	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 
 	"github.com/godverv/matreshka/internal/cases"
@@ -30,7 +30,7 @@ func (s Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var portToServers map[string]yaml.Node
 	err := unmarshal(&portToServers)
 	if err != nil {
-		return errors.Wrap(err, "error unmarshalling to yaml.Nodes")
+		return rerrors.Wrap(err, "error unmarshalling to yaml.Nodes")
 	}
 
 	for portStr, node := range portToServers {
@@ -40,12 +40,12 @@ func (s Servers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 		err = node.Decode(&srv)
 		if err != nil {
-			return errors.Wrap(err, "error decoding server")
+			return rerrors.Wrap(err, "error decoding server")
 		}
 
 		port, err := strconv.Atoi(portStr)
 		if err != nil {
-			return errors.Wrap(err, "error converting port to int")
+			return rerrors.Wrap(err, "error converting port to int")
 		}
 
 		s[port] = srv
@@ -89,7 +89,7 @@ func (s Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
 		}
 		serverNodes, err := srv.MarshalEnv(subPrefix)
 		if err != nil {
-			return nil, errors.Wrap(err, "error marshalling server")
+			return nil, rerrors.Wrap(err, "error marshalling server")
 		}
 
 		root.InnerNodes = append(root.InnerNodes, serverNodes...)
@@ -107,12 +107,12 @@ func (s Servers) UnmarshalEnv(rootNode *evon.Node) error {
 		}
 		err := srv.UnmarshalEnv(v)
 		if err != nil {
-			return errors.Wrap(err, "error unmarshalling server description")
+			return rerrors.Wrap(err, "error unmarshalling server description")
 		}
 
 		p, err := strconv.Atoi(srv.Port)
 		if err != nil {
-			return errors.Wrap(err, "port must be an integer, got %s", srv.Port)
+			return rerrors.Wrap(err, "port must be an integer, got %s", srv.Port)
 		}
 
 		s[p] = srv
@@ -123,7 +123,7 @@ func (s Servers) UnmarshalEnv(rootNode *evon.Node) error {
 func (s Servers) ParseToStruct(dst any) error {
 	dstRef := reflect.ValueOf(dst)
 	if dstRef.Kind() != reflect.Ptr {
-		return errors.Wrap(ErrNotAPointer, "expected destination to be a pointer ")
+		return rerrors.Wrap(ErrNotAPointer, "expected destination to be a pointer ")
 	}
 
 	dstRef = dstRef.Elem()
@@ -141,7 +141,7 @@ func (s Servers) ParseToStruct(dst any) error {
 
 		v, ok := dstMapping[name]
 		if !ok {
-			return errors.New("not found field with name: " + name)
+			return rerrors.New("not found field with name: " + name)
 		}
 
 		v.Set(reflect.ValueOf(serv))

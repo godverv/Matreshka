@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	errors "github.com/Red-Sock/trace-errors"
+	"go.redsock.ru/rerrors"
 )
 
 const PostgresResourceName = "postgres"
@@ -42,7 +42,7 @@ func (p *Postgres) GetType() string {
 func (p *Postgres) MarshalYAML() (interface{}, error) {
 	resourceType := strings.Split(p.GetName(), "_")[0]
 	if resourceType != "postgres" {
-		return nil, errors.Wrap(ErrInvalidResourceName, "but got: "+resourceType)
+		return nil, rerrors.Wrap(ErrInvalidResourceName, "but got: "+resourceType)
 	}
 
 	return *p, nil
