@@ -66,3 +66,11 @@ environment:
   - name: credit percents based on year of birth
     type: float
     value: [ 0.01, 0.02, 0.03,0.04 ]
+
+service_discovery:
+  makosh_url: localhost:1281
+  makosh_token: "1256"
+  overrides:
+    - service_name: matreshka
+      urls:
+        - localhost:1257

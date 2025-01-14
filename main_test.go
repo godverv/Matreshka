@@ -32,10 +32,28 @@ var (
 
 	//go:embed tests/full_config.yaml
 	fullConfig []byte
+	//go:embed tests/full_config.env
+	fullEnvConfig []byte
 
-	//go:embed tests/.env.full_config
-	dotEnvFullConfig []byte
+	//go:embed tests/service_discovery.yaml
+	serviceDiscoveryConfig []byte
+	//go:embed tests/service_discovery.env
+	serviceDiscoveryEnvConfig []byte
+
+	//go:embed tests/full_resources_config.yaml
+	fullResourcesConfig []byte
+	//go:embed tests/full_resources_config.env
+	fullResourcesEnvConfig []byte
 )
+
+func getResourcesFull() []resources.Resource {
+	return []resources.Resource{
+		getPostgresClientTest(),
+		getRedisClientTest(),
+		getTelegramClientTest(),
+		getGRPCClientTest(),
+	}
+}
 
 func getPostgresClientTest() *resources.Postgres {
 	return &resources.Postgres{
@@ -494,16 +512,13 @@ func getFullConfigTest() AppConfig {
 		StartupDuration: 10 * time.Second,
 	}
 
-	cfgExpect.DataSources = append(cfgExpect.DataSources,
-		getPostgresClientTest(),
-		getRedisClientTest(),
-		getTelegramClientTest(),
-		getGRPCClientTest(),
-	)
+	cfgExpect.DataSources = getResourcesFull()
 
 	cfgExpect.Servers = getConfigServersFull()
 
 	cfgExpect.Environment = getEnvironmentVariables()
+
+	cfgExpect.ServiceDiscovery = getConfigServiceDiscovery()
 	return cfgExpect
 }
 
@@ -517,7 +532,7 @@ func setupEnvironmentVariables() error {
 		return rerrors.Wrap(err, "error setting service name variable")
 	}
 
-	splitedEnvs := bytes.Split(dotEnvFullConfig, []byte{'\n'})
+	splitedEnvs := bytes.Split(fullEnvConfig, []byte{'\n'})
 
 	for _, env := range splitedEnvs {
 		if len(env) == 0 {

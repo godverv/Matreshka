@@ -40,13 +40,13 @@ func (o *Overrides) UnmarshalEnv(rootNode *evon.Node) error {
 
 	return nil
 }
-func (o *Overrides) MarshalEnv(prefix string) ([]*evon.Node, error) {
+func (o Overrides) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
 		prefix += "_"
 	}
 
-	out := make([]*evon.Node, 0, len(*o))
-	for _, override := range *o {
+	out := make([]*evon.Node, 0, len(o))
+	for _, override := range o {
 		overrideServiceName := strings.Replace(override.ServiceName, "_", "-", -1)
 
 		nodes, err := evon.MarshalEnvWithPrefix(prefix+overrideServiceName, override)
@@ -62,6 +62,9 @@ func (o *Overrides) MarshalEnv(prefix string) ([]*evon.Node, error) {
 
 func (o *Override) UnmarshalEnv(n *evon.Node) error {
 	return nil
+}
+func (o *Override) MarshalEnv(prefix string) ([]*evon.Node, error) {
+	return nil, nil
 }
 
 func (u *Urls) UnmarshalEnv(n *evon.Node) error {

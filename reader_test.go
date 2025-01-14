@@ -143,8 +143,9 @@ func Test_MergeConfigs(t *testing.T) {
 				getTelegramClientTest(),
 				getGRPCClientTest(),
 			},
-			Servers:     getConfigServersFull(),
-			Environment: Environment(getEnvironmentVariables()),
+			Servers:          getConfigServersFull(),
+			Environment:      Environment(getEnvironmentVariables()),
+			ServiceDiscovery: getConfigServiceDiscovery(),
 		}
 
 		sort.Slice(expectedCfg.Environment, func(i, j int) bool {

@@ -10,6 +10,7 @@ import (
 
 	"go.redsock.ru/evon"
 	"go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
 
 	"go.verv.tech/matreshka/environment"
 )
@@ -21,8 +22,8 @@ const (
 func NewEmptyConfig() AppConfig {
 	return AppConfig{
 		AppInfo:     AppInfo{},
-		Servers:     make(Servers),
 		DataSources: make(DataSources, 0),
+		Servers:     make(Servers),
 		Environment: make(Environment, 0),
 	}
 }
@@ -134,6 +135,12 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 			master.DataSources = append(master.DataSources, slave.DataSources[i])
 		}
 	}
+
+	master.ServiceDiscovery.MakoshUrl =
+		toolbox.Coalesce(master.ServiceDiscovery.MakoshUrl, slave.ServiceDiscovery.MakoshUrl)
+
+	master.ServiceDiscovery.MakoshToken =
+		toolbox.Coalesce(master.ServiceDiscovery.MakoshToken, slave.ServiceDiscovery.MakoshToken)
 
 	for _, slaveOverride := range slave.ServiceDiscovery.Overrides {
 		found := false
