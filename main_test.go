@@ -4,10 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"os"
+	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"go.redsock.ru/evon"
-	"go.redsock.ru/rerrors"
 
 	"go.verv.tech/matreshka/environment"
 	"go.verv.tech/matreshka/resources"
@@ -522,15 +523,13 @@ func getFullConfigTest() AppConfig {
 	return cfgExpect
 }
 
-func setupEnvironmentVariables() error {
+func setupEnvironmentVariables(t *testing.T) error {
 	if os.Getenv(VervName) != "" {
 		return nil
 	}
 
 	err := os.Setenv(VervName, "MATRESHKA")
-	if err != nil {
-		return rerrors.Wrap(err, "error setting service name variable")
-	}
+	require.NoError(t, err)
 
 	splitedEnvs := bytes.Split(fullEnvConfig, []byte{'\n'})
 
@@ -541,9 +540,7 @@ func setupEnvironmentVariables() error {
 
 		nameVal := bytes.Split(env, []byte{'='})
 		err = os.Setenv(string(nameVal[0]), string(nameVal[1]))
-		if err != nil {
-			return rerrors.Wrap(err, "error setting env variable")
-		}
+		require.NoError(t, err)
 	}
 	return nil
 }

@@ -105,7 +105,9 @@ func (v *Variable) UnmarshalEnv(node *evon.Node) error {
 	}
 
 	if tp == nil {
-		return errors.New("environment variable type missing")
+		tp = &evon.Node{
+			Value: VariableTypeStr,
+		}
 	}
 
 	v.Type = variableType(fmt.Sprint(tp.Value))
