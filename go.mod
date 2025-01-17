@@ -20,5 +20,3 @@ require (
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
-
-replace go.redsock.ru/evon => /Users/alexbukov/Yandex.Disk.localized/проекты/redsock/evon
