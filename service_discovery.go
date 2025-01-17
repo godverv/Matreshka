@@ -5,7 +5,7 @@ import (
 )
 
 type ServiceDiscovery struct {
-	// MakoshURl
-	// MakoshToken
-	Overrides service_discovery.Overrides `yaml:"overrides"`
+	MakoshUrl   string                      `yaml:"makosh_url" env:",omitempty"`
+	MakoshToken string                      `yaml:"makosh_token" env:",omitempty"`
+	Overrides   service_discovery.Overrides `yaml:"overrides" env:",omitempty"`
 }

@@ -10,6 +10,7 @@ import (
 
 	"go.redsock.ru/evon"
 	"go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
 
 	"go.verv.tech/matreshka/environment"
 )
@@ -21,8 +22,8 @@ const (
 func NewEmptyConfig() AppConfig {
 	return AppConfig{
 		AppInfo:     AppInfo{},
-		Servers:     make(Servers),
 		DataSources: make(DataSources, 0),
+		Servers:     make(Servers),
 		Environment: make(Environment, 0),
 	}
 }
@@ -54,26 +55,39 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 		}
 	}
 
-	prefix, env := getEnvVars()
+	prefix, evonStorageFromEnv := getEnvVars()
 
-	masterEnvStorage := evon.NodeStorage{}
-	masterEnv, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
+	// Storage in Evon format (e.g. object_sub-field-name_leaf-field-name)
+	masterEvonStorage := evon.NodeStorage{}
+	masterEvonCfg, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
 	if err != nil {
 		return masterConfig, rerrors.Wrap(err, "error marshalling to env")
 	}
 
-	masterEnvStorage.AddNode(masterEnv)
+	// Storage in Basic Environment format (e.g. object_sub_field_name_leaf_field_name)
+	masterEnvStorage := map[string]*evon.Node{}
+	for key, node := range evonStorageFromEnv {
+		key = strings.ReplaceAll(key, "-", "_")
+		masterEnvStorage[key] = node
+	}
 
-	for _, n := range env {
-		masterNode, ok := masterEnvStorage[n.Name]
-		if !ok {
-			masterEnvStorage.AddNode(n)
+	masterEvonStorage.AddNode(masterEvonCfg)
+
+	for _, n := range evonStorageFromEnv {
+		masterEvonNode := masterEvonStorage[n.Name]
+		if masterEvonNode == nil {
+			masterEvonNode = masterEnvStorage[n.Name]
 		} else {
-			masterNode.Value = n.Value
+			masterEvonStorage.AddNode(n)
+		}
+
+		if masterEvonNode != nil {
+			masterEvonNode.Value = n.Value
 		}
 	}
+
 	masterConfig = NewEmptyConfig()
-	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEnvStorage, &masterConfig)
+	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEvonStorage, &masterConfig)
 	if err != nil {
 		return masterConfig, rerrors.Wrap(err, "error unmarshalling back to config")
 	}
@@ -134,6 +148,12 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 			master.DataSources = append(master.DataSources, slave.DataSources[i])
 		}
 	}
+
+	master.ServiceDiscovery.MakoshUrl =
+		toolbox.Coalesce(master.ServiceDiscovery.MakoshUrl, slave.ServiceDiscovery.MakoshUrl)
+
+	master.ServiceDiscovery.MakoshToken =
+		toolbox.Coalesce(master.ServiceDiscovery.MakoshToken, slave.ServiceDiscovery.MakoshToken)
 
 	for _, slaveOverride := range slave.ServiceDiscovery.Overrides {
 		found := false

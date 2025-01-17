@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.redsock.ru/evon"
 )
 
 const (
@@ -78,5 +79,60 @@ func Test_GetResources(t *testing.T) {
 		tgCfg, err := cfg.DataSources.Telegram("redis")
 		require.ErrorIs(t, err, ErrUnexpectedType)
 		require.Nil(t, tgCfg)
+	})
+}
+
+func Test_DataSources(t *testing.T) {
+	t.Parallel()
+
+	t.Run("YAML", func(t *testing.T) {
+		t.Run("Marshal", func(t *testing.T) {
+			cfg := AppConfig{
+				DataSources: getResourcesFull(),
+			}
+
+			marshalled, err := cfg.Marshal()
+			require.NoError(t, err)
+
+			require.Equal(t, string(marshalled), string(fullResourcesConfig))
+		})
+		t.Run("Unmarshal", func(t *testing.T) {
+			actualConfig := &AppConfig{}
+
+			err := actualConfig.Unmarshal(fullResourcesConfig)
+			require.NoError(t, err)
+			expectedConfig := &AppConfig{
+				DataSources: getResourcesFull(),
+				Servers:     Servers{},
+				Environment: Environment{},
+			}
+
+			require.Equal(t, expectedConfig, actualConfig)
+		})
+	})
+
+	t.Run("EVON", func(t *testing.T) {
+		t.Run("Marshal", func(t *testing.T) {
+			cfg := AppConfig{
+				DataSources: getResourcesFull(),
+			}
+
+			marshalledEvonNodes, err := evon.MarshalEnv(cfg)
+			require.NoError(t, err)
+			evonMarshalled := evon.Marshal(marshalledEvonNodes.InnerNodes)
+			require.Equal(t, string(evonMarshalled), string(fullResourcesEnvConfig))
+		})
+
+		t.Run("Unmarshal", func(t *testing.T) {
+			actualConfig := AppConfig{}
+			err := evon.Unmarshal(fullResourcesEnvConfig, &actualConfig)
+			require.NoError(t, err)
+
+			expectedConfig := AppConfig{
+				DataSources: getResourcesFull(),
+			}
+
+			require.Equal(t, expectedConfig, actualConfig)
+		})
 	})
 }

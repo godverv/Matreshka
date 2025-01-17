@@ -4,10 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"os"
+	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"go.redsock.ru/evon"
-	"go.redsock.ru/rerrors"
 
 	"go.verv.tech/matreshka/environment"
 	"go.verv.tech/matreshka/resources"
@@ -32,10 +33,28 @@ var (
 
 	//go:embed tests/full_config.yaml
 	fullConfig []byte
+	//go:embed tests/full_config.env
+	fullEnvConfig []byte
 
-	//go:embed tests/.env.full_config
-	dotEnvFullConfig []byte
+	//go:embed tests/service_discovery.yaml
+	serviceDiscoveryConfig []byte
+	//go:embed tests/service_discovery.env
+	serviceDiscoveryEnvConfig []byte
+
+	//go:embed tests/full_resources_config.yaml
+	fullResourcesConfig []byte
+	//go:embed tests/full_resources_config.env
+	fullResourcesEnvConfig []byte
 )
+
+func getResourcesFull() []resources.Resource {
+	return []resources.Resource{
+		getPostgresClientTest(),
+		getRedisClientTest(),
+		getTelegramClientTest(),
+		getGRPCClientTest(),
+	}
+}
 
 func getPostgresClientTest() *resources.Postgres {
 	return &resources.Postgres{
@@ -494,30 +513,25 @@ func getFullConfigTest() AppConfig {
 		StartupDuration: 10 * time.Second,
 	}
 
-	cfgExpect.DataSources = append(cfgExpect.DataSources,
-		getPostgresClientTest(),
-		getRedisClientTest(),
-		getTelegramClientTest(),
-		getGRPCClientTest(),
-	)
+	cfgExpect.DataSources = getResourcesFull()
 
 	cfgExpect.Servers = getConfigServersFull()
 
 	cfgExpect.Environment = getEnvironmentVariables()
+
+	cfgExpect.ServiceDiscovery = getConfigServiceDiscovery()
 	return cfgExpect
 }
 
-func setupEnvironmentVariables() error {
+func setupEnvironmentVariables(t *testing.T) error {
 	if os.Getenv(VervName) != "" {
 		return nil
 	}
 
 	err := os.Setenv(VervName, "MATRESHKA")
-	if err != nil {
-		return rerrors.Wrap(err, "error setting service name variable")
-	}
+	require.NoError(t, err)
 
-	splitedEnvs := bytes.Split(dotEnvFullConfig, []byte{'\n'})
+	splitedEnvs := bytes.Split(fullEnvConfig, []byte{'\n'})
 
 	for _, env := range splitedEnvs {
 		if len(env) == 0 {
@@ -526,9 +540,7 @@ func setupEnvironmentVariables() error {
 
 		nameVal := bytes.Split(env, []byte{'='})
 		err = os.Setenv(string(nameVal[0]), string(nameVal[1]))
-		if err != nil {
-			return rerrors.Wrap(err, "error setting env variable")
-		}
+		require.NoError(t, err)
 	}
 	return nil
 }

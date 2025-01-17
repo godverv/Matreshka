@@ -13,8 +13,6 @@ import (
 )
 
 func Test_ReadConfig(t *testing.T) {
-	t.Parallel()
-
 	tmpDirPath := path.Join(os.TempDir(), t.Name())
 	require.NoError(t, os.MkdirAll(tmpDirPath, os.ModePerm))
 
@@ -49,8 +47,8 @@ func Test_ReadConfig(t *testing.T) {
 		require.Equal(t, cfgExpect, cfgActual)
 	})
 
-	t.Run("OK_READ_FULL_FROM_ENVIRONMENT", func(t *testing.T) {
-		require.NoError(t, setupEnvironmentVariables())
+	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_ENV_FORMAT", func(t *testing.T) {
+		require.NoError(t, setupEnvironmentVariables(t))
 
 		cfgActual, err := ReadConfigs()
 		require.NoError(t, err)
@@ -143,8 +141,9 @@ func Test_MergeConfigs(t *testing.T) {
 				getTelegramClientTest(),
 				getGRPCClientTest(),
 			},
-			Servers:     getConfigServersFull(),
-			Environment: Environment(getEnvironmentVariables()),
+			Servers:          getConfigServersFull(),
+			Environment:      Environment(getEnvironmentVariables()),
+			ServiceDiscovery: getConfigServiceDiscovery(),
 		}
 
 		sort.Slice(expectedCfg.Environment, func(i, j int) bool {
