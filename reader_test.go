@@ -47,8 +47,8 @@ func Test_ReadConfig(t *testing.T) {
 		require.Equal(t, cfgExpect, cfgActual)
 	})
 
-	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_ENV_FORMAT", func(t *testing.T) {
-		require.NoError(t, setupEnvironmentVariables(t))
+	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_EVON_FORMAT", func(t *testing.T) {
+		setupFullEnvConfigWithModuleName(t)
 
 		cfgActual, err := ReadConfigs()
 		require.NoError(t, err)
@@ -86,7 +86,7 @@ func Test_ReadConfig(t *testing.T) {
 				appInfoConfigShortName,
 				os.ModePerm))
 
-		require.NoError(t, setupEnvironmentVariables(t))
+		setupFullEnvConfigWithModuleName(t)
 
 		require.NoError(t, os.Setenv(VervName, ""))
 
@@ -125,7 +125,7 @@ func Test_ReadConfig(t *testing.T) {
 				appInfoConfigFullName,
 				os.ModePerm))
 
-		require.NoError(t, setupEnvironmentVariables(t))
+		setupFullEnvConfigWithModuleName(t)
 
 		require.NoError(t, os.Setenv(VervName, ""))
 
@@ -152,6 +152,35 @@ func Test_ReadConfig(t *testing.T) {
 
 		require.Equal(t, cfgExpect, cfgActual)
 	})
+	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_WITHOUT_MODULE_NAME", func(t *testing.T) {
+		setupFullEnvConfigWithoutModuleName(t)
+
+		require.NoError(t, os.Setenv(VervName, ""))
+
+		cfgActual, err := ReadConfigs()
+		require.NoError(t, err)
+
+		cfgExpect := getFullConfigTest()
+
+		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
+			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
+		})
+
+		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
+			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
+		})
+
+		sort.Slice(cfgExpect.Environment, func(i, j int) bool {
+			return cfgExpect.Environment[i].Name > cfgExpect.Environment[j].Name
+		})
+
+		sort.Slice(cfgActual.Environment, func(i, j int) bool {
+			return cfgActual.Environment[i].Name > cfgActual.Environment[j].Name
+		})
+
+		require.Equal(t, cfgExpect, cfgActual)
+	})
+
 	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
 		cfg, err := getFromFile("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)

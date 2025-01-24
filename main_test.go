@@ -38,6 +38,8 @@ var (
 
 	//go:embed tests/full_config.yaml
 	fullConfig []byte
+	//go:embed tests/full_config_without_module_name.env
+	fullEnvConfigWithoutModule []byte
 	//go:embed tests/full_config.env
 	fullEnvConfig []byte
 
@@ -528,15 +530,23 @@ func getFullConfigTest() AppConfig {
 	return cfgExpect
 }
 
-func setupEnvironmentVariables(t *testing.T) error {
+func setupFullEnvConfigWithModuleName(t *testing.T) {
 	if os.Getenv(VervName) != "" {
-		return nil
+		return
 	}
 
 	err := os.Setenv(VervName, "MATRESHKA")
 	require.NoError(t, err)
 
-	splitedEnvs := bytes.Split(fullEnvConfig, []byte{'\n'})
+	setEnvConfigFromFile(t, fullEnvConfig)
+}
+
+func setupFullEnvConfigWithoutModuleName(t *testing.T) {
+	setEnvConfigFromFile(t, fullEnvConfigWithoutModule)
+}
+
+func setEnvConfigFromFile(t *testing.T, cfg []byte) {
+	splitedEnvs := bytes.Split(cfg, []byte{'\n'})
 
 	for _, env := range splitedEnvs {
 		if len(env) == 0 {
@@ -544,8 +554,7 @@ func setupEnvironmentVariables(t *testing.T) error {
 		}
 
 		nameVal := bytes.Split(env, []byte{'='})
-		err = os.Setenv(string(nameVal[0]), string(nameVal[1]))
+		err := os.Setenv(string(nameVal[0]), string(nameVal[1]))
 		require.NoError(t, err)
 	}
-	return nil
 }

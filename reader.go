@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 
@@ -171,17 +172,22 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	return master
 }
 
-func getEnvVars(masterInfo AppInfo) (prefix string, envConfig evon.NodeStorage) {
+func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorage) {
 	envConfig = evon.NodeStorage{}
 
 	projectName := toolbox.Coalesce(os.Getenv(VervName), masterInfo.ModuleName())
-	if projectName == "" {
-		return "", envConfig
-	}
 
 	environ := os.Environ()
 
-	prefix = strings.ToUpper(projectName)
+	prefixOut = strings.ToUpper(projectName)
+
+	prefixWorking := prefixOut
+	// In case project name is specified, appending underscore to clear name from variable
+	if prefixWorking != "" {
+		prefixWorking += "_"
+	}
+
+	partsToParse := []string{"APP-INFO", "DATA-SOURCES", "SERVERS", "ENVIRONMENT", "SERVICE-DISCOVERY"}
 
 	for _, variable := range environ {
 		idx := strings.Index(variable, "=")
@@ -189,18 +195,38 @@ func getEnvVars(masterInfo AppInfo) (prefix string, envConfig evon.NodeStorage) 
 			continue
 		}
 
-		name := strings.ToUpper(variable[:idx])
+		originalName := strings.ToUpper(variable[:idx])
 
-		if strings.HasPrefix(name, prefix) {
-			envConfig.AddNode(&evon.Node{
-				Name:       name,
-				Value:      os.Getenv(name),
-				InnerNodes: nil,
-			})
+		if strings.HasPrefix(originalName, "MATRESHKA_APP-INFO") {
+			println(1)
 		}
+
+		strippingName := originalName
+
+		if !strings.HasPrefix(strippingName, prefixWorking) {
+			continue
+		}
+
+		strippingName = strippingName[len(prefixWorking):]
+		spaceIndex := strings.Index(strippingName, "_")
+		if spaceIndex == -1 {
+			continue
+		}
+
+		firstPart := strippingName[:spaceIndex]
+
+		if !slices.Contains(partsToParse, firstPart) {
+			continue
+		}
+
+		envConfig.AddNode(&evon.Node{
+			Name:       originalName,
+			Value:      os.Getenv(originalName),
+			InnerNodes: nil,
+		})
 	}
 
-	return prefix, envConfig
+	return prefixOut, envConfig
 }
 
 func getFromFile(pth string) (AppConfig, error) {
