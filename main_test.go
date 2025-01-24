@@ -18,6 +18,11 @@ var (
 	//go:embed tests/empty_config.yaml
 	emptyConfig []byte
 
+	//go:embed tests/app_info_config_short_name.yaml
+	appInfoConfigShortName []byte
+	//go:embed tests/app_info_config_full_name.yaml
+	appInfoConfigFullName []byte
+
 	//go:embed tests/api_config.yaml
 	apiConfig []byte
 	//go:embed tests/api_config.with_name.yaml

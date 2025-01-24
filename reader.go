@@ -55,7 +55,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 		}
 	}
 
-	prefix, evonStorageFromEnv := getEnvVars()
+	prefix, evonStorageFromEnv := getEnvVars(masterConfig.AppInfo)
 
 	// Storage in Evon format (e.g. object_sub-field-name_leaf-field-name)
 	masterEvonStorage := evon.NodeStorage{}
@@ -171,10 +171,10 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	return master
 }
 
-func getEnvVars() (prefix string, envConfig evon.NodeStorage) {
+func getEnvVars(masterInfo AppInfo) (prefix string, envConfig evon.NodeStorage) {
 	envConfig = evon.NodeStorage{}
 
-	projectName := os.Getenv(VervName)
+	projectName := toolbox.Coalesce(os.Getenv(VervName), masterInfo.ModuleName())
 	if projectName == "" {
 		return "", envConfig
 	}

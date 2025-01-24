@@ -10,7 +10,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "description": "App name. May be presented in golang package format. e.g `github.com/godverv/matreshka-be`",
+          "description": "App name. May be presented in golang package format. e.g `github.com/godverv/matreshka-be`. In this case app will be using last part (matreshka-be) as a environment name",
           "type": "string"
         },
         "version": {
@@ -25,32 +25,44 @@
         }
       },
       "required": [
+        "name",
         "version"
       ]
     },
-    "server": {
-      "description": "Defines server properties, such as Rest Port, GRPC port",
-      "type": "array",
-      "items": {
-        "description": "Server definition",
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "Name of server. Must start with the type of server",
-            "type": "string",
-            "pattern": "(rest|grpc)(_|)(.+|)"
+    "servers": {
+      "description": "Definition of servers. Key must be a port",
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]+$": {
+          "type": "object",
+          "patternProperties": {
+            "\/[a-z]*[A-Z]*{GRPC}[a-z]*[A-Z]*": {
+              "type": "object",
+              "properties": {
+                "module": {
+                  "description": "GRPC | GOLANG module name"
+                },
+                "gateway": {
+                  "description": "Path for HTTP proxy to grpc handles."
+                }
+              }
+            },
+            "\/[a-z]*[A-Z]*{FS}[a-z]*[A-Z]*": {
+              "type": "object",
+              "properties": {
+                "dist": {
+                  "description": "Path to folder | file to host as a server"
+                }
+              }
+            }
           },
-          "port": {
-            "description": "Port of server",
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "exclusiveMaximum": 65536
-          }
+          "additionalProperties": true
         }
-      }
+      },
+      "additionalProperties": false
     },
     "data_sources": {
-      "description": "Definition of needed data sources including Databases, APIs and etc",
+      "description": "Definition of data sources: Databases, APIs and Telegram bots",
       "type": "array",
       "items": {
         "type": "object",
@@ -66,12 +78,68 @@
           },
           {
             "$ref": "#/definitions/grpc"
+          },
+          {
+            "$ref": "#/definitions/sqlite"
           }
         ]
       }
     },
     "environment": {
-      "description": "Defines additional environment variables"
+      "description": "Defines additional environment variables",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Env var name. Spaces will be replaced with \"-\" character. Actual ENV name will start with {NAME-OF-SERVICE}_ENVIRONMENT as prefix",
+            "type": "string"
+          },
+          "type": {
+            "description": "Might one of following enums string | duration | bool | float | int",
+            "type": "string",
+            "enum": [
+              "string",
+              "duration",
+              "bool",
+              "float",
+              "int"
+            ]
+          }
+        }
+      }
+    },
+    "service_discovery": {
+      "description": "Service discovery local override",
+      "type":"object",
+      "properties": {
+        "makosh_url": {
+          "description": "URL path to custom makosh instance",
+          "type": "string"
+        },
+        "makosh_token": {
+          "description": "A custom token to auth into makosh instance",
+          "type": "string"
+        },
+        "overrides": {
+          "description": "Service specific override of connection URL",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "service_name": {
+                "type": "string"
+              },
+              "urls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -110,7 +178,13 @@
           ]
         }
       },
-      "required": ["resource_name", "host", "port", "user", "name"]
+      "required": [
+        "resource_name",
+        "host",
+        "port",
+        "user",
+        "name"
+      ]
     },
     "redis": {
       "type": "object",
@@ -137,7 +211,11 @@
           "minimum": 0
         }
       },
-      "required": ["resource_name", "host", "port"]
+      "required": [
+        "resource_name",
+        "host",
+        "port"
+      ]
     },
     "telegram": {
       "description": "Name of resource. Must start with telegram",
@@ -147,7 +225,7 @@
           "type": "string",
           "pattern": "telegram(_|)(.+|)"
         },
-        "api": {
+        "api_key": {
           "type": "string"
         }
       }
@@ -164,6 +242,22 @@
           "type": "string"
         },
         "module": {
+          "type": "string"
+        }
+      }
+    },
+    "sqlite": {
+      "description": "Definition of sqlite",
+      "type": "object",
+      "properties": {
+        "resource_name": {
+          "type": "string",
+          "pattern": "sqlite(_|)(.+|)"
+        },
+        "path": {
+          "type": "string"
+        },
+        "migrations_folder": {
           "type": "string"
         }
       }
