@@ -85,6 +85,7 @@ var (
 	}
 	mapVariableTypeToStruct = map[variableType]func(in any) (typedValue, error){
 		VariableTypeStr: toStringValue,
+		VariableTypeInt: toIntVariable,
 	}
 )
 
@@ -219,7 +220,7 @@ func (v *Variable) ValueString() string {
 func extractValue(val any, vType variableType) (out any, err error) {
 	switch vType {
 	case VariableTypeInt:
-		return toIntVariable(val)
+		return extractIntVariable(val)
 	case VariableTypeStr:
 		return extractStringValue(val)
 	case VariableTypeBool:
