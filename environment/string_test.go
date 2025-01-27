@@ -40,6 +40,12 @@ value: single_value
 
 	require.YAMLEq(t, string(marshalled), expectedYaml)
 
+	var newVar Variable
+
+	err = yaml.Unmarshal(marshalled, &newVar)
+	require.NoError(t, err)
+	require.Equal(t, *expect, newVar)
+
 }
 
 func Test_StringSliceVariable(t *testing.T) {

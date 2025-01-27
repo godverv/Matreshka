@@ -68,6 +68,24 @@ func toStringValue(in any) (typedValue, error) {
 	}
 }
 
+func fromStrNode(node *yaml.Node) (typedValue, error) {
+	if node.Kind == yaml.ScalarNode {
+		return &stringValue{v: node.Value}, nil
+	}
+
+	if node.Kind == yaml.SequenceNode {
+		strSlice := &stringSliceValue{}
+
+		for _, child := range node.Content {
+			strSlice.v = append(strSlice.v, child.Value)
+		}
+
+		return strSlice, nil
+
+	}
+	return nil, errors.New("Unknown yaml type: %s . Expected String or String slice", node.Kind)
+}
+
 func extractStringValue(in any) (any, error) {
 	switch v := in.(type) {
 	case string:

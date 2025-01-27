@@ -22,23 +22,7 @@ type intSliceValue struct {
 	v []int
 }
 
-func mp(inMapped []int) string {
-	if len(inMapped) == 0 {
-		return "[]"
-	}
-
-	ranges := make([]string, 0, len(inMapped))
-
-	if slices.IsSorted(inMapped) {
-
-	}
-
-	return "[" + strings.Join(ranges, ",") + "]"
-}
-
 func (v *intSliceValue) YamlValue() any {
-	intRanges := make([]string, 0, len(v.v))
-
 	if slices.IsSorted(v.v) {
 		return v.asYamlRange()
 	}
@@ -52,35 +36,11 @@ func (v *intSliceValue) YamlValue() any {
 		return node
 	}
 
-	convertToRange := func(start, end int) string {
-		newRange := strconv.Itoa(start)
-		if start != end {
-			newRange += "-" + strconv.Itoa(end)
-		}
-
-		return newRange
-	}
-
-	prev := v.v[0]
-	rangeStart := prev
-
-	for _, v := range v.v[1:] {
-		if v-prev != 1 {
-			intRanges = append(intRanges, convertToRange(rangeStart, prev))
-
-			prev = v
-			rangeStart = v
-		}
-		prev = v
-	}
-
-	intRanges = append(intRanges, convertToRange(rangeStart, prev))
-
-	for _, r := range intRanges {
+	for _, r := range v.v {
 		node.Content = append(node.Content,
 			&yaml.Node{
 				Kind:  yaml.ScalarNode,
-				Value: r,
+				Value: strconv.Itoa(r),
 			})
 	}
 
@@ -125,6 +85,7 @@ func (v *intSliceValue) asYamlRange() *yaml.Node {
 
 	return node
 }
+
 func toIntVariable(val any) (typedValue, error) {
 	switch switchValue := val.(type) {
 	case string:

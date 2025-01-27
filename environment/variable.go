@@ -85,11 +85,16 @@ var (
 		reflect.Uint64:  VariableTypeInt,
 	}
 	mapVariableTypeToTypedValueConstructor = map[variableType]func(in any) (typedValue, error){
-		VariableTypeStr: toStringValue,
-		VariableTypeInt: toIntVariable,
+		VariableTypeStr:   toStringValue,
+		VariableTypeInt:   toIntVariable,
+		VariableTypeFloat: toFloatVariable,
+		VariableTypeBool:  toBoolValue,
 	}
 	mapVariableTypeToYamlNodeParser = map[variableType]func(node *yaml.Node) (typedValue, error){
-		VariableTypeInt: fromIntNode,
+		VariableTypeStr:   fromStrNode,
+		VariableTypeInt:   fromIntNode,
+		VariableTypeFloat: fromFloatNode,
+		VariableTypeBool:  fromBoolNode,
 	}
 )
 
@@ -249,9 +254,9 @@ func extractValue(val any, vType variableType) (out any, err error) {
 	case VariableTypeStr:
 		return extractStringValue(val)
 	case VariableTypeBool:
-		return toBool(val)
+		return extractBool(val)
 	case VariableTypeFloat:
-		return toFloatVariable(val)
+		return extractFloatVariable(val)
 	case VariableTypeDuration:
 		return toDuration(val)
 	default:
