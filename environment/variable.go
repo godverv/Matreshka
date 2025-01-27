@@ -7,6 +7,7 @@ import (
 
 	"go.redsock.ru/evon"
 	errors "go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
 )
 
 var (
@@ -28,68 +29,124 @@ type Variable struct {
 	Name  string       `yaml:"name"`
 	Type  variableType `yaml:"type"`
 	Enum  []any        `yaml:"enum,omitempty"`
-	Value any          `yaml:"value,omitempty"`
+	Value Value        `yaml:"value"`
 }
 
-func (v *Variable) MarshalYAML() (any, error) {
-	out := map[string]any{
-		"name": v.Name,
-		"type": v.Type,
+type opt func(*Variable)
+
+func MustNewVariable(name string, val any, opts ...opt) *Variable {
+	v, err := NewVariable(name, val, opts...)
+	if err != nil {
+		panic(err)
 	}
 
-	if len(v.Enum) != 0 {
-		out["enum"] = v.Enum
+	return v
+}
+
+func NewVariable(name string, val any, opts ...opt) (*Variable, error) {
+	out := &Variable{
+		Name: name,
 	}
 
-	var val any
-
-	switch v.Type {
-	case VariableTypeInt:
-		val = marshalInt(v.Value)
-	default:
-		val = v.Value
+	for _, o := range opts {
+		o(out)
 	}
 
-	out["value"] = val
+	out.Type = toolbox.Coalesce(out.Type, GetType(val))
+	if out.Type == "" {
+		return nil, errors.Wrap(ErrUnknownEnvVariableType)
+	}
+
+	var err error
+	out.Value.val, err = mapVariableTypeToStruct[out.Type](val)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
 
 	return out, nil
 }
 
-func (v *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
-	var vals map[string]any
-	err := unmarshal(&vals)
-	if err != nil {
-		return errors.Wrap(err, "error unmarshalling environment variable")
+var (
+	mapReflectTypeToVariableType = map[reflect.Kind]variableType{
+		reflect.String:  VariableTypeStr,
+		reflect.Bool:    VariableTypeBool,
+		reflect.Float64: VariableTypeFloat,
+		reflect.Float32: VariableTypeFloat,
+		reflect.Int:     VariableTypeInt,
+		reflect.Int8:    VariableTypeInt,
+		reflect.Int16:   VariableTypeInt,
+		reflect.Int32:   VariableTypeInt,
+		reflect.Int64:   VariableTypeInt,
+		reflect.Uint:    VariableTypeInt,
+		reflect.Uint8:   VariableTypeInt,
+		reflect.Uint16:  VariableTypeInt,
+		reflect.Uint32:  VariableTypeInt,
+		reflect.Uint64:  VariableTypeInt,
 	}
-
-	v.Name = vals["name"].(string)
-	v.Type = variableType(vals["type"].(string))
-
-	val := vals["value"]
-	if val == nil {
-		return ErrNoValue
+	mapVariableTypeToStruct = map[variableType]func(in any) (typedValue, error){
+		VariableTypeStr: toStringValue,
 	}
+)
 
-	v.Value, err = extractValue(val, v.Type)
-	if err != nil {
-		return errors.Wrap(err, "error reading value")
-	}
-
-	enum := vals["enum"]
-	if enum != nil {
-		var ok bool
-		v.Enum, ok = enum.([]any)
-		if !ok {
-			return errors.New(fmt.Sprintf("enum expected to be slice, but got %v ", enum))
-		}
-
-		if !isValueInEnum(v.Value, v.Enum) {
-			return errors.New(fmt.Sprintf("value out of enum: `%v` expected to be in %v", v.Value, enum))
-		}
-	}
-
-	return nil
-}
+//func (v *Variable) MarshalYAML() (any, error) {
+//	out := map[string]any{
+//		"name": v.Name,
+//		"type": v.Type,
+//	}
+//
+//	if len(v.Enum) != 0 {
+//		out["enum"] = v.Enum
+//	}
+//
+//	var val any
+//
+//	switch v.Type {
+//	case VariableTypeInt:
+//		val = marshalInt(v.Value)
+//	default:
+//		val = v.Value
+//	}
+//
+//	out["value"] = val
+//
+//	return out, nil
+//}
+//
+//func (v *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
+//	var vals map[string]any
+//	err := unmarshal(&vals)
+//	if err != nil {
+//		return errors.Wrap(err, "error unmarshalling environment variable")
+//	}
+//
+//	v.Name = vals["name"].(string)
+//	v.Type = variableType(vals["type"].(string))
+//
+//	val := vals["value"]
+//	if val == nil {
+//		return ErrNoValue
+//	}
+//
+//	v.Value, err = extractValue(val, v.Type)
+//	if err != nil {
+//		return errors.Wrap(err, "error reading value")
+//	}
+//
+//	enum := vals["enum"]
+//	if enum != nil {
+//		var ok bool
+//		v.Enum, ok = enum.([]any)
+//		if !ok {
+//			return errors.New(fmt.Sprintf("enum expected to be slice, but got %v ", enum))
+//		}
+//
+//		if !isValueInEnum(v.Value, v.Enum) {
+//			return errors.New(fmt.Sprintf("value out of enum: `%v` expected to be in %v", v.Value, enum))
+//		}
+//	}
+//
+//	return nil
+//}
 
 func (v *Variable) UnmarshalEnv(node *evon.Node) error {
 	var tp, enum *evon.Node
@@ -127,10 +184,15 @@ func (v *Variable) UnmarshalEnv(node *evon.Node) error {
 		}
 	}
 
-	var err error
-	v.Value, err = extractValue(node.Value, v.Type)
+	// TODO: remove onto valid
+	val, err := extractValue(node.Value, v.Type)
 	if err != nil {
 		return errors.Wrap(err, "error extracting value")
+	}
+
+	v.Value.val, err = mapVariableTypeToStruct[v.Type](val)
+	if err != nil {
+		return errors.Wrap(err)
 	}
 
 	return nil
@@ -153,12 +215,13 @@ func (v *Variable) ValueString() string {
 	return fmt.Sprint(v.Value)
 }
 
+// deprecated
 func extractValue(val any, vType variableType) (out any, err error) {
 	switch vType {
 	case VariableTypeInt:
 		return toIntVariable(val)
 	case VariableTypeStr:
-		return toStringValue(val)
+		return extractStringValue(val)
 	case VariableTypeBool:
 		return toBool(val)
 	case VariableTypeFloat:

@@ -41,11 +41,7 @@ func Test_Environment(t *testing.T) {
 		t.Parallel()
 
 		env := Environment([]*environment.Variable{
-			{
-				Name:  "new_unknown",
-				Type:  environment.VariableTypeStr,
-				Value: "nil",
-			},
+			environment.MustNewVariable("new_unknown", "nil"),
 		})
 
 		customEnvConf := &config.EnvironmentConfig{}
