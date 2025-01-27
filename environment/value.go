@@ -2,8 +2,6 @@ package environment
 
 import (
 	"reflect"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Value struct {
@@ -16,10 +14,6 @@ type typedValue interface {
 
 func (v Value) MarshalYAML() (interface{}, error) {
 	return v.val.YamlValue(), nil
-}
-
-func (v *Value) UnmarshalYAML(node *yaml.Node) error {
-	return nil
 }
 
 func GetType(val any) variableType {

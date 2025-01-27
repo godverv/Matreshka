@@ -2,11 +2,12 @@ package environment
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
 	errors "go.redsock.ru/rerrors"
+	"gopkg.in/yaml.v3"
 )
 
 type intValue struct {
@@ -21,14 +22,34 @@ type intSliceValue struct {
 	v []int
 }
 
+func mp(inMapped []int) string {
+	if len(inMapped) == 0 {
+		return "[]"
+	}
+
+	ranges := make([]string, 0, len(inMapped))
+
+	if slices.IsSorted(inMapped) {
+
+	}
+
+	return "[" + strings.Join(ranges, ",") + "]"
+}
+
 func (v *intSliceValue) YamlValue() any {
-	ranges := make([]string, 0, len(v.v))
-	sort.Slice(v.v, func(i, j int) bool {
-		return v.v[i] < v.v[j]
-	})
+	intRanges := make([]string, 0, len(v.v))
+
+	if slices.IsSorted(v.v) {
+		return v.asYamlRange()
+	}
+
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
 
 	if len(v.v) == 0 {
-		return "[]"
+		return node
 	}
 
 	convertToRange := func(start, end int) string {
@@ -45,7 +66,7 @@ func (v *intSliceValue) YamlValue() any {
 
 	for _, v := range v.v[1:] {
 		if v-prev != 1 {
-			ranges = append(ranges, convertToRange(rangeStart, prev))
+			intRanges = append(intRanges, convertToRange(rangeStart, prev))
 
 			prev = v
 			rangeStart = v
@@ -53,11 +74,57 @@ func (v *intSliceValue) YamlValue() any {
 		prev = v
 	}
 
-	ranges = append(ranges, convertToRange(rangeStart, prev))
+	intRanges = append(intRanges, convertToRange(rangeStart, prev))
 
-	return "[" + strings.Join(ranges, ",") + "]"
+	for _, r := range intRanges {
+		node.Content = append(node.Content,
+			&yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Value: r,
+			})
+	}
+
+	return node
 }
 
+func (v *intSliceValue) asYamlRange() *yaml.Node {
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
+
+	convertToRange := func(start, end int) string {
+		newRange := strconv.Itoa(start)
+		if start != end {
+			newRange += "-" + strconv.Itoa(end)
+		}
+
+		return newRange
+	}
+
+	prev := v.v[0]
+	rangeStart := prev
+
+	for _, v := range v.v[1:] {
+		if v-prev != 1 {
+			node.Content = append(node.Content, &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Value: convertToRange(rangeStart, prev),
+			})
+
+			prev = v
+			rangeStart = v
+		}
+		prev = v
+	}
+
+	node.Content = append(node.Content, &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Value: convertToRange(rangeStart, prev),
+	})
+
+	return node
+}
 func toIntVariable(val any) (typedValue, error) {
 	switch switchValue := val.(type) {
 	case string:
@@ -79,11 +146,78 @@ func toIntVariable(val any) (typedValue, error) {
 	case []interface{}:
 		v, err := anySliceToIntSlice(switchValue)
 		return &intSliceValue{v: v}, err
-
+	case []int:
+		return &intSliceValue{v: switchValue}, nil
+	case []int8:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
+	case []int16:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
+	case []int32:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
+	case []int64:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
 	default:
 		v, err := anyToInt(val)
 		return &intValue{v: v}, err
 	}
+}
+
+func fromIntNode(node *yaml.Node) (typedValue, error) {
+	if node.Kind == yaml.ScalarNode {
+		i, err := strconv.Atoi(node.Value)
+		return &intValue{i}, err
+	}
+
+	if node.Kind == yaml.SequenceNode {
+		intSlice := &intSliceValue{}
+
+		for _, child := range node.Content {
+
+			i := 0
+			var err error
+
+			switch child.Tag {
+			case "!!int":
+				i, err = strconv.Atoi(child.Value)
+				if err != nil {
+					return nil, errors.Wrap(err, "could not parse int: %s ", child.Value)
+				}
+
+				intSlice.v = append(intSlice.v, i)
+			case "!!str":
+				minusIndex := strings.Index(child.Value, "-")
+				if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, "-") < 2 {
+					i, err = strconv.Atoi(child.Value)
+					if err != nil {
+						return nil, errors.Wrap(err, "could not parse string as int: %s ", child.Value)
+					}
+
+					intSlice.v = append(intSlice.v, i)
+				} else {
+
+					minusIndex = strings.Index(child.Value[1:], "-") + 1
+					var firstInt, lastInt int
+					firstInt, err = strconv.Atoi(child.Value[:minusIndex])
+					if err != nil {
+						return nil, errors.Wrap(err, "error parsing first int in sequence")
+					}
+
+					lastInt, err = strconv.Atoi(child.Value[minusIndex+1:])
+					if err != nil {
+						return nil, errors.Wrap(err, "error parsing last int in sequence")
+					}
+
+					for ; firstInt <= lastInt; firstInt++ {
+						intSlice.v = append(intSlice.v, firstInt)
+					}
+				}
+			}
+		}
+
+		return intSlice, nil
+	}
+
+	return nil, errors.New("Expected Int OR Int Slice type, got yaml %s", node.Tag)
 }
 
 func extractIntVariable(val any) (any, error) {
@@ -201,44 +335,11 @@ func extractIntRange(rangeSeparatorIdx int, strValue string) ([]int, error) {
 	return out, nil
 }
 
-func marshalInt(in any) string {
-	switch newIn := in.(type) {
-	case []int:
-		ranges := make([]string, 0, len(newIn))
-		sort.Slice(newIn, func(i, j int) bool {
-			return newIn[i] < newIn[j]
-		})
-
-		if len(newIn) == 0 {
-			return "[]"
-		}
-
-		convertToRange := func(start, end int) string {
-			newRange := strconv.Itoa(start)
-			if start != end {
-				newRange += "-" + strconv.Itoa(end)
-			}
-
-			return newRange
-		}
-
-		prev := newIn[0]
-		rangeStart := prev
-
-		for _, v := range newIn[1:] {
-			if v-prev != 1 {
-				ranges = append(ranges, convertToRange(rangeStart, prev))
-
-				prev = v
-				rangeStart = v
-			}
-			prev = v
-		}
-
-		ranges = append(ranges, convertToRange(rangeStart, prev))
-
-		return "[" + strings.Join(ranges, ",") + "]"
-	default:
-		return fmt.Sprint(newIn)
+func toIntSlice[T int | int8 | int16 | int32 | int64](v []T) []int {
+	out := make([]int, 0, len(v))
+	for _, v := range v {
+		out = append(out, int(v))
 	}
+
+	return out
 }

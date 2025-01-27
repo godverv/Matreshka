@@ -8,97 +8,117 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const varName = "test_variable"
+
 func Test_StringVariable(t *testing.T) {
 	t.Parallel()
 
-	const (
-		varName     = "string_variable"
-		singleValue = "single_value"
-	)
-	multipleValue := []string{"1", "2", "3"}
-	_ = multipleValue
+	const singleValue = "single_value"
 
-	t.Run("Single", func(t *testing.T) {
-		actual := MustNewVariable(varName, singleValue)
+	actual := MustNewVariable(varName, singleValue)
 
-		expect := &Variable{
-			Name: varName,
-			Type: VariableTypeStr,
-			Value: Value{
-				val: &stringValue{
-					v: singleValue,
-				},
+	expect := &Variable{
+		Name: varName,
+		Type: VariableTypeStr,
+		Value: Value{
+			val: &stringValue{
+				v: singleValue,
 			},
-		}
+		},
+	}
 
-		require.Equal(t, expect, actual)
+	require.Equal(t, expect, actual)
 
-		marshalled, err := yaml.Marshal(actual)
-		require.NoError(t, err)
+	marshalled, err := yaml.Marshal(actual)
+	require.NoError(t, err)
 
-		expectedYaml := `
-name: string_variable
+	expectedYaml := `
+name: test_variable
 type: string
 value: single_value
 `[1:]
 
-		require.YAMLEq(t, string(marshalled), expectedYaml)
-	})
+	require.YAMLEq(t, string(marshalled), expectedYaml)
 
-	t.Run("Slice", func(t *testing.T) {
-		type testCase struct {
-			valueToPass any
-			opts        []opt
-		}
+}
 
-		testCases := map[string]testCase{
-			"FromStringSlice": {
-				valueToPass: multipleValue,
-			},
-			"FromStringSliceAsOneString": {
-				valueToPass: "[" + strings.Join(multipleValue, ",") + "]",
-			},
-			"FromAnySlice": {
-				valueToPass: func() any {
-					anySlice := make([]any, 0, len(multipleValue))
-					for _, v := range multipleValue {
-						anySlice = append(anySlice, v)
-					}
+func Test_StringSliceVariable(t *testing.T) {
+	type testCase struct {
+		valueToPass any
+		opts        []opt
+	}
 
-					return anySlice
-				}(),
-				opts: []opt{
-					WithType(VariableTypeStr),
-				},
-			},
-		}
+	multipleValue := []string{"1", "2", "3"}
 
-		expect := &Variable{
-			Name: varName,
-			Type: VariableTypeStr,
-			Value: Value{
-				val: &stringSliceValue{
-					v: multipleValue,
-				},
+	testCases := map[string]testCase{
+		"FromStringSlice": {
+			valueToPass: multipleValue,
+		},
+		"FromStringSliceAsOneString": {
+			valueToPass: "[" + strings.Join(multipleValue, ",") + "]",
+		},
+		"FromAnySlice": {
+			valueToPass: func() any {
+				anySlice := make([]any, 0, len(multipleValue))
+				for _, v := range multipleValue {
+					anySlice = append(anySlice, v)
+				}
+
+				return anySlice
+			}(),
+			opts: []opt{
+				WithType(VariableTypeStr),
 			},
-		}
-		expectedYaml := `
-name: string_variable
+		},
+	}
+
+	expect := &Variable{
+		Name: varName,
+		Type: VariableTypeStr,
+		Value: Value{
+			val: &stringSliceValue{
+				v: multipleValue,
+			},
+		},
+	}
+	expectedYaml := `
+name: test_variable
 type: string
-value: '[1,2,3]'
-`[1:]
+value: ["1", "2", "3"]
+`
 
-		for name, tc := range testCases {
-			tc := tc
-			t.Run(name, func(t *testing.T) {
-				actual := MustNewVariable(varName, tc.valueToPass, tc.opts...)
-				require.Equal(t, expect, actual)
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			actual := MustNewVariable(varName, tc.valueToPass, tc.opts...)
+			require.Equal(t, expect, actual)
 
-				marshalled, err := yaml.Marshal(actual)
-				require.NoError(t, err)
+			marshalled, err := yaml.Marshal(actual)
+			require.NoError(t, err)
 
-				require.YAMLEq(t, string(marshalled), expectedYaml)
-			})
-		}
-	})
+			require.YAMLEq(t, string(marshalled), expectedYaml)
+		})
+	}
+}
+
+type Anon struct {
+	B any `yaml:"b,flow"`
+	A any `yaml:"a,flow"`
+}
+
+func (a *Anon) UnmarshalYAML(node *yaml.Node) error {
+	return nil
+}
+
+func Test_TestingMarshalling(t *testing.T) {
+
+	a := Anon{A: []int{1, 2, 3}, B: 2}
+
+	b, err := yaml.Marshal(a)
+	require.NoError(t, err)
+	_ = b
+
+	c := Anon{}
+	err = yaml.Unmarshal(b, &c)
+	require.NoError(t, err)
 }

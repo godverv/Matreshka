@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	errors "go.redsock.ru/rerrors"
+	"gopkg.in/yaml.v3"
 )
 
 type stringValue struct {
@@ -20,6 +21,25 @@ type stringSliceValue struct {
 }
 
 func (s *stringSliceValue) YamlValue() any {
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
+
+	node.Content = make([]*yaml.Node, 0, len(s.v))
+
+	for _, v := range s.v {
+		node.Content = append(node.Content,
+			&yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Tag:   "!!str",
+				Value: v,
+			},
+		)
+	}
+
+	return node
+
 	return "[" + strings.Join(s.v, ",") + "]"
 }
 

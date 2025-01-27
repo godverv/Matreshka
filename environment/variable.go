@@ -8,6 +8,7 @@ import (
 	"go.redsock.ru/evon"
 	errors "go.redsock.ru/rerrors"
 	"go.redsock.ru/toolbox"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -58,7 +59,7 @@ func NewVariable(name string, val any, opts ...opt) (*Variable, error) {
 	}
 
 	var err error
-	out.Value.val, err = mapVariableTypeToStruct[out.Type](val)
+	out.Value.val, err = mapVariableTypeToTypedValueConstructor[out.Type](val)
 	if err != nil {
 		return nil, errors.Wrap(err)
 	}
@@ -83,11 +84,35 @@ var (
 		reflect.Uint32:  VariableTypeInt,
 		reflect.Uint64:  VariableTypeInt,
 	}
-	mapVariableTypeToStruct = map[variableType]func(in any) (typedValue, error){
+	mapVariableTypeToTypedValueConstructor = map[variableType]func(in any) (typedValue, error){
 		VariableTypeStr: toStringValue,
 		VariableTypeInt: toIntVariable,
 	}
+	mapVariableTypeToYamlNodeParser = map[variableType]func(node *yaml.Node) (typedValue, error){
+		VariableTypeInt: fromIntNode,
+	}
 )
+
+func (v *Variable) UnmarshalYAML(node *yaml.Node) error {
+	var value, enum *yaml.Node
+	_ = enum
+	for cIdx := 0; cIdx < len(node.Content); cIdx += 2 {
+		fieldName := node.Content[cIdx].Value
+		switch fieldName {
+		case "name":
+			v.Name = node.Content[cIdx+1].Value
+		case "type":
+			v.Type = variableType(node.Content[cIdx+1].Value)
+		case "value", "enum":
+			value = node.Content[cIdx+1]
+		}
+	}
+
+	val, err := mapVariableTypeToYamlNodeParser[v.Type](value)
+	v.Value.val = val
+
+	return err
+}
 
 //func (v *Variable) MarshalYAML() (any, error) {
 //	out := map[string]any{
@@ -191,7 +216,7 @@ func (v *Variable) UnmarshalEnv(node *evon.Node) error {
 		return errors.Wrap(err, "error extracting value")
 	}
 
-	v.Value.val, err = mapVariableTypeToStruct[v.Type](val)
+	v.Value.val, err = mapVariableTypeToTypedValueConstructor[v.Type](val)
 	if err != nil {
 		return errors.Wrap(err)
 	}
