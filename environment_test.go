@@ -56,4 +56,15 @@ func Test_Environment(t *testing.T) {
 		expected := &config.EnvironmentConfig{}
 		require.Equal(t, expected, customEnvConf)
 	})
+
+	t.Run("MARSHAL", func(t *testing.T) {
+		ac := AppConfig{
+			Environment: getEnvironmentVariables(),
+		}
+		// TODO RSI-294: add tests after reformating the way yamls are created
+		bytes, err := ac.Marshal()
+		require.NoError(t, err)
+
+		_ = bytes
+	})
 }

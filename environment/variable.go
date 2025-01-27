@@ -38,7 +38,7 @@ func (v *Variable) MarshalYAML() (any, error) {
 	}
 
 	if len(v.Enum) != 0 {
-		out["enum"] = nil
+		out["enum"] = fmt.Sprint(v.Enum)
 	}
 
 	var val any
