@@ -3,6 +3,7 @@ package matreshka
 import (
 	"strings"
 
+	"go.redsock.ru/evon"
 	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 )
@@ -34,7 +35,7 @@ func (a *AppConfig) Unmarshal(b []byte) error {
 		return rerrors.Wrap(err)
 	}
 
-	envNameReplacer := strings.NewReplacer(" ", "_", "-", "_")
+	envNameReplacer := strings.NewReplacer(" ", evon.ObjectSplitter, evon.FieldSplitter, evon.ObjectSplitter)
 
 	for i := range a.Environment {
 		a.Environment[i].Name = envNameReplacer.Replace(a.Environment[i].Name)

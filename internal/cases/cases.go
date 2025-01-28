@@ -2,10 +2,12 @@ package cases
 
 import (
 	"strings"
+
+	"go.redsock.ru/evon"
 )
 
 func SnakeToPascal(v string) string {
-	parts := strings.Split(v, "_")
+	parts := strings.Split(v, evon.ObjectSplitter)
 	for i := range parts {
 		if _, ok := initialisms[parts[i]]; ok {
 			parts[i] = strings.ToUpper(parts[i])

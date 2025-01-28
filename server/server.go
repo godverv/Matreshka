@@ -98,7 +98,7 @@ func (s *Server) MarshalEnv(name string) ([]*evon.Node, error) {
 	})
 
 	if name != "" {
-		name += "_"
+		name += evon.ObjectSplitter
 	}
 
 	for path, srv := range s.GRPC {

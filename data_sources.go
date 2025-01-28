@@ -41,12 +41,12 @@ func (r *DataSources) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func (r DataSources) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
-		prefix += "_"
+		prefix += evon.ObjectSplitter
 	}
 
 	out := make([]*evon.Node, 0, len(r))
 	for _, resource := range r {
-		resourceName := strings.Replace(resource.GetName(), "_", "-", -1)
+		resourceName := strings.Replace(resource.GetName(), evon.ObjectSplitter, evon.FieldSplitter, -1)
 
 		nodes, err := evon.MarshalEnvWithPrefix(prefix+resourceName, resource)
 		if err != nil {
@@ -66,7 +66,7 @@ func (r *DataSources) UnmarshalEnv(rootNode *evon.Node) error {
 			name = name[len(rootNode.Name)+1:]
 		}
 
-		name = strings.Replace(name, "-", "_", -1)
+		name = strings.Replace(name, evon.FieldSplitter, evon.ObjectSplitter, -1)
 
 		dst := resources.GetResourceByName(name)
 
@@ -100,7 +100,7 @@ func (r *DataSources) ParseToStruct(dst any) error {
 
 	for _, ds := range *r {
 		name := ds.GetName()
-		name = strings.ReplaceAll(name, " ", "_")
+		name = strings.ReplaceAll(name, " ", evon.ObjectSplitter)
 		name = cases.SnakeToPascal(name)
 		v := dstMapping[name]
 

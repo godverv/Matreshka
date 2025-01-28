@@ -11,6 +11,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const mathMinus = "-"
+
 type intValue struct {
 	v int
 }
@@ -99,7 +101,7 @@ func (v *intSliceValue) asYamlRange() *yaml.Node {
 	convertToRange := func(start, end int) string {
 		newRange := strconv.Itoa(start)
 		if start != end {
-			newRange += "-" + strconv.Itoa(end)
+			newRange += mathMinus + strconv.Itoa(end)
 		}
 
 		return newRange
@@ -137,7 +139,7 @@ func toIntVariable(val any) (typedValue, error) {
 			return &intSliceValue{v: v}, err
 		}
 
-		rangeSeparator := strings.Index(switchValue, "-")
+		rangeSeparator := strings.Index(switchValue, mathMinus)
 		if rangeSeparator != -1 {
 			v, err := extractIntRange(rangeSeparator, switchValue)
 			return &intSliceValue{v: v}, err
@@ -195,8 +197,8 @@ func intSliceFromYamlNode(node *yaml.Node) (*intSliceValue, error) {
 
 			intSlice.v = append(intSlice.v, i)
 		case "!!str":
-			minusIndex := strings.Index(child.Value, "-")
-			if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, "-") < 2 {
+			minusIndex := strings.Index(child.Value, mathMinus)
+			if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, mathMinus) < 2 {
 				i, err = strconv.Atoi(child.Value)
 				if err != nil {
 					return nil, errors.Wrap(err, "could not parse string as int: %s ", child.Value)
@@ -205,7 +207,7 @@ func intSliceFromYamlNode(node *yaml.Node) (*intSliceValue, error) {
 				intSlice.v = append(intSlice.v, i)
 			} else {
 
-				minusIndex = strings.Index(child.Value[1:], "-") + 1
+				minusIndex = strings.Index(child.Value[1:], mathMinus) + 1
 				var firstInt, lastInt int
 				firstInt, err = strconv.Atoi(child.Value[:minusIndex])
 				if err != nil {
@@ -277,7 +279,7 @@ func anySliceToIntSlice(value []any) ([]int, error) {
 	for _, v := range value {
 		switch v := v.(type) {
 		case string:
-			rangeSeparator := strings.Index(v, "-")
+			rangeSeparator := strings.Index(v, mathMinus)
 			if rangeSeparator != -1 {
 				rng, err := extractIntRange(rangeSeparator, v)
 				if err != nil {

@@ -18,12 +18,12 @@ type Environment []*environment.Variable
 
 func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
-		prefix += "_"
+		prefix += evon.ObjectSplitter
 	}
 
 	out := make([]*evon.Node, 0, len(*a))
 	for _, v := range *a {
-		pref := prefix + strings.NewReplacer(" ", "-", "_", "-").Replace(strings.ToUpper(v.Name))
+		pref := prefix + strings.NewReplacer(" ", evon.FieldSplitter, evon.ObjectSplitter, evon.FieldSplitter).Replace(strings.ToUpper(v.Name))
 		root := &evon.Node{
 			Name:  pref,
 			Value: v.ValueString(),
@@ -50,30 +50,23 @@ func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 
 	return out, nil
 }
+
 func (a *Environment) UnmarshalEnv(rootNode *evon.Node) error {
-	env := make([]*environment.Variable, 0, len(rootNode.InnerNodes))
+	*a = make([]*environment.Variable, len(rootNode.InnerNodes))
 
-	replacer := strings.NewReplacer("-", "_")
+	for idx := range rootNode.InnerNodes {
+		(*a)[idx] = &environment.Variable{}
 
-	for _, e := range rootNode.InnerNodes {
-		name := e.Name[len(rootNode.Name)+1:]
-		name = strings.ToLower(name)
-		name = replacer.Replace(name)
-		ev := &environment.Variable{
-			Name: name,
-		}
-		err := ev.UnmarshalEnv(e)
+		err := (*a)[idx].UnmarshalEnv(rootNode.InnerNodes[idx])
 		if err != nil {
 			return errors.Wrap(err, "error unmarshalling environment variable")
 		}
-		env = append(env, ev)
 	}
 
-	sort.Slice(env, func(i, j int) bool {
-		return env[i].Name < env[j].Name
+	sort.Slice(*a, func(i, j int) bool {
+		return (*a)[i].Name < (*a)[j].Name
 	})
 
-	*a = env
 	return nil
 }
 
@@ -95,7 +88,7 @@ func (a *Environment) ParseToStruct(dst any) error {
 
 	for _, env := range *a {
 		name := env.Name
-		name = strings.ReplaceAll(name, " ", "_")
+		name = strings.ReplaceAll(name, " ", evon.ObjectSplitter)
 		name = cases.SnakeToPascal(name)
 		v, ok := dstMapping[name]
 		if !ok {

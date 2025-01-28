@@ -162,6 +162,15 @@ func (v *Variable) UnmarshalYAML(node *yaml.Node) error {
 }
 
 func (v *Variable) UnmarshalEnv(node *evon.Node) (err error) {
+	v.Name = node.Name
+	splitIdx := strings.LastIndex(v.Name, evon.ObjectSplitter)
+	if splitIdx != -1 {
+		v.Name = v.Name[splitIdx+1:]
+	}
+
+	v.Name = strings.ReplaceAll(v.Name, evon.FieldSplitter, evon.ObjectSplitter)
+	v.Name = strings.ToLower(v.Name)
+
 	var enum *evon.Node
 	for _, n := range node.InnerNodes {
 		switch n.Name[len(node.Name)+1:] {
@@ -217,15 +226,6 @@ func (v *Variable) ValueString() string {
 	}
 
 	return fmt.Sprint(v.Value)
-}
-
-func extractValue(val any, vType variableType) (out typedValue, err error) {
-	constructor := mapVariableTypeToTypedValueConstructor[vType]
-	if constructor == nil {
-		return nil, ErrUnknownEnvVariableType
-
-	}
-	return constructor(val)
 }
 
 func toStringArray(vRef reflect.Value) string {

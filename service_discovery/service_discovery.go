@@ -25,7 +25,7 @@ func (o *Overrides) UnmarshalEnv(rootNode *evon.Node) error {
 			name = name[len(rootNode.Name)+1:]
 		}
 
-		name = strings.Replace(name, "-", "_", -1)
+		name = strings.Replace(name, evon.FieldSplitter, evon.ObjectSplitter, -1)
 
 		dst := &Override{}
 
@@ -42,12 +42,12 @@ func (o *Overrides) UnmarshalEnv(rootNode *evon.Node) error {
 }
 func (o Overrides) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	if prefix != "" {
-		prefix += "_"
+		prefix += evon.ObjectSplitter
 	}
 
 	out := make([]*evon.Node, 0, len(o))
 	for _, override := range o {
-		overrideServiceName := strings.Replace(override.ServiceName, "_", "-", -1)
+		overrideServiceName := strings.Replace(override.ServiceName, evon.ObjectSplitter, evon.FieldSplitter, -1)
 
 		nodes, err := evon.MarshalEnvWithPrefix(prefix+overrideServiceName, override)
 		if err != nil {
