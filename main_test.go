@@ -218,8 +218,8 @@ func getTelegramClientEnvs() []evon.Node {
 
 func getEnvironmentVariables() []*environment.Variable {
 	return []*environment.Variable{
-		environment.MustNewVariable("welcome_string", "not so basic 🤡 string"),
 		environment.MustNewVariable("database_max_connections", 1),
+		environment.MustNewVariable("welcome_string", "not so basic 🤡 string"),
 		environment.MustNewVariable("one_of_welcome_string", "one", environment.WithEnum("one", "two", "three")),
 		environment.MustNewVariable("true_falser", true),
 		environment.MustNewVariable("request_timeout", time.Second*10),

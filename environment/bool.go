@@ -3,6 +3,7 @@ package environment
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	errors "go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
@@ -10,6 +11,14 @@ import (
 
 type boolValue struct {
 	v bool
+}
+
+func (s *boolValue) Val() any {
+	return s.v
+}
+
+func (s *boolValue) EvonValue() string {
+	return strconv.FormatBool(s.v)
 }
 
 func (s *boolValue) YamlValue() any {
@@ -20,8 +29,34 @@ type boolSliceValue struct {
 	v []bool
 }
 
-func (s *boolSliceValue) YamlValue() any {
+func (s *boolSliceValue) Val() any {
 	return s.v
+}
+
+func (s *boolSliceValue) EvonValue() string {
+	strVals := make([]string, 0, len(s.v))
+	for _, v := range s.v {
+		strVals = append(strVals, strconv.FormatBool(v))
+	}
+
+	return "[" + strings.Join(strVals, ",") + "]"
+}
+
+func (s *boolSliceValue) YamlValue() any {
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
+
+	for _, b := range s.v {
+		node.Content = append(node.Content, &yaml.Node{
+			Kind:  yaml.ScalarNode,
+			Tag:   "!!bool",
+			Value: strconv.FormatBool(b),
+		})
+	}
+
+	return node
 }
 
 func toBoolValue(val any) (typedValue, error) {

@@ -13,12 +13,33 @@ type floatValue struct {
 	v float64
 }
 
+func (v *floatValue) Val() any {
+	return v.v
+}
+
+func (v *floatValue) EvonValue() string {
+	return floatToString(v.v)
+}
+
 func (v *floatValue) YamlValue() any {
 	return v.v
 }
 
 type floatSliceValue struct {
 	v []float64
+}
+
+func (v *floatSliceValue) Val() any {
+	return v.v
+}
+
+func (v *floatSliceValue) EvonValue() string {
+	outStr := make([]string, 0, len(v.v))
+
+	for _, e := range v.v {
+		outStr = append(outStr, floatToString(e))
+	}
+	return "[" + strings.Join(outStr, ",") + "]"
 }
 
 func (v *floatSliceValue) YamlValue() any {
@@ -36,7 +57,7 @@ func (v *floatSliceValue) YamlValue() any {
 		node.Content = append(node.Content,
 			&yaml.Node{
 				Kind:  yaml.ScalarNode,
-				Value: fmt.Sprintf("%.2f", r),
+				Value: floatToString(r),
 			})
 	}
 
@@ -163,4 +184,8 @@ func anyToFloat(val any) (float64, error) {
 	default:
 		return 0, errors.New(fmt.Sprintf("can't cast %T to float", val))
 	}
+}
+
+func floatToString(f float64) string {
+	return fmt.Sprintf("%.2f", f)
 }

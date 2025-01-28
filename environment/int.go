@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"go.redsock.ru/evon"
 	errors "go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 )
@@ -14,12 +15,24 @@ type intValue struct {
 	v int
 }
 
+func (v *intValue) Val() any {
+	return v.v
+}
+
 func (v *intValue) YamlValue() any {
 	return v.v
 }
 
+func (v *intValue) EvonValue() string {
+	return fmt.Sprintf("%d", v.v)
+}
+
 type intSliceValue struct {
 	v []int
+}
+
+func (v *intSliceValue) Val() any {
+	return v.v
 }
 
 func (v *intSliceValue) YamlValue() any {
@@ -45,6 +58,36 @@ func (v *intSliceValue) YamlValue() any {
 	}
 
 	return node
+}
+
+func (v *intSliceValue) EvonValue() string {
+	outStr := make([]string, 0, len(v.v))
+	for _, vl := range v.v {
+		outStr = append(outStr, fmt.Sprintf("%d", vl))
+	}
+
+	return "[" + strings.Join(outStr, ",") + "]"
+}
+
+func (v *intSliceValue) isEnum(val typedValue) error {
+	valuesToValidate := make([]int, 0, 1)
+
+	switch actualValue := val.(type) {
+	case *intValue:
+		valuesToValidate = append(valuesToValidate, actualValue.v)
+	case *intSliceValue:
+		valuesToValidate = append(valuesToValidate, actualValue.v...)
+	default:
+		return errors.Wrapf(ErrUnexpectedType, "Expected Int or Slice of Ints but got %T", val)
+	}
+
+	for _, valueToValidate := range valuesToValidate {
+		if !slices.Contains(v.v, valueToValidate) {
+			return errors.Wrapf(ErrEnumValidationFailed, "got %d", valueToValidate)
+		}
+	}
+
+	return nil
 }
 
 func (v *intSliceValue) asYamlRange() *yaml.Node {
@@ -94,7 +137,6 @@ func toIntVariable(val any) (typedValue, error) {
 			return &intSliceValue{v: v}, err
 		}
 
-		//TODO test [1-20, 30] MUST fail
 		rangeSeparator := strings.Index(switchValue, "-")
 		if rangeSeparator != -1 {
 			v, err := extractIntRange(rangeSeparator, switchValue)
@@ -123,86 +165,101 @@ func toIntVariable(val any) (typedValue, error) {
 	}
 }
 
-func fromIntNode(node *yaml.Node) (typedValue, error) {
+func intValueFromNode(node *yaml.Node) (typedValue, error) {
 	if node.Kind == yaml.ScalarNode {
 		i, err := strconv.Atoi(node.Value)
 		return &intValue{i}, err
 	}
 
 	if node.Kind == yaml.SequenceNode {
-		intSlice := &intSliceValue{}
-
-		for _, child := range node.Content {
-
-			i := 0
-			var err error
-
-			switch child.Tag {
-			case "!!int":
-				i, err = strconv.Atoi(child.Value)
-				if err != nil {
-					return nil, errors.Wrap(err, "could not parse int: %s ", child.Value)
-				}
-
-				intSlice.v = append(intSlice.v, i)
-			case "!!str":
-				minusIndex := strings.Index(child.Value, "-")
-				if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, "-") < 2 {
-					i, err = strconv.Atoi(child.Value)
-					if err != nil {
-						return nil, errors.Wrap(err, "could not parse string as int: %s ", child.Value)
-					}
-
-					intSlice.v = append(intSlice.v, i)
-				} else {
-
-					minusIndex = strings.Index(child.Value[1:], "-") + 1
-					var firstInt, lastInt int
-					firstInt, err = strconv.Atoi(child.Value[:minusIndex])
-					if err != nil {
-						return nil, errors.Wrap(err, "error parsing first int in sequence")
-					}
-
-					lastInt, err = strconv.Atoi(child.Value[minusIndex+1:])
-					if err != nil {
-						return nil, errors.Wrap(err, "error parsing last int in sequence")
-					}
-
-					for ; firstInt <= lastInt; firstInt++ {
-						intSlice.v = append(intSlice.v, firstInt)
-					}
-				}
-			}
-		}
-
-		return intSlice, nil
+		return intSliceFromYamlNode(node)
 	}
 
 	return nil, errors.New("Expected Int OR Int Slice type, got yaml %s", node.Tag)
 }
 
-func extractIntVariable(val any) (any, error) {
-	switch switchValue := val.(type) {
-	case string:
-		if switchValue[0] == '[' {
-			return extractIntSliceFromString(switchValue)
+func intSliceFromYamlNode(node *yaml.Node) (*intSliceValue, error) {
+	intSlice := &intSliceValue{}
+
+	for _, child := range node.Content {
+
+		i := 0
+		var err error
+
+		switch child.Tag {
+		case "!!int":
+			i, err = strconv.Atoi(child.Value)
+			if err != nil {
+				return nil, errors.Wrap(err, "could not parse int: %s ", child.Value)
+			}
+
+			intSlice.v = append(intSlice.v, i)
+		case "!!str":
+			minusIndex := strings.Index(child.Value, "-")
+			if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, "-") < 2 {
+				i, err = strconv.Atoi(child.Value)
+				if err != nil {
+					return nil, errors.Wrap(err, "could not parse string as int: %s ", child.Value)
+				}
+
+				intSlice.v = append(intSlice.v, i)
+			} else {
+
+				minusIndex = strings.Index(child.Value[1:], "-") + 1
+				var firstInt, lastInt int
+				firstInt, err = strconv.Atoi(child.Value[:minusIndex])
+				if err != nil {
+					return nil, errors.Wrap(err, "error parsing first int in sequence")
+				}
+
+				lastInt, err = strconv.Atoi(child.Value[minusIndex+1:])
+				if err != nil {
+					return nil, errors.Wrap(err, "error parsing last int in sequence")
+				}
+
+				for ; firstInt <= lastInt; firstInt++ {
+					intSlice.v = append(intSlice.v, firstInt)
+				}
+			}
 		}
-
-		rangeSeparator := strings.Index(switchValue, "-")
-		if rangeSeparator != -1 {
-			return extractIntRange(rangeSeparator, switchValue)
-		}
-
-		return strconv.Atoi(switchValue)
-
-	case []interface{}:
-		return anySliceToIntSlice(switchValue)
-
-	default:
-		return anyToInt(val)
 	}
+
+	return intSlice, nil
 }
 
+func intSliceFromEvonNode(node *evon.Node) (*intSliceValue, error) {
+	switch v := node.Value.(type) {
+	case string:
+		if strings.HasPrefix(v, "[") {
+			v = v[1:]
+			if strings.HasSuffix(v, "]") {
+				v = v[:len(v)-1]
+			}
+		}
+
+		splited := strings.Split(v, ",")
+		isv := &intSliceValue{
+			v: make([]int, 0, len(splited)),
+		}
+
+		for _, oneV := range splited {
+			intV, err := strconv.Atoi(oneV)
+			if err != nil {
+				return nil, errors.Wrap(err, "error parsing int value from string")
+			}
+			isv.v = append(isv.v, intV)
+		}
+
+		return isv, nil
+
+	case []int:
+		return &intSliceValue{v: v}, nil
+
+	default:
+		return nil, errors.Wrap(ErrUnexpectedType, "expected string or slice of int")
+	}
+
+}
 func extractIntSliceFromString(switchValue string) ([]int, error) {
 	separatedVals := strings.Split(switchValue[1:len(switchValue)-1], ",")
 

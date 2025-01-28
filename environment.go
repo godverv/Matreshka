@@ -34,7 +34,7 @@ func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 			},
 		}
 
-		if len(v.Enum) != 0 {
+		if v.Enum != nil {
 			root.InnerNodes = append(root.InnerNodes,
 				&evon.Node{
 					Name:  pref + "_ENUM",
@@ -102,7 +102,7 @@ func (a *Environment) ParseToStruct(dst any) error {
 			return errors.Wrap(ErrNotFound, "field with name "+name+" can't be found in target struct")
 		}
 
-		v.Set(reflect.ValueOf(env.Value))
+		v.Set(reflect.ValueOf(env.Value.Value()))
 
 	}
 

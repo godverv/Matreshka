@@ -2,31 +2,86 @@ package environment
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	errors "go.redsock.ru/rerrors"
+	"gopkg.in/yaml.v3"
 )
 
-func toDuration(val any) (any, error) {
+type durationValue struct {
+	v time.Duration
+}
+
+func (s *durationValue) Val() any {
+	return s.v
+}
+
+func (s *durationValue) EvonValue() string {
+	return s.v.String()
+}
+
+func (s *durationValue) YamlValue() any {
+	return s.v
+}
+
+type durationSliceValue struct {
+	v []time.Duration
+}
+
+func (s *durationSliceValue) Val() any {
+	return s.v
+}
+
+func (s *durationSliceValue) EvonValue() string {
+	strs := make([]string, 0, len(s.v))
+
+	for _, d := range s.v {
+		strs = append(strs, d.String())
+	}
+
+	return "[" + strings.Join(strs, ",") + "]"
+}
+
+func (s *durationSliceValue) YamlValue() any {
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
+
+	for _, b := range s.v {
+		node.Content = append(node.Content, &yaml.Node{
+			Kind:  yaml.ScalarNode,
+			Tag:   "!!str",
+			Value: b.String(),
+		})
+	}
+
+	return node
+}
+
+func toDuration(val any) (typedValue, error) {
 	switch v := val.(type) {
 	case string:
-		return time.ParseDuration(v)
+		d, err := time.ParseDuration(v)
+		return &durationValue{v: d}, err
+
 	case time.Duration:
-		return v, nil
-	case []interface{}:
-		out := make([]time.Duration, 0, len(v))
-		for _, val := range v {
-			b, err := toDuration(val)
-			if err != nil {
-				return nil, errors.Wrap(err, "error extracting duration from array value")
-			}
+		return &durationValue{v: v}, nil
 
-			out = append(out, b.(time.Duration))
-		}
-
-		return out, nil
+	case []time.Duration:
+		return &durationSliceValue{v: v}, nil
 
 	default:
-		return 0, errors.New(fmt.Sprintf("can't cast %T to time.Duration", val))
+		return nil, errors.New(fmt.Sprintf("can't cast %T to time.Duration", val))
 	}
+}
+
+func fromDurationNode(val *yaml.Node) (typedValue, error) {
+	if val.Kind == yaml.ScalarNode {
+		dur, err := time.ParseDuration(val.Value)
+		return &durationValue{v: dur}, err
+	}
+
+	return nil, nil
 }

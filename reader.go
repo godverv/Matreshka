@@ -197,10 +197,6 @@ func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorag
 
 		originalName := strings.ToUpper(variable[:idx])
 
-		if strings.HasPrefix(originalName, "MATRESHKA_APP-INFO") {
-			println(1)
-		}
-
 		strippingName := originalName
 
 		if !strings.HasPrefix(strippingName, prefixWorking) {
