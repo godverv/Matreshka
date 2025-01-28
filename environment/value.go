@@ -37,9 +37,11 @@ func GetType(val any) variableType {
 		refKind = refV.Kind()
 	}
 
-	switch refKind {
-	case reflect.Slice:
+	if refKind == reflect.Slice {
 		refKind = reflect.TypeOf(val).Elem().Kind()
+	}
+
+	switch refKind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		t := refV.Type().String()
 		if t == "time.Duration" {
