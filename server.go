@@ -70,7 +70,7 @@ func (s Servers) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	sort.Ints(ports)
 
 	if prefix != "" {
-		prefix += "_"
+		prefix += evon.ObjectSplitter
 	}
 
 	names := serverNamer{
@@ -176,8 +176,8 @@ func (s *serverNamer) getName(in *server.Server) string {
 	}
 
 	name = strings.NewReplacer(
-		"_", "-",
-		" ", "-",
+		evon.ObjectSplitter, evon.FieldSplitter,
+		" ", evon.FieldSplitter,
 	).Replace(name)
 	name = strings.ToUpper(name)
 	return name
@@ -188,6 +188,6 @@ func ServerName(name string) string {
 		return "Master"
 	}
 
-	name = strings.ReplaceAll(name, " ", "_")
+	name = strings.ReplaceAll(name, " ", evon.ObjectSplitter)
 	return cases.SnakeToPascal(name)
 }

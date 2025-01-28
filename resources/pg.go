@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"go.redsock.ru/evon"
 	"go.redsock.ru/rerrors"
 )
 
@@ -40,7 +41,7 @@ func (p *Postgres) GetType() string {
 }
 
 func (p *Postgres) MarshalYAML() (interface{}, error) {
-	resourceType := strings.Split(p.GetName(), "_")[0]
+	resourceType := strings.Split(p.GetName(), evon.ObjectSplitter)[0]
 	if resourceType != "postgres" {
 		return nil, rerrors.Wrap(ErrInvalidResourceName, "but got: "+resourceType)
 	}

@@ -2,36 +2,267 @@ package environment
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
+	"go.redsock.ru/evon"
 	errors "go.redsock.ru/rerrors"
+	"gopkg.in/yaml.v3"
 )
 
-func toIntVariable(val any) (any, error) {
+const mathMinus = "-"
+
+type intValue struct {
+	v int
+}
+
+func (v *intValue) Val() any {
+	return v.v
+}
+
+func (v *intValue) YamlValue() any {
+	return v.v
+}
+
+func (v *intValue) EvonValue() string {
+	return fmt.Sprintf("%d", v.v)
+}
+
+type intSliceValue struct {
+	v []int
+}
+
+func (v *intSliceValue) Val() any {
+	return v.v
+}
+
+func (v *intSliceValue) YamlValue() any {
+	if slices.IsSorted(v.v) {
+		return v.asYamlRange()
+	}
+
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
+
+	if len(v.v) == 0 {
+		return node
+	}
+
+	for _, r := range v.v {
+		node.Content = append(node.Content,
+			&yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Value: strconv.Itoa(r),
+			})
+	}
+
+	return node
+}
+
+func (v *intSliceValue) EvonValue() string {
+	outStr := make([]string, 0, len(v.v))
+	for _, vl := range v.v {
+		outStr = append(outStr, fmt.Sprintf("%d", vl))
+	}
+
+	return "[" + strings.Join(outStr, ",") + "]"
+}
+
+func (v *intSliceValue) isEnum(val typedValue) error {
+	valuesToValidate := make([]int, 0, 1)
+
+	switch actualValue := val.(type) {
+	case *intValue:
+		valuesToValidate = append(valuesToValidate, actualValue.v)
+	case *intSliceValue:
+		valuesToValidate = append(valuesToValidate, actualValue.v...)
+	default:
+		return errors.Wrapf(ErrUnexpectedType, "Expected Int or Slice of Ints but got %T", val)
+	}
+
+	for _, valueToValidate := range valuesToValidate {
+		if !slices.Contains(v.v, valueToValidate) {
+			return errors.Wrapf(ErrEnumValidationFailed, "got %d", valueToValidate)
+		}
+	}
+
+	return nil
+}
+
+func (v *intSliceValue) asYamlRange() *yaml.Node {
+	node := &yaml.Node{
+		Kind:  yaml.SequenceNode,
+		Style: yaml.FlowStyle,
+	}
+
+	convertToRange := func(start, end int) string {
+		newRange := strconv.Itoa(start)
+		if start != end {
+			newRange += mathMinus + strconv.Itoa(end)
+		}
+
+		return newRange
+	}
+
+	prev := v.v[0]
+	rangeStart := prev
+
+	for _, v := range v.v[1:] {
+		if v-prev != 1 {
+			node.Content = append(node.Content, &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Value: convertToRange(rangeStart, prev),
+			})
+
+			prev = v
+			rangeStart = v
+		}
+		prev = v
+	}
+
+	node.Content = append(node.Content, &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Value: convertToRange(rangeStart, prev),
+	})
+
+	return node
+}
+
+func toIntVariable(val any) (typedValue, error) {
 	switch switchValue := val.(type) {
 	case string:
 		if switchValue[0] == '[' {
-			return stringToIntSlice(switchValue)
+			v, err := extractIntSliceFromString(switchValue)
+			return &intSliceValue{v: v}, err
 		}
 
-		rangeSeparator := strings.Index(switchValue, "-")
+		rangeSeparator := strings.Index(switchValue, mathMinus)
 		if rangeSeparator != -1 {
-			return toIntRange(rangeSeparator, switchValue)
+			v, err := extractIntRange(rangeSeparator, switchValue)
+			return &intSliceValue{v: v}, err
 		}
 
-		return strconv.Atoi(switchValue)
+		v, err := strconv.Atoi(switchValue)
+		return &intValue{v: v}, err
 
 	case []interface{}:
-		return anySliceToIntSlice(switchValue)
-
+		v, err := anySliceToIntSlice(switchValue)
+		return &intSliceValue{v: v}, err
+	case []int:
+		return &intSliceValue{v: switchValue}, nil
+	case []int8:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
+	case []int16:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
+	case []int32:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
+	case []int64:
+		return &intSliceValue{v: toIntSlice(switchValue)}, nil
 	default:
-		return anyToInt(val)
+		v, err := anyToInt(val)
+		return &intValue{v: v}, err
 	}
 }
 
-func stringToIntSlice(switchValue string) ([]int, error) {
+func intValueFromNode(node *yaml.Node) (typedValue, error) {
+	if node.Kind == yaml.ScalarNode {
+		i, err := strconv.Atoi(node.Value)
+		return &intValue{i}, err
+	}
+
+	if node.Kind == yaml.SequenceNode {
+		return intSliceFromYamlNode(node)
+	}
+
+	return nil, errors.New("Expected Int OR Int Slice type, got yaml %s", node.Tag)
+}
+
+func intSliceFromYamlNode(node *yaml.Node) (*intSliceValue, error) {
+	intSlice := &intSliceValue{}
+
+	for _, child := range node.Content {
+
+		i := 0
+		var err error
+
+		switch child.Tag {
+		case "!!int":
+			i, err = strconv.Atoi(child.Value)
+			if err != nil {
+				return nil, errors.Wrap(err, "could not parse int: %s ", child.Value)
+			}
+
+			intSlice.v = append(intSlice.v, i)
+		case "!!str":
+			minusIndex := strings.Index(child.Value, mathMinus)
+			if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, mathMinus) < 2 {
+				i, err = strconv.Atoi(child.Value)
+				if err != nil {
+					return nil, errors.Wrap(err, "could not parse string as int: %s ", child.Value)
+				}
+
+				intSlice.v = append(intSlice.v, i)
+			} else {
+
+				minusIndex = strings.Index(child.Value[1:], mathMinus) + 1
+				var firstInt, lastInt int
+				firstInt, err = strconv.Atoi(child.Value[:minusIndex])
+				if err != nil {
+					return nil, errors.Wrap(err, "error parsing first int in sequence")
+				}
+
+				lastInt, err = strconv.Atoi(child.Value[minusIndex+1:])
+				if err != nil {
+					return nil, errors.Wrap(err, "error parsing last int in sequence")
+				}
+
+				for ; firstInt <= lastInt; firstInt++ {
+					intSlice.v = append(intSlice.v, firstInt)
+				}
+			}
+		}
+	}
+
+	return intSlice, nil
+}
+
+func intSliceFromEvonNode(node *evon.Node) (*intSliceValue, error) {
+	switch v := node.Value.(type) {
+	case string:
+		if strings.HasPrefix(v, "[") {
+			v = v[1:]
+			if strings.HasSuffix(v, "]") {
+				v = v[:len(v)-1]
+			}
+		}
+
+		splited := strings.Split(v, ",")
+		isv := &intSliceValue{
+			v: make([]int, 0, len(splited)),
+		}
+
+		for _, oneV := range splited {
+			intV, err := strconv.Atoi(oneV)
+			if err != nil {
+				return nil, errors.Wrap(err, "error parsing int value from string")
+			}
+			isv.v = append(isv.v, intV)
+		}
+
+		return isv, nil
+
+	case []int:
+		return &intSliceValue{v: v}, nil
+
+	default:
+		return nil, errors.Wrap(ErrUnexpectedType, "expected string or slice of int")
+	}
+
+}
+func extractIntSliceFromString(switchValue string) ([]int, error) {
 	separatedVals := strings.Split(switchValue[1:len(switchValue)-1], ",")
 
 	anyVals := make([]any, 0, len(separatedVals))
@@ -48,9 +279,9 @@ func anySliceToIntSlice(value []any) ([]int, error) {
 	for _, v := range value {
 		switch v := v.(type) {
 		case string:
-			rangeSeparator := strings.Index(v, "-")
+			rangeSeparator := strings.Index(v, mathMinus)
 			if rangeSeparator != -1 {
-				rng, err := toIntRange(rangeSeparator, v)
+				rng, err := extractIntRange(rangeSeparator, v)
 				if err != nil {
 					return nil, errors.Wrap(err, "error converting value to int range")
 				}
@@ -81,13 +312,30 @@ func anyToInt(val any) (int, error) {
 	switch switchValue := val.(type) {
 	case int:
 		return switchValue, nil
-
+	case int8:
+		return int(switchValue), nil
+	case int16:
+		return int(switchValue), nil
+	case int32:
+		return int(switchValue), nil
+	case int64:
+		return int(switchValue), nil
+	case uint:
+		return int(switchValue), nil
+	case uint8:
+		return int(switchValue), nil
+	case uint16:
+		return int(switchValue), nil
+	case uint32:
+		return int(switchValue), nil
+	case uint64:
+		return int(switchValue), nil
 	default:
 		return 0, errors.New(fmt.Sprintf("can't cast %T to int", val))
 	}
 }
 
-func toIntRange(rangeSeparatorIdx int, strValue string) ([]int, error) {
+func extractIntRange(rangeSeparatorIdx int, strValue string) ([]int, error) {
 	firstNumber, err := strconv.Atoi(strValue[:rangeSeparatorIdx])
 	if err != nil {
 		return nil, errors.Wrap(err, "error parsing first number of range to int")
@@ -107,44 +355,11 @@ func toIntRange(rangeSeparatorIdx int, strValue string) ([]int, error) {
 	return out, nil
 }
 
-func marshalInt(in any) string {
-	switch newIn := in.(type) {
-	case []int:
-		ranges := make([]string, 0, len(newIn))
-		sort.Slice(newIn, func(i, j int) bool {
-			return newIn[i] < newIn[j]
-		})
-
-		if len(newIn) == 0 {
-			return "[]"
-		}
-
-		convertToRange := func(start, end int) string {
-			newRange := strconv.Itoa(start)
-			if start != end {
-				newRange += "-" + strconv.Itoa(end)
-			}
-
-			return newRange
-		}
-
-		prev := newIn[0]
-		rangeStart := prev
-
-		for _, v := range newIn[1:] {
-			if v-prev != 1 {
-				ranges = append(ranges, convertToRange(rangeStart, prev))
-
-				prev = v
-				rangeStart = v
-			}
-			prev = v
-		}
-
-		ranges = append(ranges, convertToRange(rangeStart, prev))
-
-		return "[" + strings.Join(ranges, ",") + "]"
-	default:
-		return fmt.Sprint(newIn)
+func toIntSlice[T int | int8 | int16 | int32 | int64](v []T) []int {
+	out := make([]int, 0, len(v))
+	for _, v := range v {
+		out = append(out, int(v))
 	}
+
+	return out
 }

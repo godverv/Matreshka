@@ -68,7 +68,7 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 	// Storage in Basic Environment format (e.g. object_sub_field_name_leaf_field_name)
 	masterEnvStorage := map[string]*evon.Node{}
 	for key, node := range evonStorageFromEnv {
-		key = strings.ReplaceAll(key, "-", "_")
+		key = strings.ReplaceAll(key, evon.FieldSplitter, evon.ObjectSplitter)
 		masterEnvStorage[key] = node
 	}
 
@@ -184,7 +184,7 @@ func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorag
 	prefixWorking := prefixOut
 	// In case project name is specified, appending underscore to clear name from variable
 	if prefixWorking != "" {
-		prefixWorking += "_"
+		prefixWorking += evon.ObjectSplitter
 	}
 
 	partsToParse := []string{"APP-INFO", "DATA-SOURCES", "SERVERS", "ENVIRONMENT", "SERVICE-DISCOVERY"}
@@ -197,10 +197,6 @@ func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorag
 
 		originalName := strings.ToUpper(variable[:idx])
 
-		if strings.HasPrefix(originalName, "MATRESHKA_APP-INFO") {
-			println(1)
-		}
-
 		strippingName := originalName
 
 		if !strings.HasPrefix(strippingName, prefixWorking) {
@@ -208,7 +204,7 @@ func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorag
 		}
 
 		strippingName = strippingName[len(prefixWorking):]
-		spaceIndex := strings.Index(strippingName, "_")
+		spaceIndex := strings.Index(strippingName, evon.ObjectSplitter)
 		if spaceIndex == -1 {
 			continue
 		}

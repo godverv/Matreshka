@@ -218,53 +218,15 @@ func getTelegramClientEnvs() []evon.Node {
 
 func getEnvironmentVariables() []*environment.Variable {
 	return []*environment.Variable{
-		{
-			Name:  "database_max_connections",
-			Value: 1,
-			Type:  environment.VariableTypeInt,
-		},
-		{
-			Name:  "welcome_string",
-			Type:  environment.VariableTypeStr,
-			Value: "not so basic 🤡 string",
-		},
-		{
-			Name:  "one_of_welcome_string",
-			Type:  environment.VariableTypeStr,
-			Value: "one",
-			Enum:  []any{"one", "two", "three"},
-		},
-		{
-			Name:  "true_falser",
-			Type:  environment.VariableTypeBool,
-			Value: true,
-		},
-		{
-			Name:  "request_timeout",
-			Type:  environment.VariableTypeDuration,
-			Value: time.Second * 10,
-		},
-
-		{
-			Name:  "available_ports",
-			Type:  environment.VariableTypeInt,
-			Value: []int{10, 12, 34, 35, 36, 37, 38, 39, 40},
-		},
-		{
-			Name:  "usernames_to_ban",
-			Type:  environment.VariableTypeStr,
-			Value: []string{"hacker228", "mothe4acker"},
-		},
-		{
-			Name:  "credit_percent",
-			Type:  environment.VariableTypeFloat,
-			Value: 0.01,
-		},
-		{
-			Name:  "credit_percents_based_on_year_of_birth",
-			Type:  environment.VariableTypeFloat,
-			Value: []float64{0.01, 0.02, 0.03, 0.04},
-		},
+		environment.MustNewVariable("database_max_connections", 1),
+		environment.MustNewVariable("welcome_string", "not so basic 🤡 string"),
+		environment.MustNewVariable("one_of_welcome_string", "one", environment.WithEnum("one", "two", "three")),
+		environment.MustNewVariable("true_falser", true),
+		environment.MustNewVariable("request_timeout", time.Second*10),
+		environment.MustNewVariable("available_ports", []int{10, 12, 34, 35, 36, 37, 38, 39, 40}),
+		environment.MustNewVariable("usernames_to_ban", []string{"hacker228", "mothe4acker"}),
+		environment.MustNewVariable("credit_percent", 0.01),
+		environment.MustNewVariable("credit_percents_based_on_year_of_birth", []float64{0.01, 0.02, 0.03, 0.04}),
 	}
 }
 

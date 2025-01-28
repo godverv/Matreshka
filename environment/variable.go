@@ -7,11 +7,15 @@ import (
 
 	"go.redsock.ru/evon"
 	errors "go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
+	"gopkg.in/yaml.v3"
 )
 
 var (
 	ErrUnknownEnvVariableType = errors.New("unknown environment variable type")
-	ErrNoValue                = errors.New("no value for variable")
+	ErrEnumValidationFailed   = errors.New("value doesn't satisfy enum")
+	ErrNotAEnumable           = errors.New("not a enumable type. Only string | int values can be enum")
+	ErrUnexpectedType         = errors.New("unexpected type")
 )
 
 type variableType string
@@ -27,121 +31,192 @@ const (
 type Variable struct {
 	Name  string       `yaml:"name"`
 	Type  variableType `yaml:"type"`
-	Enum  []any        `yaml:"enum,omitempty"`
-	Value any          `yaml:"value,omitempty"`
+	Enum  typedEnum    `yaml:"enum,omitempty"`
+	Value Value        `yaml:"value"`
 }
 
-func (v *Variable) MarshalYAML() (any, error) {
-	out := map[string]any{
-		"name": v.Name,
-		"type": v.Type,
+type opt func(*Variable)
+
+func MustNewVariable(name string, val any, opts ...opt) *Variable {
+	v, err := NewVariable(name, val, opts...)
+	if err != nil {
+		panic(err)
 	}
 
-	if len(v.Enum) != 0 {
-		out["enum"] = v.Enum
+	return v
+}
+
+func NewVariable(name string, val any, opts ...opt) (*Variable, error) {
+	out := &Variable{
+		Name: name,
 	}
 
-	var val any
-
-	switch v.Type {
-	case VariableTypeInt:
-		val = marshalInt(v.Value)
-	default:
-		val = v.Value
+	for _, o := range opts {
+		o(out)
 	}
 
-	out["value"] = val
+	out.Type = toolbox.Coalesce(out.Type, GetType(val))
+	if out.Type == "" {
+		return nil, errors.Wrap(ErrUnknownEnvVariableType)
+	}
+
+	var err error
+	out.Value.val, err = mapVariableTypeToTypedValueConstructor[out.Type](val)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
 
 	return out, nil
 }
 
-func (v *Variable) UnmarshalYAML(unmarshal func(a any) error) error {
-	var vals map[string]any
-	err := unmarshal(&vals)
+var (
+	mapReflectTypeToVariableType = map[reflect.Kind]variableType{
+		reflect.String:  VariableTypeStr,
+		reflect.Bool:    VariableTypeBool,
+		reflect.Float64: VariableTypeFloat,
+		reflect.Float32: VariableTypeFloat,
+		reflect.Int:     VariableTypeInt,
+		reflect.Int8:    VariableTypeInt,
+		reflect.Int16:   VariableTypeInt,
+		reflect.Int32:   VariableTypeInt,
+		reflect.Int64:   VariableTypeInt,
+		reflect.Uint:    VariableTypeInt,
+		reflect.Uint8:   VariableTypeInt,
+		reflect.Uint16:  VariableTypeInt,
+		reflect.Uint32:  VariableTypeInt,
+		reflect.Uint64:  VariableTypeInt,
+	}
+	mapVariableTypeToTypedValueConstructor = map[variableType]func(in any) (typedValue, error){
+		VariableTypeStr:      toStringValue,
+		VariableTypeInt:      toIntVariable,
+		VariableTypeFloat:    toFloatVariable,
+		VariableTypeBool:     toBoolValue,
+		VariableTypeDuration: toDuration,
+	}
+	mapVariableTypeToYamlNodeParser = map[variableType]func(node *yaml.Node) (typedValue, error){
+		VariableTypeStr:      stringValueFromNode,
+		VariableTypeInt:      intValueFromNode,
+		VariableTypeFloat:    fromFloatNode,
+		VariableTypeBool:     fromBoolNode,
+		VariableTypeDuration: fromDurationNode,
+	}
+	mapVariableTypeToEnumYamlNodeParser = map[variableType]func(node *yaml.Node) (typedEnum, error){
+		VariableTypeStr: func(node *yaml.Node) (typedEnum, error) {
+			return stringSliceFromYamlNode(node)
+		},
+		VariableTypeInt: func(node *yaml.Node) (typedEnum, error) {
+			return intSliceFromYamlNode(node)
+		},
+	}
+	mapVariableTypeToEnumEvonNodeParser = map[variableType]func(node *evon.Node) (typedEnum, error){
+		VariableTypeStr: func(node *evon.Node) (typedEnum, error) {
+			return stringsSliceFromEvonNode(node)
+		},
+		VariableTypeInt: func(node *evon.Node) (typedEnum, error) {
+			return intSliceFromEvonNode(node)
+		},
+	}
+)
+
+func (v *Variable) UnmarshalYAML(node *yaml.Node) error {
+	var value, enum *yaml.Node
+	_ = enum
+	for cIdx := 0; cIdx < len(node.Content); cIdx += 2 {
+		fieldName := node.Content[cIdx].Value
+		switch fieldName {
+		case "name":
+			v.Name = node.Content[cIdx+1].Value
+		case "type":
+			v.Type = variableType(node.Content[cIdx+1].Value)
+		case "value":
+			value = node.Content[cIdx+1]
+		case "enum":
+			enum = node.Content[cIdx+1]
+		}
+	}
+
+	val, err := mapVariableTypeToYamlNodeParser[v.Type](value)
 	if err != nil {
-		return errors.Wrap(err, "error unmarshalling environment variable")
+		return errors.Wrap(err, "error parsing yaml value node")
 	}
+	v.Value.val = val
 
-	v.Name = vals["name"].(string)
-	v.Type = variableType(vals["type"].(string))
-
-	val := vals["value"]
-	if val == nil {
-		return ErrNoValue
-	}
-
-	v.Value, err = extractValue(val, v.Type)
-	if err != nil {
-		return errors.Wrap(err, "error reading value")
-	}
-
-	enum := vals["enum"]
 	if enum != nil {
-		var ok bool
-		v.Enum, ok = enum.([]any)
+		constructor, ok := mapVariableTypeToEnumYamlNodeParser[v.Type]
 		if !ok {
-			return errors.New(fmt.Sprintf("enum expected to be slice, but got %v ", enum))
+			return errors.Wrap(ErrNotAEnumable, "error unmarshalling yaml enum")
 		}
 
-		if !isValueInEnum(v.Value, v.Enum) {
-			return errors.New(fmt.Sprintf("value out of enum: `%v` expected to be in %v", v.Value, enum))
+		v.Enum, err = constructor(enum)
+		if err != nil {
+			return errors.Wrap(err, "error parsing yaml enums node")
+		}
+
+		err = v.Enum.isEnum(v.Value.val)
+		if err != nil {
+			return errors.Wrap(err)
 		}
 	}
 
 	return nil
 }
 
-func (v *Variable) UnmarshalEnv(node *evon.Node) error {
-	var tp, enum *evon.Node
+func (v *Variable) UnmarshalEnv(node *evon.Node) (err error) {
+	v.Name = node.Name
+	splitIdx := strings.LastIndex(v.Name, evon.ObjectSplitter)
+	if splitIdx != -1 {
+		v.Name = v.Name[splitIdx+1:]
+	}
+
+	v.Name = strings.ReplaceAll(v.Name, evon.FieldSplitter, evon.ObjectSplitter)
+	v.Name = strings.ToLower(v.Name)
+
+	var enum *evon.Node
 	for _, n := range node.InnerNodes {
 		switch n.Name[len(node.Name)+1:] {
 		case "TYPE":
-			tp = n
+			v.Type = variableType(fmt.Sprint(n.Value))
 		case "ENUM":
 			enum = n
 		default:
 
 		}
 	}
-
-	if tp == nil {
-		tp = &evon.Node{
-			Value: VariableTypeStr,
-		}
+	if v.Type == "" {
+		v.Type = VariableTypeStr
 	}
 
-	v.Type = variableType(fmt.Sprint(tp.Value))
-	if enum != nil {
-		enumVal, err := extractValue(enum.Value, v.Type)
-		if err != nil {
-			return errors.Wrap(err, "error extracting enum value")
-		}
-
-		enumRef := reflect.ValueOf(enumVal)
-		if enumRef.Kind() != reflect.Slice {
-			return errors.New("expected enum to be slice, but got " + enumRef.Kind().String())
-		}
-
-		for i := 0; i < enumRef.Len(); i++ {
-			v.Enum = append(v.Enum, enumRef.Index(i).Interface())
-		}
-	}
-
-	var err error
-	v.Value, err = extractValue(node.Value, v.Type)
+	v.Value.val, err = mapVariableTypeToTypedValueConstructor[v.Type](node.Value)
 	if err != nil {
-		return errors.Wrap(err, "error extracting value")
+		return errors.Wrap(err)
+	}
+
+	if enum != nil {
+		constructor, ok := mapVariableTypeToEnumEvonNodeParser[v.Type]
+		if !ok {
+			return errors.Wrap(ErrNotAEnumable, "error unmarshalling evon enum")
+		}
+
+		v.Enum, err = constructor(enum)
+		if err != nil {
+			return errors.Wrap(err)
+		}
+
+		err = v.Enum.isEnum(v.Value.val)
+		if err != nil {
+			return errors.Wrap(err)
+		}
 	}
 
 	return nil
 }
 
 func (v *Variable) EnumString() string {
-	if len(v.Enum) == 0 {
+	if v.Enum == nil {
 		return ""
 	}
 
-	return toStringArray(reflect.ValueOf(v.Enum))
+	return v.Enum.EvonValue()
 }
 
 func (v *Variable) ValueString() string {
@@ -153,23 +228,6 @@ func (v *Variable) ValueString() string {
 	return fmt.Sprint(v.Value)
 }
 
-func extractValue(val any, vType variableType) (out any, err error) {
-	switch vType {
-	case VariableTypeInt:
-		return toIntVariable(val)
-	case VariableTypeStr:
-		return toStringValue(val)
-	case VariableTypeBool:
-		return toBool(val)
-	case VariableTypeFloat:
-		return toFloatVariable(val)
-	case VariableTypeDuration:
-		return toDuration(val)
-	default:
-		return nil, ErrUnknownEnvVariableType
-	}
-}
-
 func toStringArray(vRef reflect.Value) string {
 	vals := make([]string, 0, vRef.Len())
 	for i := 0; i < vRef.Len(); i++ {
@@ -179,6 +237,7 @@ func toStringArray(vRef reflect.Value) string {
 	return "[" + strings.Join(vals, ",") + "]"
 }
 
+// MapVariableToGoType - maps variable onto golang's type name and import path
 func MapVariableToGoType(variable Variable) (typeName string, importName string) {
 	switch variable.Type {
 	case VariableTypeInt:

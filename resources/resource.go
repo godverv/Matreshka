@@ -2,6 +2,8 @@ package resources
 
 import (
 	"strings"
+
+	"go.redsock.ru/evon"
 )
 
 type Resource interface {
@@ -28,7 +30,7 @@ var resources = map[string]func(name Name) Resource{
 func GetResourceByName(name string) Resource {
 
 	name = strings.ToLower(name)
-	resourceTypeName := strings.Split(name, "_")[0]
+	resourceTypeName := strings.Split(name, evon.ObjectSplitter)[0]
 
 	r := resources[resourceTypeName]
 	if r == nil {

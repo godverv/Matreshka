@@ -44,7 +44,11 @@ func Test_ReadConfig(t *testing.T) {
 			s.Name = ""
 		}
 
-		require.Equal(t, cfgExpect, cfgActual)
+		require.Equal(t, cfgExpect.AppInfo, cfgActual.AppInfo)
+		require.Equal(t, cfgExpect.Environment, cfgActual.Environment)
+		require.Equal(t, cfgExpect.DataSources, cfgActual.DataSources)
+		require.Equal(t, cfgExpect.ServiceDiscovery, cfgActual.ServiceDiscovery)
+		require.Equal(t, cfgExpect.Servers, cfgActual.Servers)
 	})
 
 	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_EVON_FORMAT", func(t *testing.T) {
