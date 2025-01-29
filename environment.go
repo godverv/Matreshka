@@ -34,7 +34,7 @@ func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 			},
 		}
 
-		if v.Enum != nil {
+		if v.Enum.Value() != nil {
 			root.InnerNodes = append(root.InnerNodes,
 				&evon.Node{
 					Name:  pref + "_ENUM",

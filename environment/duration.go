@@ -77,10 +77,22 @@ func toDuration(val any) (typedValue, error) {
 	}
 }
 
-func fromDurationNode(val *yaml.Node) (typedValue, error) {
+func fromDurationNode(val *yaml.Node) (v typedValue, err error) {
 	if val.Kind == yaml.ScalarNode {
 		dur, err := time.ParseDuration(val.Value)
 		return &durationValue{v: dur}, err
+	}
+
+	if val.Kind == yaml.SequenceNode {
+		arr := make([]time.Duration, len(val.Content))
+		for idx := range val.Content {
+			arr[idx], err = time.ParseDuration(val.Content[idx].Value)
+			if err != nil {
+				return nil, errors.Wrap(err)
+			}
+		}
+
+		return &durationSliceValue{v: arr}, nil
 	}
 
 	return nil, nil

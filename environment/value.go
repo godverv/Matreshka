@@ -9,7 +9,11 @@ type Value struct {
 }
 
 func (v Value) Value() any {
-	return v.val.Val()
+	if v.val != nil {
+		return v.val.Val()
+	}
+
+	return nil
 }
 
 type typedValue interface {
@@ -18,13 +22,12 @@ type typedValue interface {
 	Val() any
 }
 
-type typedEnum interface {
-	typedValue
-	isEnum(value typedValue) error
-}
-
 func (v Value) MarshalYAML() (interface{}, error) {
-	return v.val.YamlValue(), nil
+	if v.val != nil {
+		return v.val.YamlValue(), nil
+	}
+
+	return nil, nil
 }
 
 func GetType(val any) variableType {
@@ -36,15 +39,22 @@ func GetType(val any) variableType {
 		refV = refV.Elem()
 		refKind = refV.Kind()
 	}
-
+	isSlice := false
 	if refKind == reflect.Slice {
 		refKind = reflect.TypeOf(val).Elem().Kind()
+		isSlice = true
 	}
 
 	switch refKind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		t := refV.Type().String()
-		if t == "time.Duration" {
+		var nativeType string
+		if isSlice {
+			nativeType = reflect.TypeOf(val).Elem().String()
+		} else {
+			nativeType = refV.Type().String()
+		}
+
+		if nativeType == "time.Duration" {
 			return VariableTypeDuration
 		}
 	}

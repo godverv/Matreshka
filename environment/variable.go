@@ -31,7 +31,7 @@ const (
 type Variable struct {
 	Name  string       `yaml:"name"`
 	Type  variableType `yaml:"type"`
-	Enum  typedEnum    `yaml:"enum,omitempty"`
+	Enum  TypedEnum    `yaml:"enum,omitempty"`
 	Value Value        `yaml:"value"`
 }
 
@@ -120,7 +120,7 @@ var (
 
 func (v *Variable) UnmarshalYAML(node *yaml.Node) error {
 	var value, enum *yaml.Node
-	_ = enum
+
 	for cIdx := 0; cIdx < len(node.Content); cIdx += 2 {
 		fieldName := node.Content[cIdx].Value
 		switch fieldName {
@@ -147,12 +147,12 @@ func (v *Variable) UnmarshalYAML(node *yaml.Node) error {
 			return errors.Wrap(ErrNotAEnumable, "error unmarshalling yaml enum")
 		}
 
-		v.Enum, err = constructor(enum)
+		v.Enum.v, err = constructor(enum)
 		if err != nil {
 			return errors.Wrap(err, "error parsing yaml enums node")
 		}
 
-		err = v.Enum.isEnum(v.Value.val)
+		err = v.Enum.v.isEnum(v.Value.val)
 		if err != nil {
 			return errors.Wrap(err)
 		}
@@ -197,12 +197,12 @@ func (v *Variable) UnmarshalEnv(node *evon.Node) (err error) {
 			return errors.Wrap(ErrNotAEnumable, "error unmarshalling evon enum")
 		}
 
-		v.Enum, err = constructor(enum)
+		v.Enum.v, err = constructor(enum)
 		if err != nil {
 			return errors.Wrap(err)
 		}
 
-		err = v.Enum.isEnum(v.Value.val)
+		err = v.Enum.v.isEnum(v.Value.val)
 		if err != nil {
 			return errors.Wrap(err)
 		}
@@ -212,11 +212,11 @@ func (v *Variable) UnmarshalEnv(node *evon.Node) (err error) {
 }
 
 func (v *Variable) EnumString() string {
-	if v.Enum == nil {
+	if v.Enum.v == nil {
 		return ""
 	}
 
-	return v.Enum.EvonValue()
+	return v.Enum.v.EvonValue()
 }
 
 func (v *Variable) ValueString() string {

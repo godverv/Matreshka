@@ -19,7 +19,7 @@ func WithEnum(enums ...any) opt {
 				is.v = append(is.v, ev.(int))
 			}
 
-			v.Enum = is
+			v.Enum.v = is
 		case string:
 			is := &stringSliceValue{
 				v: make([]string, 0, len(enums)),
@@ -28,7 +28,7 @@ func WithEnum(enums ...any) opt {
 				is.v = append(is.v, ev.(string))
 			}
 
-			v.Enum = is
+			v.Enum.v = is
 		default:
 			panic(fmt.Sprintf("unsupported enum type %T", enums[0]))
 		}
