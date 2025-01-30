@@ -219,24 +219,6 @@ func (v *Variable) EnumString() string {
 	return v.Enum.v.EvonValue()
 }
 
-func (v *Variable) ValueString() string {
-	ref := reflect.ValueOf(v.Value)
-	if ref.Kind() == reflect.Slice {
-		return toStringArray(ref)
-	}
-
-	return fmt.Sprint(v.Value)
-}
-
-func toStringArray(vRef reflect.Value) string {
-	vals := make([]string, 0, vRef.Len())
-	for i := 0; i < vRef.Len(); i++ {
-		vals = append(vals, fmt.Sprint(vRef.Index(i).Interface()))
-	}
-
-	return "[" + strings.Join(vals, ",") + "]"
-}
-
 // MapVariableToGoType - maps variable onto golang's type name and import path
 func MapVariableToGoType(variable Variable) (typeName string, importName string) {
 	switch variable.Type {

@@ -3,10 +3,10 @@ module go.verv.tech/matreshka
 go 1.23.4
 
 require (
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	go.redsock.ru/evon v0.0.17
 	go.redsock.ru/rerrors v0.0.3
-	go.redsock.ru/toolbox v0.0.9
+	go.redsock.ru/toolbox v0.0.10
 	gopkg.in/yaml.v3 v3.0.1
 )
 

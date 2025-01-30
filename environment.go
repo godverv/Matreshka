@@ -24,9 +24,10 @@ func (a *Environment) MarshalEnv(prefix string) ([]*evon.Node, error) {
 	out := make([]*evon.Node, 0, len(*a))
 	for _, v := range *a {
 		pref := prefix + strings.NewReplacer(" ", evon.FieldSplitter, evon.ObjectSplitter, evon.FieldSplitter).Replace(strings.ToUpper(v.Name))
+
 		root := &evon.Node{
 			Name:  pref,
-			Value: v.ValueString(),
+			Value: v.Value.String(),
 			InnerNodes: []*evon.Node{{
 				Name:  pref + "_TYPE",
 				Value: v.Type,

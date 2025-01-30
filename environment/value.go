@@ -8,6 +8,12 @@ type Value struct {
 	val typedValue
 }
 
+type typedValue interface {
+	YamlValue() any
+	EvonValue() string
+	Val() any
+}
+
 func (v Value) Value() any {
 	if v.val != nil {
 		return v.val.Val()
@@ -16,18 +22,16 @@ func (v Value) Value() any {
 	return nil
 }
 
-type typedValue interface {
-	YamlValue() any
-	EvonValue() string
-	Val() any
-}
-
 func (v Value) MarshalYAML() (interface{}, error) {
 	if v.val != nil {
 		return v.val.YamlValue(), nil
 	}
 
 	return nil, nil
+}
+
+func (v Value) String() string {
+	return v.val.EvonValue()
 }
 
 func GetType(val any) variableType {

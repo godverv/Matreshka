@@ -29,8 +29,8 @@ func NewEmptyConfig() AppConfig {
 	}
 }
 
-func ReadConfigs(paths ...string) (AppConfig, error) {
-	masterConfig := NewEmptyConfig()
+func ReadConfigs(paths ...string) (masterConfig AppConfig, err error) {
+	masterConfig = NewEmptyConfig()
 
 	if len(paths) != 0 {
 		fileConfig, err := getFromFile(paths[0])
@@ -58,44 +58,12 @@ func ReadConfigs(paths ...string) (AppConfig, error) {
 
 	prefix, evonStorageFromEnv := getEnvVars(masterConfig.AppInfo)
 
-	// Storage in Evon format (e.g. object_sub-field-name_leaf-field-name)
-	masterEvonStorage := evon.NodeStorage{}
-	masterEvonCfg, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
+	//if len(evonStorageFromEnv) != 0 {
+	masterConfig, err = mergeWithEnv(prefix, evonStorageFromEnv, masterConfig)
 	if err != nil {
-		return masterConfig, rerrors.Wrap(err, "error marshalling to env")
+		return masterConfig, rerrors.Wrap(err, "error merging config with environment")
 	}
-
-	// Storage in Basic Environment format (e.g. object_sub_field_name_leaf_field_name)
-	masterEnvStorage := map[string]*evon.Node{}
-	for key, node := range evonStorageFromEnv {
-		key = strings.ReplaceAll(key, evon.FieldSplitter, evon.ObjectSplitter)
-		masterEnvStorage[key] = node
-	}
-
-	masterEvonStorage.AddNode(masterEvonCfg)
-
-	for _, n := range evonStorageFromEnv {
-		masterEvonNode := masterEvonStorage[n.Name]
-		if masterEvonNode == nil {
-			masterEvonNode = masterEnvStorage[n.Name]
-		} else {
-			masterEvonStorage.AddNode(n)
-		}
-
-		if masterEvonNode != nil {
-			masterEvonNode.Value = n.Value
-		}
-	}
-
-	masterConfig = NewEmptyConfig()
-	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEvonStorage, &masterConfig)
-	if err != nil {
-		return masterConfig, rerrors.Wrap(err, "error unmarshalling back to config")
-	}
-
-	sort.Slice(masterConfig.Environment, func(i, j int) bool {
-		return masterConfig.Environment[i].Name < masterConfig.Environment[j].Name
-	})
+	//}
 
 	return masterConfig, nil
 }
@@ -223,6 +191,50 @@ func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorag
 	}
 
 	return prefixOut, envConfig
+}
+
+func mergeWithEnv(prefix string, evonStorageFromEnv evon.NodeStorage, masterConfig AppConfig) (AppConfig, error) {
+
+	// Storage in Evon format (e.g. object_sub-field-name_leaf-field-name)
+	masterEvonStorage := evon.NodeStorage{}
+	masterEvonCfg, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
+	if err != nil {
+		return masterConfig, rerrors.Wrap(err, "error marshalling to env")
+	}
+
+	// Storage in Basic Environment format (e.g. object_sub_field_name_leaf_field_name)
+	masterEnvStorage := map[string]*evon.Node{}
+	for key, node := range evonStorageFromEnv {
+		key = strings.ReplaceAll(key, evon.FieldSplitter, evon.ObjectSplitter)
+		masterEnvStorage[key] = node
+	}
+
+	masterEvonStorage.AddNode(masterEvonCfg)
+
+	for _, n := range evonStorageFromEnv {
+		masterEvonNode := masterEvonStorage[n.Name]
+		if masterEvonNode == nil {
+			masterEvonNode = masterEnvStorage[n.Name]
+		} else {
+			masterEvonStorage.AddNode(n)
+		}
+
+		if masterEvonNode != nil {
+			masterEvonNode.Value = n.Value
+		}
+	}
+
+	masterConfig = NewEmptyConfig()
+	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEvonStorage, &masterConfig)
+	if err != nil {
+		return masterConfig, rerrors.Wrap(err, "error unmarshalling back to config")
+	}
+
+	sort.Slice(masterConfig.Environment, func(i, j int) bool {
+		return masterConfig.Environment[i].Name < masterConfig.Environment[j].Name
+	})
+
+	return masterConfig, nil
 }
 
 func getFromFile(pth string) (AppConfig, error) {
