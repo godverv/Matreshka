@@ -7,7 +7,7 @@ import (
 	"go.redsock.ru/evon"
 	"gopkg.in/yaml.v3"
 
-	"go.verv.tech/matreshka/server"
+	"go.vervstack.ru/matreshka/server"
 )
 
 func Test_Servers(t *testing.T) {

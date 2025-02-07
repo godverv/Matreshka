@@ -13,7 +13,7 @@ import (
 	"go.redsock.ru/rerrors"
 	"go.redsock.ru/toolbox"
 
-	"go.verv.tech/matreshka/environment"
+	"go.vervstack.ru/matreshka/environment"
 )
 
 const (

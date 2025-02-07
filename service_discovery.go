@@ -1,7 +1,7 @@
 package matreshka
 
 import (
-	"go.verv.tech/matreshka/service_discovery"
+	"go.vervstack.ru/matreshka/service_discovery"
 )
 
 type ServiceDiscovery struct {

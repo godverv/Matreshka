@@ -8,8 +8,8 @@ import (
 	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
 
-	"go.verv.tech/matreshka/internal/cases"
-	"go.verv.tech/matreshka/resources"
+	"go.vervstack.ru/matreshka/internal/cases"
+	"go.vervstack.ru/matreshka/resources"
 )
 
 type DataSources []resources.Resource

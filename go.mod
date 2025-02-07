@@ -1,4 +1,4 @@
-module go.verv.tech/matreshka
+module go.vervstack.ru/matreshka
 
 go 1.23.4
 

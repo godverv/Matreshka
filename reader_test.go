@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"go.verv.tech/matreshka/resources"
+	"go.vervstack.ru/matreshka/resources"
 )
 
 func Test_ReadConfig(t *testing.T) {
