@@ -9,10 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"go.vervstack.ru/matreshka/environment"
 	"go.vervstack.ru/matreshka/resources"
 )
 
-func Test_ReadConfig(t *testing.T) {
+func Test_ParseConfig(t *testing.T) {
 	tmpDirPath := path.Join(os.TempDir(), t.Name())
 	require.NoError(t, os.MkdirAll(tmpDirPath, os.ModePerm))
 
@@ -33,7 +34,7 @@ func Test_ReadConfig(t *testing.T) {
 		require.Equal(t, cfg, NewEmptyConfig())
 	})
 
-	t.Run("OK_READ_FULL_FROM_FILE", func(t *testing.T) {
+	t.Run("OK_FULL_FROM_FILE", func(t *testing.T) {
 		t.Parallel()
 
 		cfgActual, err := ParseConfig(fullConfig)
@@ -51,141 +52,7 @@ func Test_ReadConfig(t *testing.T) {
 		require.Equal(t, cfgExpect.Servers, cfgActual.Servers)
 	})
 
-	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_EVON_FORMAT", func(t *testing.T) {
-		setupFullEnvConfigWithModuleName(t)
-
-		cfgActual, err := ReadConfigs()
-		require.NoError(t, err)
-
-		cfgExpect := getFullConfigTest()
-
-		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
-			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
-			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgExpect.Environment, func(i, j int) bool {
-			return cfgExpect.Environment[i].Name > cfgExpect.Environment[j].Name
-		})
-
-		sort.Slice(cfgActual.Environment, func(i, j int) bool {
-			return cfgActual.Environment[i].Name > cfgActual.Environment[j].Name
-		})
-
-		require.Equal(t, cfgExpect, cfgActual)
-	})
-
-	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_USING_MODULE_NAME_SHORT", func(t *testing.T) {
-		cfgPath := path.Join(tmpDirPath, path.Base(t.Name())+".yaml")
-		defer func() {
-			require.NoError(t, os.RemoveAll(cfgPath))
-		}()
-
-		require.NoError(t,
-			os.WriteFile(
-				cfgPath,
-				appInfoConfigShortName,
-				os.ModePerm))
-
-		setupFullEnvConfigWithModuleName(t)
-
-		require.NoError(t, os.Setenv(VervName, ""))
-
-		cfgActual, err := ReadConfigs(cfgPath)
-		require.NoError(t, err)
-
-		cfgExpect := getFullConfigTest()
-
-		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
-			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
-			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgExpect.Environment, func(i, j int) bool {
-			return cfgExpect.Environment[i].Name > cfgExpect.Environment[j].Name
-		})
-
-		sort.Slice(cfgActual.Environment, func(i, j int) bool {
-			return cfgActual.Environment[i].Name > cfgActual.Environment[j].Name
-		})
-
-		require.Equal(t, cfgExpect, cfgActual)
-	})
-	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_USING_MODULE_NAME_FULL", func(t *testing.T) {
-		cfgPath := path.Join(tmpDirPath, path.Base(t.Name())+".yaml")
-		defer func() {
-			require.NoError(t, os.RemoveAll(cfgPath))
-		}()
-
-		require.NoError(t,
-			os.WriteFile(
-				cfgPath,
-				appInfoConfigFullName,
-				os.ModePerm))
-
-		setupFullEnvConfigWithModuleName(t)
-
-		require.NoError(t, os.Setenv(VervName, ""))
-
-		cfgActual, err := ReadConfigs(cfgPath)
-		require.NoError(t, err)
-
-		cfgExpect := getFullConfigTest()
-
-		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
-			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
-			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgExpect.Environment, func(i, j int) bool {
-			return cfgExpect.Environment[i].Name > cfgExpect.Environment[j].Name
-		})
-
-		sort.Slice(cfgActual.Environment, func(i, j int) bool {
-			return cfgActual.Environment[i].Name > cfgActual.Environment[j].Name
-		})
-
-		require.Equal(t, cfgExpect, cfgActual)
-	})
-	t.Run("OK_READ_FULL_FROM_ENVIRONMENT_WITHOUT_MODULE_NAME", func(t *testing.T) {
-		setupFullEnvConfigWithoutModuleName(t)
-
-		require.NoError(t, os.Setenv(VervName, ""))
-
-		cfgActual, err := ReadConfigs()
-		require.NoError(t, err)
-
-		cfgExpect := getFullConfigTest()
-
-		sort.Slice(cfgExpect.DataSources, func(i, j int) bool {
-			return cfgExpect.DataSources[i].GetName() > cfgExpect.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgActual.DataSources, func(i, j int) bool {
-			return cfgActual.DataSources[i].GetName() > cfgActual.DataSources[j].GetName()
-		})
-
-		sort.Slice(cfgExpect.Environment, func(i, j int) bool {
-			return cfgExpect.Environment[i].Name > cfgExpect.Environment[j].Name
-		})
-
-		sort.Slice(cfgActual.Environment, func(i, j int) bool {
-			return cfgActual.Environment[i].Name > cfgActual.Environment[j].Name
-		})
-
-		require.Equal(t, cfgExpect, cfgActual)
-	})
-
-	t.Run("ERROR_READING_CONFIG", func(t *testing.T) {
+	t.Run("ERROR_UNKNOWN_FILE)", func(t *testing.T) {
 		cfg, err := getFromFile("unreadable config path")
 		require.ErrorIs(t, err, os.ErrNotExist)
 		require.Equal(t, cfg, NewEmptyConfig())
@@ -208,7 +75,7 @@ func Test_ReadConfig(t *testing.T) {
 	})
 }
 
-func Test_MergeConfigs(t *testing.T) {
+func Test_ReadConfigs(t *testing.T) {
 	t.Parallel()
 
 	tmpDirPath := path.Join(os.TempDir(), t.Name())
@@ -261,7 +128,7 @@ func Test_MergeConfigs(t *testing.T) {
 			return expectedCfg.Environment[i].Name > expectedCfg.Environment[j].Name
 		})
 
-		t.Run("EMPTY_MERGE_FULL", func(t *testing.T) {
+		t.Run("EMPTY_TO_FULL", func(t *testing.T) {
 			// empty and full config merge
 			actualCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
 
@@ -273,7 +140,7 @@ func Test_MergeConfigs(t *testing.T) {
 			require.Equal(t, expectedCfg, actualCfg)
 		})
 
-		t.Run("FULL_MERGE_EMPTY", func(t *testing.T) {
+		t.Run("FULL_TO_EMPTY", func(t *testing.T) {
 			actualCfg, err := ReadConfigs(fullConfigPath, emptyConfigPath)
 
 			sort.Slice(actualCfg.Environment, func(i, j int) bool {
@@ -282,6 +149,62 @@ func Test_MergeConfigs(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, expectedCfg, actualCfg)
+		})
+
+		t.Run("EMPTY_TO_FULL_TO_ENV", func(t *testing.T) {
+			// empty and full config merge
+
+			expectedCfgWithEnv := AppConfig{
+				AppInfo: AppInfo{
+					Name:            "matreshka",
+					Version:         "v0.0.1",
+					StartupDuration: time.Second * 10,
+				},
+				DataSources: []resources.Resource{
+					getPostgresClientTest(),
+					getRedisClientTest(),
+					getTelegramClientTest(),
+					getGRPCClientTest(),
+				},
+				Servers:          getConfigServersFull(),
+				Environment:      Environment(getEnvironmentVariables()),
+				ServiceDiscovery: getConfigServiceDiscovery(),
+			}
+
+			// Evon style only
+			require.NoError(t, os.Setenv("database-max-connections", "3"))
+			expectedCfgWithEnv.Environment[0] = environment.MustNewVariable("database_max_connections", 3)
+
+			// Service name + env part + evon style
+			require.NoError(t, os.Setenv("matreshka_environment_welcome-string", "wel-cum"))
+			expectedCfgWithEnv.Environment[1] = environment.MustNewVariable("welcome_string", "wel-cum")
+
+			// Service name + evon style
+			require.NoError(t, os.Setenv("matreshka_one-of-welcome-string", "three"))
+			expectedCfgWithEnv.Environment[2] = environment.MustNewVariable(
+				"one_of_welcome_string", "three",
+				environment.WithEnum("one", "two", "three"))
+
+			// Service name + env part + default env style
+			require.NoError(t, os.Setenv("matreshka_environment_request_timeout", "10s"))
+			expectedCfgWithEnv.Environment[4] = environment.MustNewVariable("request_timeout", time.Second*10)
+
+			// Default env style
+			require.NoError(t, os.Setenv("available_ports", "[12-18,20]"))
+			expectedCfgWithEnv.Environment[5] = environment.MustNewVariable("available_ports", []int{12, 13, 14, 15, 16, 17, 18, 20})
+
+			actualCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
+
+			sort.Slice(actualCfg.Environment, func(i, j int) bool {
+				return actualCfg.Environment[i].Name > actualCfg.Environment[j].Name
+			})
+
+			sort.Slice(expectedCfgWithEnv.Environment, func(i, j int) bool {
+				return expectedCfgWithEnv.Environment[i].Name > expectedCfgWithEnv.Environment[j].Name
+			})
+
+			require.NoError(t, err)
+			require.Equal(t, expectedCfgWithEnv, actualCfg)
 		})
 	})
 

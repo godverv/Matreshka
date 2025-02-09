@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"slices"
 	"sort"
 	"strings"
 
@@ -56,14 +55,10 @@ func ReadConfigs(paths ...string) (masterConfig AppConfig, err error) {
 		}
 	}
 
-	prefix, evonStorageFromEnv := getEnvVars(masterConfig.AppInfo)
-
-	//if len(evonStorageFromEnv) != 0 {
-	masterConfig, err = mergeWithEnv(prefix, evonStorageFromEnv, masterConfig)
+	masterConfig, err = enrichWithEnv(masterConfig)
 	if err != nil {
-		return masterConfig, rerrors.Wrap(err, "error merging config with environment")
+		return masterConfig, rerrors.Wrap(err, "error enriching master config with env vars")
 	}
-	//}
 
 	return masterConfig, nil
 }
@@ -140,22 +135,52 @@ func MergeConfigs(master, slave AppConfig) AppConfig {
 	return master
 }
 
-func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorage) {
-	envConfig = evon.NodeStorage{}
+func enrichWithEnv(masterConfig AppConfig) (enrichedConfig AppConfig, err error) {
+	projectName := strings.ToUpper(toolbox.Coalesce(os.Getenv(VervName), masterConfig.ModuleName()))
 
-	projectName := toolbox.Coalesce(os.Getenv(VervName), masterInfo.ModuleName())
+	// Storage in Evon format (e.g. object_sub-field-name_leaf-field-name)
+	masterEvonCfg, err := evon.MarshalEnvWithPrefix(projectName, &masterConfig)
+	if err != nil {
+		return masterConfig, rerrors.Wrap(err, "error marshalling to env")
+	}
+
+	masterEvonStorage := evon.NodeStorage{}
+	masterEvonStorage.AddNode(masterEvonCfg)
+
+	// Pointers to evon nodes presented in default environment variable format
+	envNamePointers := map[string]*evon.Node{}
+	for name, node := range masterEvonStorage {
+		envNamePointers[strings.ReplaceAll(name, "-", "_")] = node
+	}
 
 	environ := os.Environ()
 
-	prefixOut = strings.ToUpper(projectName)
+	const environmentEvonPart = "ENVIRONMENT"
+	serviceNameWithEnvPartPrefix := projectName + evon.ObjectSplitter + environmentEvonPart
 
-	prefixWorking := prefixOut
-	// In case project name is specified, appending underscore to clear name from variable
-	if prefixWorking != "" {
-		prefixWorking += evon.ObjectSplitter
+	nodeFinders := []func(originalName string) *evon.Node{
+		// Simply extract from storage
+		func(originalName string) *evon.Node {
+			return masterEvonStorage[originalName]
+		},
+		// Try to find inside environment object
+		func(originalName string) *evon.Node {
+			if !strings.HasPrefix(originalName, serviceNameWithEnvPartPrefix) {
+				originalName = serviceNameWithEnvPartPrefix + evon.ObjectSplitter + originalName[len(projectName)+1:]
+			}
+
+			return masterEvonStorage[originalName]
+		},
+		// Use environment style to find from
+		func(originalName string) *evon.Node {
+			if !strings.HasPrefix(originalName, serviceNameWithEnvPartPrefix) {
+				originalName = serviceNameWithEnvPartPrefix + evon.ObjectSplitter + originalName[len(projectName)+1:]
+			}
+
+			originalName = strings.ReplaceAll(originalName, "-", "_")
+			return envNamePointers[originalName]
+		},
 	}
-
-	partsToParse := []string{"APP-INFO", "DATA-SOURCES", "SERVERS", "ENVIRONMENT", "SERVICE-DISCOVERY"}
 
 	for _, variable := range environ {
 		idx := strings.Index(variable, "=")
@@ -163,69 +188,35 @@ func getEnvVars(masterInfo AppInfo) (prefixOut string, envConfig evon.NodeStorag
 			continue
 		}
 
-		originalName := strings.ToUpper(variable[:idx])
+		// Just in case. Validate that env variable has certain project name prefix.
+		// This allows user to set variables in short form.
+		// Instead of VELEZ_SHUT_DOWN_ON_EXIT use SHUT_DOWN_ON_EXIT as name
+		variableName := strings.ToUpper(variable[:idx])
 
-		strippingName := originalName
+		variableValue := variable[idx+1:]
 
-		if !strings.HasPrefix(strippingName, prefixWorking) {
+		if !strings.HasPrefix(variableName, projectName) {
+			variableName = projectName + evon.ObjectSplitter + variableName
+		}
+
+		var node *evon.Node
+
+		for _, nf := range nodeFinders {
+			node = nf(variableName)
+			if node != nil {
+				continue
+			}
+		}
+
+		if node == nil {
 			continue
 		}
 
-		strippingName = strippingName[len(prefixWorking):]
-		spaceIndex := strings.Index(strippingName, evon.ObjectSplitter)
-		if spaceIndex == -1 {
-			continue
-		}
-
-		firstPart := strippingName[:spaceIndex]
-
-		if !slices.Contains(partsToParse, firstPart) {
-			continue
-		}
-
-		envConfig.AddNode(&evon.Node{
-			Name:       originalName,
-			Value:      os.Getenv(originalName),
-			InnerNodes: nil,
-		})
-	}
-
-	return prefixOut, envConfig
-}
-
-func mergeWithEnv(prefix string, evonStorageFromEnv evon.NodeStorage, masterConfig AppConfig) (AppConfig, error) {
-
-	// Storage in Evon format (e.g. object_sub-field-name_leaf-field-name)
-	masterEvonStorage := evon.NodeStorage{}
-	masterEvonCfg, err := evon.MarshalEnvWithPrefix(prefix, &masterConfig)
-	if err != nil {
-		return masterConfig, rerrors.Wrap(err, "error marshalling to env")
-	}
-
-	// Storage in Basic Environment format (e.g. object_sub_field_name_leaf_field_name)
-	masterEnvStorage := map[string]*evon.Node{}
-	for key, node := range evonStorageFromEnv {
-		key = strings.ReplaceAll(key, evon.FieldSplitter, evon.ObjectSplitter)
-		masterEnvStorage[key] = node
-	}
-
-	masterEvonStorage.AddNode(masterEvonCfg)
-
-	for _, n := range evonStorageFromEnv {
-		masterEvonNode := masterEvonStorage[n.Name]
-		if masterEvonNode == nil {
-			masterEvonNode = masterEnvStorage[n.Name]
-		} else {
-			masterEvonStorage.AddNode(n)
-		}
-
-		if masterEvonNode != nil {
-			masterEvonNode.Value = n.Value
-		}
+		node.Value = variableValue
 	}
 
 	masterConfig = NewEmptyConfig()
-	err = evon.UnmarshalWithNodesAndPrefix(prefix, masterEvonStorage, &masterConfig)
+	err = evon.UnmarshalWithNodesAndPrefix(projectName, masterEvonStorage, &masterConfig)
 	if err != nil {
 		return masterConfig, rerrors.Wrap(err, "error unmarshalling back to config")
 	}
