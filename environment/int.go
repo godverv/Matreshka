@@ -169,6 +169,10 @@ func toIntVariable(val any) (typedValue, error) {
 
 func intValueFromNode(node *yaml.Node) (typedValue, error) {
 	if node.Kind == yaml.ScalarNode {
+		if strings.HasPrefix(node.Value, "[") {
+			return intSliceFromYamlNode(node)
+		}
+
 		i, err := strconv.Atoi(node.Value)
 		return &intValue{i}, err
 	}
