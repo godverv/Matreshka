@@ -11,7 +11,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const mathMinus = "-"
+const (
+	mathMinus      = "-"
+	rangeDelimiter = ":"
+)
 
 type intValue struct {
 	v int
@@ -101,7 +104,7 @@ func (v *intSliceValue) asYamlRange() *yaml.Node {
 	convertToRange := func(start, end int) string {
 		newRange := strconv.Itoa(start)
 		if start != end {
-			newRange += mathMinus + strconv.Itoa(end)
+			newRange += rangeDelimiter + strconv.Itoa(end)
 		}
 
 		return newRange
@@ -187,45 +190,44 @@ func intValueFromNode(node *yaml.Node) (typedValue, error) {
 func intSliceFromYamlNode(node *yaml.Node) (*intSliceValue, error) {
 	intSlice := &intSliceValue{}
 
-	for _, child := range node.Content {
+	var values []string
+
+	if node.Kind == yaml.SequenceNode {
+		for _, c := range node.Content {
+			values = append(values, c.Value)
+		}
+	} else {
+		stringedSlice := node.Value[1:]
+		stringedSlice = stringedSlice[:len(stringedSlice)-1]
+		values = strings.Split(stringedSlice, ",")
+	}
+
+	for _, v := range values {
 
 		i := 0
 		var err error
-
-		switch child.Tag {
-		case "!!int":
-			i, err = strconv.Atoi(child.Value)
+		rangeIndex := strings.Index(v, rangeDelimiter)
+		if rangeIndex == -1 {
+			i, err = strconv.Atoi(v)
 			if err != nil {
-				return nil, errors.Wrap(err, "could not parse int: %s ", child.Value)
+				return nil, errors.Wrapf(err, "could not parse int. Expected single int value. Got '%s'", v)
 			}
 
 			intSlice.v = append(intSlice.v, i)
-		case "!!str":
-			minusIndex := strings.Index(child.Value, mathMinus)
-			if minusIndex == -1 || minusIndex == 0 && strings.Count(child.Value, mathMinus) < 2 {
-				i, err = strconv.Atoi(child.Value)
-				if err != nil {
-					return nil, errors.Wrap(err, "could not parse string as int: %s ", child.Value)
-				}
+		} else {
+			var firstInt, lastInt int
+			firstInt, err = strconv.Atoi(v[:rangeIndex])
+			if err != nil {
+				return nil, errors.Wrap(err, "error parsing first int in sequence")
+			}
 
-				intSlice.v = append(intSlice.v, i)
-			} else {
+			lastInt, err = strconv.Atoi(v[rangeIndex+1:])
+			if err != nil {
+				return nil, errors.Wrap(err, "error parsing last int in sequence")
+			}
 
-				minusIndex = strings.Index(child.Value[1:], mathMinus) + 1
-				var firstInt, lastInt int
-				firstInt, err = strconv.Atoi(child.Value[:minusIndex])
-				if err != nil {
-					return nil, errors.Wrap(err, "error parsing first int in sequence")
-				}
-
-				lastInt, err = strconv.Atoi(child.Value[minusIndex+1:])
-				if err != nil {
-					return nil, errors.Wrap(err, "error parsing last int in sequence")
-				}
-
-				for ; firstInt <= lastInt; firstInt++ {
-					intSlice.v = append(intSlice.v, firstInt)
-				}
+			for ; firstInt <= lastInt; firstInt++ {
+				intSlice.v = append(intSlice.v, firstInt)
 			}
 		}
 	}
@@ -283,7 +285,7 @@ func anySliceToIntSlice(value []any) ([]int, error) {
 	for _, v := range value {
 		switch v := v.(type) {
 		case string:
-			rangeSeparator := strings.Index(v, mathMinus)
+			rangeSeparator := strings.Index(v, rangeDelimiter)
 			if rangeSeparator != -1 {
 				rng, err := extractIntRange(rangeSeparator, v)
 				if err != nil {

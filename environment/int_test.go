@@ -324,19 +324,19 @@ func TestIntRangeVariable(t *testing.T) {
 				expectedYaml = `
 name: test_variable
 type: int
-value: [1-3, 5-7]
+value: [1:3, 5:7]
 `
 			} else if tc.expected[2] < 0 {
 				expectedYaml = `
 name: test_variable
 type: int
-value: [-7--5, -3--1]
+value: [-7:-5, -3:-1]
 `
 			} else {
 				expectedYaml = `
 name: test_variable
 type: int
-value: [-2-1, 3-5]
+value: [-2:1, 3:5]
 `
 			}
 

@@ -190,11 +190,11 @@ func Test_ReadConfigs(t *testing.T) {
 			expectedCfgWithEnv.Environment[4] = environment.MustNewVariable("request_timeout", time.Second*10)
 
 			// Default env style
-			require.NoError(t, os.Setenv("available_ports", "[12-18,20]"))
+			require.NoError(t, os.Setenv("available_ports", "[12:18,20]"))
 			expectedCfgWithEnv.Environment[5] = environment.MustNewVariable("available_ports", []int{12, 13, 14, 15, 16, 17, 18, 20})
 
 			actualCfg, err := ReadConfigs(emptyConfigPath, fullConfigPath)
-
+			require.NoError(t, err)
 			sort.Slice(actualCfg.Environment, func(i, j int) bool {
 				return actualCfg.Environment[i].Name > actualCfg.Environment[j].Name
 			})
